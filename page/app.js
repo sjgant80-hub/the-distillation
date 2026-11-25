@@ -1,20 +1,22 @@
-// app.js — the page. The kernels above it are the gated code, inlined byte for byte; this file shows what they
-// compute from the published records, and lets a visitor run them: judge a round again, try the training gate, try
-// the adoption rule. Every number it writes is a count from a published record, read here by those kernels.
+// app.js — the page. The kernels above it are the gated code, inlined byte for byte; the house kit (CRYSTAL, HOUSE)
+// draws. This file shows what the kernels compute from the published records, as receipts, a stack and a glass, and
+// lets a visitor run them: judge a round again, try the training gate, ask the rule. Every number it writes is a
+// count from a published record. Where no sealed round has landed yet it says "sealing now", and claims nothing.
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const bind = (k, html) => { for (const el of document.querySelectorAll(`[data-bind="${k}"]`)) el.innerHTML = html; };
 const getText = async (p) => { try { const r = await fetch(p); return r.ok ? await r.text() : null; } catch { return null; } };
 const getJSON = async (p) => { const t = await getText(p); try { return t === null ? null : JSON.parse(t); } catch { return null; } };
-const NM = '<span class="pend">not measured yet</span>';
 const pct = (x) => `${(100 * x).toFixed(1)}%`;
 const prob = (p) => (p < 0.001 ? p.toExponential(1) : p.toFixed(3));
-const hrs = (s) => (s >= 5400 ? `${(s / 3600).toFixed(1)} hours` : `${Math.round(s / 60)} minutes`);
+const hrs = (s) => (s >= 5400 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`);
 const many = (n, one, more) => `${n} ${n === 1 ? one : more}`;
-const S = { settings: null, published: null, rounds: {}, shown: null, trace: null, gates: null, parity: null, walk: null, sealSha: null };
+const SEALING = '<span class="tag gd">sealing now</span>';
+const S = { settings: null, published: null, rounds: {}, shown: null, trace: null, gates: null, parity: null, weights: null, walk: null, sealSha: null, crystal: null, faces: [] };
 const KIND = { gained: 'gained: failed before, right after', lost: 'lost: right before, failed after', kept: 'right both times', still: 'failed both times' };
-const FILL = { gained: 'var(--lume)', lost: 'var(--red)', kept: 'var(--kept)', still: 'var(--still)' };
+const FILL = { gained: '#49e8c8', lost: '#ff6b6b', kept: '#2f8f96', still: '#1c3a45' };
 const SAID = { right: 'right', wrong: 'a confident wrong answer', none: 'no answer' };
+const ORGANS = { 'src/split.mjs': 'which problems are held out, by calculation', 'src/trace.mjs': 'what may be trained on: verified working only', 'src/cold.mjs': 'how a cold reply is read: right, wrong, or no answer', 'src/adopt.mjs': 'adopt or dissolve, and the test of a person\'s grant', 'src/rounds.mjs': 'what the loop may do next', 'src/claims.mjs': 'the six claims, ruled on from the evidence', 'src/judge.mjs': 'a round\'s verdict from its records; this page runs it', 'genome/cell.mjs': 'the estate\'s birth check: its judge is the training gate' };
 
 // every held-out problem with what each model said, cold, read here by the sealed checker (src/cold.mjs)
 function paired(held, cb, cd) {
@@ -27,160 +29,169 @@ function paired(held, cb, cd) {
     return { t, base, dist, kind };
   });
 }
-const R = () => (S.shown === null ? null : S.rounds[S.shown]);
 const sealedList = () => Object.keys(S.rounds).filter((w) => w !== 'dev').map(Number).sort((a, b) => a - b);
-const label = (w) => (w === 'dev' ? 'the development round' : `round ${w}`);
+const newest = () => { const ks = sealedList(); return ks.length ? S.rounds[ks[ks.length - 1]] : null; };
+const R = () => (S.shown === null ? null : S.rounds[S.shown]);   // the round the glass shows: the newest sealed one, else the development round
 
-// ── the hero: the status line, the ledger, the fail-wall ──
-function renderHero() {
-  const r = R(), v = r && r.verdict, c = v && v.cold;
+// ── the result: three receipts, or "sealing now" ──
+function renderResult() {
+  const r = newest(), v = r && r.verdict, c = v && v.cold;
   if (!c) {
-    $('status').innerHTML = 'No round is published yet. Every number on this page is filled in from a published record, so there is nothing to show until one is.';
-    $('wall').innerHTML = NM;
+    bind('k.result', 'Round 1 · sealing now');
+    const wait = (lab) => `<div class="stat reveal"><div class="n"><span class="was">—</span><span class="arrow">→</span><span class="wait">—</span></div><div class="lab">${lab} ${SEALING}</div></div>`;
+    $('receipts').innerHTML = wait('<b>Right, cold, on held-out problems.</b> Before and after one round.') + wait('<b>Confident wrong answers.</b> The rule requires this not to rise.') + wait('<b>Problems gained and lost.</b> The fail-wall, both ways.');
+    $('verdictLine').innerHTML = 'No sealed round has landed. <b>Nothing is claimed until one has.</b> The number replaces the tag when it does, pass or fail.';
+    $('facet').innerHTML = 'Round 1 · sealing now · the gold faces are its six claims';
     return;
   }
-  const dev = S.shown === 'dev';
-  const out = v.adopted ? `<span class="pass">The rule adopts these weights.</span> ${v.next ? esc(nextLine(v.next)) : ''}` : '<span class="fail">The rule dissolves these weights: the base stays as it was.</span>';
-  $('status').innerHTML = dev
-    ? `<span class="pend">No sealed round is published yet.</span> What is shown is the development round, which shaped the settings and is not a claim: cold, on ${c.n} held-out problems, the base was right on ${c.base.right} and the distilled model on ${c.distilled.right}.`
-    : `Round ${v.round}, sealed: cold, on ${c.n} held-out problems, the base was right on ${c.base.right} and the distilled model on ${c.distilled.right}. ${out}`;
-  bind('n.base', pct(c.base.rate)); bind('n.distilled', pct(c.distilled.rate)); bind('n.gained', String(c.gained.length)); bind('n.lost', String(c.lost.length));
-  bind('n.wrong', `${c.base.wrong} → ${c.distilled.wrong}`); bind('n.train', v.train ? String(v.train.verified) : '—');
-  bind('n.outcome', v.adopted ? '<span class="pass">ADOPT</span>' : '<span class="fail">DISSOLVE</span>');
-  $('wall').innerHTML = wallSvg(r);
+  const src = `<a class="src" href="${r.dir}/verdict.json">receipt: round ${v.round} verdict ↗</a>`;
+  bind('k.result', `The result · round ${v.round}, sealed`);
+  $('receipts').innerHTML = `<div class="stat reveal"><div class="n"><span class="was">${pct(c.base.rate)}</span><span class="arrow">→</span><span class="${c.lift > 0 ? 'now' : 'bad'}" data-count="${pct(c.distilled.rate)}">${pct(c.distilled.rate)}</span></div><div class="lab"><b>Right, cold, on ${c.n} held-out problems.</b> The same model, before and after training on ${v.train ? v.train.examples : 0} verified examples of its own working.</div>${src}</div>`
+    + `<div class="stat reveal"><div class="n"><span class="was">${c.base.wrong}</span><span class="arrow">→</span><span class="${c.distilled.wrong <= c.base.wrong ? 'now' : 'bad'}" data-count="${c.distilled.wrong}">${c.distilled.wrong}</span></div><div class="lab"><b>Confident wrong answers.</b> An answer given, and wrong. The rule requires this not to rise.</div>${src}</div>`
+    + `<div class="stat reveal"><div class="n"><span class="now" data-count="+${c.gained.length}">+${c.gained.length}</span> <span class="bad">−${c.lost.length}</span></div><div class="lab"><b>Problems gained and lost.</b> Failed before and right after, against the other way. p = ${prob(c.p)}.</div>${src}</div>`;
+  const next = v.next || {};
+  $('verdictLine').innerHTML = v.adopted
+    ? `<b class="pass">The rule: adopt.</b> ${next.act === 'wait' ? `The new weights wait for a person's grant. Round ${v.round + 1} cannot start without it.` : next.act === 'run' ? `A person has granted them. Round ${next.round} may run.` : `The loop has stopped: ${esc(next.why || '')}.`}`
+    : '<b class="fail">The rule: dissolve.</b> The trained weights are dropped and the base stays as it was. The gains have flattened: the house is full.';
+  $('facet').innerHTML = `Round ${v.round} · sealed · <b>${pct(c.base.rate)} → ${pct(c.distilled.rate)}</b> right, cold · point at a face`;
 }
-function nextLine(next) {
-  return next.act === 'wait' ? `They now wait for a person's grant; round ${next.round + 1} cannot start without it.`
-    : next.act === 'run' ? `A person has granted them; round ${next.round} may run.`
-    : next.act === 'full' ? 'The loop has stopped: the house is full.'
-    : `The loop has stopped: ${next.why}.`;
+
+// ── how it works, traced from a real run ──
+function renderTrace() {
+  const t = S.trace, h = t && t.harvested;
+  if (!h) { $('traceStack').innerHTML = `<div class="srow gold"><div class="d">—</div><div class="nm"><b>No run yet</b><span>a real harvested problem is traced here once one is published</span>${SEALING}</div></div>`; return; }
+  const row = (e, i) => { const d = String(i + 1).padStart(2, '0'), said = typeof e.said === 'string' ? `wrote <code>${esc(e.said)}</code>` : 'already known';
+    return e.kind === 'bond' ? `<div class="srow"><div class="d">${d}</div><div class="nm"><b>${esc(e.cell)}</b><span>${said}</span><span class="tag cy">true · kept</span></div></div>`
+      : e.kind === 'set' ? `<div class="srow"><div class="d">${d}</div><div class="nm"><b>${esc(e.cell)}</b><span>already held: <code>${esc(e.value)}</code></span><span class="tag cy">kept</span></div></div>`
+      : `<div class="srow red"><div class="d">${d}</div><div class="nm"><b>${esc(e.cell)}</b><span>${said}</span><span class="tag rd">${e.kind === 'split' ? 'false · split smaller' : 'false · dissolved'}</span></div></div>`; };
+  const held = t.held ? `<div class="srow gold"><div class="d">cold</div><div class="nm"><b>A held-out problem</b><span>before: ${SAID[t.held.base.outcome]} · after: ${SAID[t.held.distilled.outcome]}</span><span class="tag ${t.held.distilled.outcome === 'right' ? 'cy' : 'rd'}">${esc(t.held.id)}</span></div></div>` : '';
+  $('traceStack').innerHTML = `<div class="srow"><div class="d">ask</div><div class="nm"><span>${esc(h.statement)}</span></div></div>${h.events.map(row).join('')}<div class="srow"><div class="d">learn</div><div class="nm"><b>The training example</b><span>${many(h.lines, 'verified line', 'verified lines')} from ${many(h.calls, 'model call', 'model calls')}, ending <code>${esc(h.reply.split('\n').pop())}</code></span><span class="tag cy">${esc(t.from)}</span></div></div>${held}`;
 }
+
+// ── the fail-wall: the glass ──
 function wallSvg(r) {
-  const rows = r.rows;
-  if (rows.length === 0) return NM;
-  const cols = rows.length > 120 ? 21 : 15, cell = 36, pad = 4, parts = [];
+  const rows = r.rows, cols = rows.length > 120 ? 33 : 21, cell = 30, pad = 4, parts = [];
   let y = 0;
   for (const tier of JUDGE.TIERS) {
     const g = rows.filter((x) => x.t.tier === tier);
     if (g.length === 0) continue;
     const right = (m) => g.filter((x) => x[m].outcome === 'right').length;
-    parts.push(`<text x="0" y="${y + 14}" class="m">${esc(tier)} · ${g.length} problems · right before ${right('base')}, after ${right('dist')}</text>`);
+    parts.push(`<text x="0" y="${y + 13}">${esc(tier)} · ${g.length} problems · right ${right('base')} → ${right('dist')}</text>`);
     y += 22;
-    g.forEach((x, i) => { parts.push(`<rect data-id="${esc(x.t.id)}" x="${(i % cols) * cell}" y="${y + Math.floor(i / cols) * cell}" width="${cell - pad}" height="${cell - pad}" fill="${FILL[x.kind]}"><title>${esc(x.t.id)} · ${KIND[x.kind]}</title></rect>`); });
-    y += Math.ceil(g.length / cols) * cell + 10;
+    g.forEach((x, i) => { parts.push(`<rect data-id="${esc(x.t.id)}" x="${(i % cols) * cell}" y="${y + Math.floor(i / cols) * cell}" width="${cell - pad}" height="${cell - pad}" rx="3" fill="${FILL[x.kind]}"><title>${esc(x.t.id)} · ${KIND[x.kind]}</title></rect>`); });
+    y += Math.ceil(g.length / cols) * cell + 12;
   }
   const n = (k) => rows.filter((x) => x.kind === k).length;
-  return `<svg viewBox="0 0 ${cols * cell} ${y}" role="img" aria-label="${rows.length} held-out problems: ${n('gained')} gained, ${n('kept')} right both times, ${n('still')} failed both times, ${n('lost')} lost."><style>text{font:500 12px 'JetBrains Mono',ui-monospace,monospace;fill:#a3c3cb}</style>${parts.join('')}</svg>`;
+  return `<svg viewBox="0 0 ${cols * cell} ${y}" role="img" aria-label="${rows.length} held-out problems: ${n('gained')} gained, ${n('kept')} right both times, ${n('still')} failed both times, ${n('lost')} lost."><style>text{font:500 12px 'JetBrains Mono',ui-monospace,monospace;fill:#6f8698}</style>${parts.join('')}</svg>`;
+}
+function renderWall() {
+  const r = R();
+  if (!r || r.rows.length === 0) { $('wallBox').innerHTML = `<p class="mono dim" style="margin:0">No cold test is published yet. ${SEALING}</p>`; return; }
+  $('wallBox').innerHTML = `${S.shown === 'dev' ? `<p class="mono pend" style="margin:0 0 12px;font-size:12px">Showing the development round (not a claim). Round 1: sealing now.</p>` : ''}${wallSvg(r)}`;
 }
 function openProblem(id) {
   const r = R(), x = r && r.rows.find((y) => y.t.id === id);
   if (!x) return;
-  const side = (name, m) => `<div class="box"><h4>${name}, cold: <span class="${m.outcome === 'right' ? 'pass' : m.outcome === 'wrong' ? 'fail' : 'pend'}">${SAID[m.outcome]}</span></h4><pre>${esc(m.text) || '(nothing)'}</pre><p class="small">Read by the sealed checker: ${m.answer === null ? 'no answer given' : `answer ${esc(m.answer)}`}; ${many(m.trueLines, 'true line', 'true lines')} of working, ${m.falseLines} false${m.cut ? '; the reply ran to the length limit, so its last line was not read' : ''}.</p></div>`;
-  $('probe').innerHTML = `<p><b>${esc(x.t.id)}</b> · ${esc(x.t.tier)} · <span class="${x.kind === 'gained' ? 'pass' : x.kind === 'lost' ? 'fail' : ''}">${KIND[x.kind]}</span></p><p>${esc(x.t.statement)}</p>${x.t.check && x.t.check.type === 'value' ? `<p class="small">The right answer is ${esc(x.t.check.value)}.</p>` : ''}<div class="two">${side('The base', x.base)}${side('The distilled model', x.dist)}</div>`;
+  const side = (name, m) => `<div class="box"><h4>${name}: <span class="${m.outcome === 'right' ? 'pass' : m.outcome === 'wrong' ? 'fail' : 'pend'}">${SAID[m.outcome]}</span></h4><pre>${esc(m.text) || '(nothing)'}</pre><p class="dim" style="font-size:12px;margin:8px 0 0">${m.answer === null ? 'no answer given' : `answer ${esc(m.answer)}`} · ${many(m.trueLines, 'true line', 'true lines')}, ${m.falseLines} false${m.cut ? ' · cut at the length limit' : ''}</p></div>`;
+  $('probe').innerHTML = `<p style="color:var(--ink);margin:0 0 6px"><b>${esc(x.t.id)}</b> · ${esc(x.t.tier)} · <span class="${x.kind === 'gained' ? 'pass' : x.kind === 'lost' ? 'fail' : 'dim'}">${KIND[x.kind]}</span></p><p style="color:var(--soft);font-family:var(--sans);font-size:14.5px;margin:0 0 12px">${esc(x.t.statement)}${x.t.check && x.t.check.type === 'value' ? ` <span class="dim">Right answer: ${esc(x.t.check.value)}.</span>` : ''}</p><div class="two">${side('Before', x.base)}${side('After', x.dist)}</div>`;
   if ($('open').value !== id) $('open').value = id;
 }
 function fillOpen() {
   const r = R();
   if (!r || r.rows.length === 0) return;
   const group = (k) => { const g = r.rows.filter((x) => x.kind === k); return g.length ? `<optgroup label="${KIND[k]} (${g.length})">${g.map((x) => `<option value="${esc(x.t.id)}">${esc(x.t.id)} · ${esc(x.t.tier)}</option>`).join('')}</optgroup>` : ''; };
-  $('open').innerHTML = `<option value="">Choose a held-out problem…</option>${['gained', 'lost', 'kept', 'still'].map(group).join('')}`;
+  $('open').innerHTML = `<option value="">Choose one, or press a square…</option>${['gained', 'lost', 'kept', 'still'].map(group).join('')}`;
 }
 
-// ── the numbers ──
-function renderNumbers() {
-  const r = R(), v = r && r.verdict;
-  if (!v) { for (const id of ['claimsTable', 'tierTable', 'moved', 'trainTable']) $(id).innerHTML = NM; bind('t.which', NM); }
-  else {
-    const files = ['verdict.json', 'harvest.json', 'train.jsonl', 'held.json', 'cold-base.json', 'cold-distilled.json', 'train-log.json'].map((f) => `<a href="${r.dir}/${f}">${f}</a>`).join(' · ');
-    bind('t.which', `${S.shown === 'dev' ? '<span class="pend">These are the development round\'s numbers. It is not a claim: it shaped the settings.</span>' : `These are round ${v.round}'s numbers, made under the seal.`} Judged ${esc(String(v.at).slice(0, 10))} from its records: ${files}.`);
-    $('claimsTable').innerHTML = `<table><thead><tr><th>Claim</th><th>The bar, fixed first</th><th>What happened</th><th>Verdict</th></tr></thead><tbody>${v.verdicts.map((x) => `<tr><td><b>${x.id}</b> ${esc(x.name)}</td><td>${esc(x.bar)}</td><td>${esc(x.result)}</td><td class="${x.pass === true ? 'pass' : x.pass === false ? 'fail' : 'pend'}">${x.pass === true ? 'PASS' : x.pass === false ? 'FAIL' : 'pending'}</td></tr>`).join('')}</tbody></table>${v.notes.length ? `<p class="fail">${v.notes.map(esc).join('; ')}</p>` : ''}`;
-    if (v.tiers) {
-      const cellOf = (t) => `<td class="num">${t.right} of ${t.n}</td><td class="num">${t.wrong}</td><td class="num">${t.none}</td>`;
-      $('tierTable').innerHTML = `<table><thead><tr><th>Tier</th><th>Base right</th><th>wrong</th><th>no answer</th><th>Distilled right</th><th>wrong</th><th>no answer</th></tr></thead><tbody>${JUDGE.TIERS.filter((t) => v.tiers.base[t].n > 0).map((t) => `<tr><td>${t}</td>${cellOf(v.tiers.base[t])}${cellOf(v.tiers.distilled[t])}</tr>`).join('')}<tr><td><b>all</b></td>${cellOf(v.cold.base)}${cellOf(v.cold.distilled)}</tr></tbody></table><p class="small">Easy problems are one step. Climb problems are several. Wall problems are the ones a small model mostly cannot do in one try. "Wrong" is an answer given and wrong; "no answer" is a reply with no answer line, or one cut off before it. A reply is counted right by its answer alone: of the base's ${v.cold.base.right} right answers, ${r.rows.filter((y) => y.base.outcome === 'right' && y.base.falseLines === 0).length} had no false line of working; of the distilled model's ${v.cold.distilled.right}, ${r.rows.filter((y) => y.dist.outcome === 'right' && y.dist.falseLines === 0).length}.</p>`;
-      const chips = (ids, cls) => ids.map((id) => `<button type="button" class="chip ${cls}" data-open="${esc(id)}">${esc(id)}</button>`).join('');
-      $('moved').innerHTML = `<p><b class="pass">${many(v.cold.gained.length, 'problem', 'problems')} gained</b>: failed by the base, solved by the distilled model.</p><div>${chips(v.cold.gained, '') || '<span class="small">none</span>'}</div><p><b class="${v.cold.lost.length ? 'fail' : ''}">${many(v.cold.lost.length, 'problem', 'problems')} lost</b>: solved by the base, failed by the distilled model.</p><div>${chips(v.cold.lost, 'lost') || '<span class="small">none</span>'}</div><p class="small">Press one to read both replies.</p>`;
-    } else { $('tierTable').innerHTML = NM; $('moved').innerHTML = NM; }
-    const b = r.build, t = v.train;
-    $('trainTable').innerHTML = b && t ? `<table><tbody><tr><td>Problems in the harvest pool</td><td class="num">${b.counts.pool}</td></tr><tr><td>Finished under the checker, with the right answer</td><td class="num">${b.counts.complete}</td></tr><tr><td>Not finished (no training example is made)</td><td class="num">${b.counts.incomplete}</td></tr><tr><td>Finished, but longer than ${S.settings.trace.maxLines} lines (verified, not used)</td><td class="num">${b.counts.long}</td></tr><tr><td>Failed verification when built</td><td class="num">${b.counts.unverified}</td></tr><tr><td><b>Training examples</b></td><td class="num"><b>${t.examples}</b></td></tr><tr><td>Verified again by exact arithmetic when judged</td><td class="num">${t.verified} of ${t.examples}</td></tr><tr><td>Lines of working in an example</td><td class="num">${b.lines.mean.toFixed(1)} on average, ${b.lines.most} at most</td></tr><tr><td>Model calls the harvest took</td><td class="num">${v.harvest ? v.harvest.calls : '—'}</td></tr></tbody></table><p class="small">The training file's SHA-256 is <code>${esc(t.fileSha256.slice(0, 16))}…</code>; the trainer recorded ${t.trainerSha256 === t.fileSha256 ? 'the same hash' : t.trainerSha256 ? '<span class="fail">another hash</span>' : 'no hash yet'}. The adapter it made is <code>${v.adapterSha256 ? esc(v.adapterSha256.slice(0, 16)) + '…' : 'not made yet'}</code>.</p>` : NM;
-  }
-  const d = S.rounds.dev, dv = d && d.verdict;
-  $('devBox').innerHTML = dv && dv.cold ? `<p>Run before the seal, on problems made from other seeds, to shape the token limits, the longest working that is trained on, and the speed of the model's hands. Cold, on ${dv.cold.n} held-out problems: the base right on ${dv.cold.base.right} (${pct(dv.cold.base.rate)}), the distilled model on ${dv.cold.distilled.right} (${pct(dv.cold.distilled.rate)}); ${dv.cold.gained.length} gained, ${dv.cold.lost.length} lost; confident wrong answers ${dv.cold.base.wrong} → ${dv.cold.distilled.wrong}; ${dv.train ? dv.train.examples : 0} training examples. The rule would have ${dv.adopted ? 'adopted' : 'dissolved'} it. It is not a claim, and its weights are not used by any sealed round. <a href="data/dev/verdict.json">Its verdict</a>.</p>` : '<p class="small">The development round is not published yet.</p>';
+// ── the six claims ──
+function renderClaims() {
+  const r = newest(), v = r && r.verdict, bars = CLAIMS.bars(S.settings || {});
+  const rows = v ? v.verdicts : Object.keys(CLAIMS.NAMES).map((id) => ({ id, name: CLAIMS.NAMES[id], pass: null, result: 'round 1 has not run' }));
+  $('claimStack').innerHTML = rows.map((x) => `<div class="srow ${x.pass === false ? 'red' : x.pass === null ? 'gold' : ''}"><div class="d">${x.id}</div><div class="nm"><b>${esc(x.name)}</b><span>${esc(x.result)}</span>${x.pass === true ? '<span class="tag cy">pass</span>' : x.pass === false ? '<span class="tag rd">fail · kept</span>' : SEALING}</div></div>`).join('') + (v && v.notes.length ? `<div class="srow red"><div class="d">note</div><div class="nm"><span>${v.notes.map(esc).join('; ')}</span></div></div>` : '');
+  $('bars').innerHTML = Object.keys(CLAIMS.NAMES).map((id) => `<p><b>${id} · ${esc(CLAIMS.NAMES[id])}.</b> ${esc(bars[id][0].toUpperCase() + bars[id].slice(1))}.</p>`).join('') + '<p>Registered in <a href="CLAIMS.md">CLAIMS.md</a> and frozen by <a href="SEAL.json">the seal</a> before round 1 ran.</p>';
 }
 
-// ── the loop: the fill gauge, what happens next, the grant, the spend wall ──
+// ── the loop ──
 function renderLoop() {
   const ks = sealedList(), last = ks.length ? S.rounds[ks[ks.length - 1]].verdict : null;
   const caps = S.settings ? S.settings.spend : { hoursPerRound: 0, hoursInAll: 0 }, most = S.settings ? S.settings.rounds.max : 0;
+  const win = (n, l) => `<div class="win reveal"><div class="wn">${n}</div><div class="wl">${l}</div></div>`;
   if (!last || !last.gauge) {
-    $('gauge').innerHTML = '<p class="pend">No sealed round is published yet, so the gauge is empty.</p>';
-    $('loopState').innerHTML = `The loop has not started. The seal allows at most ${most} rounds, ${caps.hoursPerRound} hours of model work for one round and ${caps.hoursInAll} hours for all of them.`;
-    $('grantBox').innerHTML = '<p class="small">There is no adopted round, so there is nothing to grant.</p>';
-    $('spendTable').innerHTML = `<p class="small">No sealed round has run yet, so nothing has been spent against the wall. The seal caps one round at ${caps.hoursPerRound} hours of model work and all rounds together at ${caps.hoursInAll}.</p>`;
+    $('loopState').innerHTML = `The loop has not started. Round 1 is ${SEALING}`;
+    $('gauge').innerHTML = '';
+    $('loopWins').innerHTML = win(`0<span class="of">/${most}</span>`, 'sealed rounds run, of the most the seal allows') + win(`0<span class="of">/${caps.hoursInAll}</span>`, 'hours of model work spent, of the cap for all rounds') + win('0', 'grants on file: no weights have been adopted') + win('—', 'where the loop stands: not started');
+    $('grantBox').innerHTML = '<p>There is no adopted round, so there is nothing to grant.</p>';
     return;
   }
-  const G = last.gauge, W = 800, H = 250, x0 = 70, x1 = 760, y0 = 200, y1 = 30, yOf = (p) => y0 - (y0 - y1) * p, xOf = (i) => x0 + (G.length === 1 ? (x1 - x0) / 2 : (x1 - x0) * (i / (G.length - 1)));
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((p) => `<path d="M${x0 - 6} ${yOf(p)}H${x1}" stroke="rgba(94,242,228,.14)"/><text class="m" x="8" y="${yOf(p) + 4}">${Math.round(p * 100)}%</text>`).join('');
-  const marks = G.map((g, i) => { const x = xOf(i), col = g.adopted ? '#5ef2e4' : '#ff6470'; return `<path d="M${x} ${yOf(g.base)}V${yOf(g.distilled)}" stroke="${col}" stroke-width="3"/><circle cx="${x}" cy="${yOf(g.base)}" r="5" fill="#02070c" stroke="#a3c3cb" stroke-width="2"/><circle cx="${x}" cy="${yOf(g.distilled)}" r="6" fill="${col}"/><text x="${x + 12}" y="${yOf(g.distilled) + 4}">${pct(g.distilled)}</text><text class="m" x="${x + 12}" y="${yOf(g.base) + 4}">${pct(g.base)}</text><text x="${x - 30}" y="${y0 + 22}">round ${g.round}</text><text class="m" x="${x - 60}" y="${y0 + 38}">${g.adopted ? (g.granted ? 'adopted · granted' : 'adopted · not granted') : 'dissolved'}</text>`; }).join('');
-  $('gauge').innerHTML = `<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cold accuracy on each round's held-out block, before and after training. ${G.map((g) => `Round ${g.round}: ${pct(g.base)} before, ${pct(g.distilled)} after, ${g.adopted ? 'adopted' : 'dissolved'}.`).join(' ')}">${ticks}${marks}</svg><p class="small">Each round is measured on its own fresh held-out block: the hollow dot is the model the round started from, the filled dot is the same model after training. A round's lift is the distance between them. ${G.map((g) => `Round ${g.round}: ${(100 * g.lift).toFixed(1)} points (${g.gained} gained, ${g.lost} lost).`).join(' ')}</p>`;
-  const n = last.next;
-  $('loopState').innerHTML = `<b>Where the loop stands.</b> ${n.act === 'wait' ? `Round ${n.round} was adopted by the rule. <span class="pend">Its weights wait for a person's grant.</span> Round ${n.round + 1} has not run and cannot run on the loop's own say-so.` : n.act === 'run' ? `Round ${n.round - 1} was adopted and granted. Round ${n.round} may run.` : n.act === 'full' ? `<span class="pass">The house is full.</span> Round ${n.round} did not clear its bar and was dissolved: the gains have flattened, and the loop has stopped. The model in use is ${last.gauge.filter((g) => g.adopted && g.granted).length ? `the one adopted and granted in round ${last.gauge.filter((g) => g.adopted && g.granted).pop().round}` : 'the base it began with'}.` : `The loop has stopped at a cap: ${esc(n.why)}.`} The seal allows at most ${most} rounds.`;
-  const gr = S.rounds[last.round].grant;
-  $('grantBox').innerHTML = gr ? `<div class="box"><h4>The grant on file for round ${last.round}</h4><p>"${esc(gr.words)}"</p><p class="small">${esc(gr.by)} · ${esc(gr.at)} · for the weights <code>${esc(String(gr.adapterSha256).slice(0, 16))}…</code> · <a href="data/grants/round-${last.round}.json">the record</a></p></div>`
-    : last.adopted ? `<div class="box"><h4>No grant is on file for round ${last.round}</h4><p>The rule adopted these weights. They become the base of the next round only when a person writes this record, in their own words, and it is committed as <code>data/grants/round-${last.round}.json</code>:</p><pre>${esc(JSON.stringify({ by: 'human', action: 'adopt-weights', round: last.round, adapterSha256: last.adapterSha256, words: '(the person\'s own words)', at: '(the date and time)' }, null, 1))}</pre><p class="small">One command writes it: <code>node scripts/grant.mjs ${last.round} &quot;your words&quot;</code>. A record that names another round or other weights opens nothing, and the loop cannot write one for itself: the test is in <code>src/adopt.mjs</code>.</p></div>`
-    : `<p class="small">Round ${last.round} was dissolved by the rule. There is nothing to grant: a grant cannot adopt what the rule dissolved.</p>`;
+  const G = last.gauge, W = 1000, H = 250, x0 = 70, x1 = 940, y0 = 190, y1 = 26, yOf = (p) => y0 - (y0 - y1) * p, xOf = (i) => x0 + (G.length === 1 ? (x1 - x0) / 2 : (x1 - x0) * (i / (G.length - 1)));
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((p) => `<path d="M${x0 - 6} ${yOf(p)}H${x1}" stroke="rgba(255,255,255,.06)"/><text fill="#6f8698" x="8" y="${yOf(p) + 4}">${Math.round(p * 100)}%</text>`).join('');
+  const marks = G.map((g, i) => { const x = xOf(i), col = g.adopted ? '#49e8c8' : '#ff6b6b'; return `<path d="M${x} ${yOf(g.base)}V${yOf(g.distilled)}" stroke="${col}" stroke-width="3"/><circle cx="${x}" cy="${yOf(g.base)}" r="5" fill="#02070c" stroke="#aebecb" stroke-width="2"/><circle cx="${x}" cy="${yOf(g.distilled)}" r="7" fill="${col}"/><text fill="#e9f2f6" x="${x + 14}" y="${yOf(g.distilled) + 4}">${pct(g.distilled)}</text><text fill="#6f8698" x="${x + 14}" y="${yOf(g.base) + 4}">${pct(g.base)}</text><text fill="#e9f2f6" x="${x - 30}" y="${y0 + 26}">round ${g.round}</text><text fill="${g.adopted ? (g.granted ? '#49e8c8' : '#ffcf6a') : '#ff6b6b'}" x="${x - 62}" y="${y0 + 44}">${g.adopted ? (g.granted ? 'adopted · granted' : 'adopted · awaiting grant') : 'dissolved'}</text>`; }).join('');
+  $('gauge').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:36px" role="img" aria-label="${G.map((g) => `Round ${g.round}: ${pct(g.base)} before, ${pct(g.distilled)} after, ${g.adopted ? 'adopted' : 'dissolved'}.`).join(' ')}"><style>text{font:500 12px 'JetBrains Mono',ui-monospace,monospace}</style>${ticks}${marks}</svg>`;
+  const n = last.next, granted = G.filter((g) => g.adopted && g.granted).length;
+  $('loopState').innerHTML = n.act === 'wait' ? `Round ${n.round} was adopted by the rule. <b class="pend">Its weights wait for a person's grant.</b> Round ${n.round + 1} cannot run on the loop's own say-so.` : n.act === 'run' ? `Round ${n.round - 1} was adopted and granted. <b>Round ${n.round} may run.</b>` : n.act === 'full' ? `<b class="pass">The house is full.</b> Round ${n.round} did not clear its bar and was dissolved. The loop has stopped.` : `The loop has stopped at a cap: ${esc(n.why)}.`;
   const sp = last.spend;
-  $('spendTable').innerHTML = `<table><thead><tr><th>Round</th><th>Harvest</th><th>Training</th><th>Cold test, base</th><th>Cold test, distilled</th><th>All</th><th>Cap</th></tr></thead><tbody>${ks.map((k) => { const s = S.rounds[k].verdict.seconds, h = S.rounds[k].verdict.hours; return `<tr><td>${k}</td><td class="num">${hrs(s.harvest)}</td><td class="num">${hrs(s.train)}</td><td class="num">${hrs(s.coldBase)}</td><td class="num">${hrs(s.coldDistilled)}</td><td class="num ${h > sp.perRound ? 'fail' : ''}">${h.toFixed(1)} hours</td><td class="num">${sp.perRound} hours</td></tr>`; }).join('')}<tr><td><b>all rounds</b></td><td></td><td></td><td></td><td></td><td class="num"><b>${sp.total.toFixed(1)} hours</b></td><td class="num">${sp.inAll} hours</td></tr></tbody></table><p class="small">Hours of model work on one laptop processor, from each record's own clock. When either cap is reached the loop stops, whatever the last round found.</p>`;
+  $('loopWins').innerHTML = win(`${ks.length}<span class="of">/${most}</span>`, 'sealed rounds run, of the most the seal allows') + win(`${sp.total.toFixed(1)}<span class="of">/${sp.inAll}</span>`, `hours of model work spent, of the cap: ${hrs(last.seconds.harvest)} harvest, ${hrs(last.seconds.train)} training, ${hrs(last.seconds.coldBase + last.seconds.coldDistilled)} tests`) + win(String(granted), 'grants on file: weights a person has allowed to stand') + win(n.act === 'wait' ? '<span class="pend">waiting</span>' : n.act === 'full' ? 'full' : n.act === 'run' ? 'ready' : 'capped', 'where the loop stands');
+  const gr = S.rounds[last.round].grant;
+  $('grantBox').innerHTML = gr ? `<p><b>Granted.</b> "${esc(gr.words)}"</p><p class="dim">${esc(gr.at)} · weights <code>${esc(String(gr.adapterSha256).slice(0, 16))}…</code> · <a href="data/grants/round-${last.round}.json">the record</a></p>`
+    : last.adopted ? `<p><b>No grant is on file for round ${last.round}.</b> The weights become the next round's base only when a person writes a record naming this round and these exact weights:</p><pre>node scripts/grant.mjs ${last.round} "your own words"</pre><p class="dim" style="margin-top:10px">Weights <code>${esc(String(last.adapterSha256).slice(0, 16))}…</code>. A record for another round or other weights opens nothing; the test is <code>src/adopt.mjs</code>.</p>`
+    : `<p>Round ${last.round} was dissolved by the rule. A grant cannot adopt what the rule dissolved.</p>`;
 }
 
-// ── how it works, traced from a real run ──
-function renderTrace() {
-  const t = S.trace;
-  if (!t || !t.harvested) { $('traceBox').innerHTML = NM; return; }
-  const h = t.harvested, line = (e) => (e.kind === 'bond' ? `<li>Asked <code>${esc(e.cell)}</code>. The model wrote <code>${esc(e.said)}</code>. Exact arithmetic agrees. <span class="pass">Kept.</span></li>`
-    : e.kind === 'split' ? `<li>Asked <code>${esc(e.cell)}</code>. ${typeof e.said === 'string' ? `The model wrote <code>${esc(e.said)}</code>. <span class="fail">That is not true, so it is not kept.</span>` : 'It was asked this before and got it wrong.'} The engine splits the step into smaller ones: <code>${esc(Array.isArray(e.into) ? e.into.join(' ; ') : String(e.into ?? ''))}</code>.</li>`
-    : e.kind === 'set' ? `<li><code>${esc(e.cell)}</code> is already known from an earlier step of this problem: <code>${esc(e.value)}</code>.</li>`
-    : `<li>Asked <code>${esc(e.cell)}</code>. ${typeof e.said === 'string' ? `The model wrote <code>${esc(e.said)}</code>. ` : ''}<span class="fail">Not true, and there is nothing smaller to split it into: dissolved.</span></li>`);
-  const held = t.held ? `<p><b>Then a held-out problem, cold</b> (${esc(t.held.id)}, ${esc(t.held.tier)}): ${esc(t.held.statement)}</p><div class="two"><div class="box"><h4>The base: ${SAID[t.held.base.outcome]}</h4><pre>${esc(t.held.base.text) || '(nothing)'}</pre></div><div class="box"><h4>The distilled model: ${SAID[t.held.distilled.outcome]}</h4><pre>${esc(t.held.distilled.text) || '(nothing)'}</pre></div></div>` : '';
-  $('traceBox').innerHTML = `<p class="small">From ${esc(t.from)}.</p><p><b>A harvested problem</b> (${esc(h.id)}, ${esc(h.tier)}): ${esc(h.statement)}</p><ol>${h.events.map(line).join('')}</ol><p><b>The training example built from it</b> (${many(h.lines, 'verified line', 'verified lines')}, from ${many(h.calls, 'model call', 'model calls')}): the model is shown the problem and learns to write this reply in one go.</p><pre>${esc(h.reply)}</pre>${held}`;
-}
-
-// ── how it is built ──
+// ── under the hood ──
 function renderBuilt() {
-  const g = S.gates;
-  $('gateTable').innerHTML = g && g.files ? `<table><thead><tr><th>Kernel</th><th>Changes made to it</th><th>Caught by its tests</th><th>Gate</th></tr></thead><tbody>${Object.entries(g.files).map(([f, x]) => `<tr><td><code>${esc(f)}</code></td><td class="num">${x.total}</td><td class="num">${x.killed}</td><td class="${x.clean ? 'pass' : 'fail'}">${x.clean ? 'CLEAN' : 'NOT CLEAN'}</td></tr>`).join('')}<tr><td><b>all</b></td><td class="num">${g.total}</td><td class="num">${g.killed}</td><td class="${g.clean ? 'pass' : 'fail'}">${g.clean ? 'CLEAN' : 'NOT CLEAN'}</td></tr></tbody></table><p class="small">The mutation gate changes one small thing in a kernel at a time (a <code>&lt;</code> to a <code>&lt;=</code>, an <code>and</code> to an <code>or</code>) and runs its tests. A change the tests do not notice is a hole in the tests. None is exempted. <a href="data/gates.json">The record</a>.</p>` : NM;
-  const ks = sealedList(), last = ks.length ? S.rounds[ks[ks.length - 1]].verdict : null;
-  bind('g.seal', S.sealSha ? `The seal on this page hashes to <code>${S.sealSha.slice(0, 16)}…</code>${last ? `; the newest sealed round records ${last.sealSha256 === S.sealSha ? 'the same seal' : '<span class="fail">another seal</span>'}` : '; no sealed round is published yet'}.` : 'The seal has not been made yet.');
+  const g = S.gates, p = S.parity, w = S.weights, last = newest();
+  $('kernelStack').innerHTML = g && g.files ? Object.entries(g.files).map(([f, x], i) => `<div class="srow ${x.clean ? '' : 'red'}"><div class="d">${String(i + 1).padStart(2, '0')}</div><div class="nm"><b>${esc(f.split('/').pop().replace('.mjs', ''))}</b><span>${esc(ORGANS[f] || f)}</span><span class="tag ${x.clean ? 'cy' : 'rd'}">${x.killed}/${x.total} caught</span></div></div>`).join('') : `<div class="srow gold"><div class="d">—</div><div class="nm"><span>the gate record is not published yet</span></div></div>`;
+  const win = (n, l, href) => `<div class="win reveal"><div class="wn">${n}</div><div class="wl">${l}${href ? ` <a class="src" href="${href}">receipt ↗</a>` : ''}</div></div>`;
+  const pn = p ? p.cells.n + p.cold.n + p.grown.n : 0, ps = p ? p.cells.same + p.cold.same + p.grown.same : 0;
+  $('builtWins').innerHTML = win(g ? `${g.killed}<span class="of">/${g.total}</span>` : '—', 'planted bugs caught: the mutation gate, nothing exempted', 'data/gates.json')
+    + win(p ? `${ps}<span class="of">/${pn}</span>` : '—', 'replies identical to plain generation', 'data/parity.json')
+    + win(w ? `${w.tensorsCompared}<span class="of">/${w.tensorsInTheOtherCopy}</span>` : '—', 'weight tensors matched to a separate copy', 'data/weights.json')
+    + win(S.sealSha ? `<span style="font-size:.62em">${S.sealSha.slice(0, 10)}…</span>` : '—', S.sealSha ? `the seal: every result-changing file, frozen${last && last.verdict ? (last.verdict.sealSha256 === S.sealSha ? '; the newest round records this seal' : '; <span class="fail">the newest round records another seal</span>') : ''}` : 'the seal has not been made yet', S.sealSha ? 'SEAL.json' : '');
 }
 
-// ── the sentences that carry a measured number: buyers, limits, white paper ──
+// ── for your business, the honest lines, the buyer walk, the development round ──
 function renderWords() {
-  const r = R(), v = r && r.verdict, c = v && v.cold, dev = S.shown === 'dev', ks = sealedList();
-  const what = dev ? 'the development round (not a claim)' : `round ${S.shown}`;
+  const r = newest(), v = r && r.verdict, c = v && v.cold, ks = sealedList();
   const p = S.parity, pn = p ? p.cells.n + p.cold.n + p.grown.n : 0, ps = p ? p.cells.same + p.cold.same + p.grown.same : 0;
-  bind('l.parity', p ? `${ps} of ${pn} replies came out identical, across single steps, whole cold replies, and problems grown turn by turn. <a href="data/parity.json">The record</a>.` : NM);
-  bind('l.rounds', ks.length ? `${many(ks.length, 'sealed round has', 'sealed rounds have')} been run and published here.` : 'No sealed round is published yet: the numbers shown are the development round\'s, which is not a claim.');
-  if (!c) { for (const k of ['l.wrong', 'l.compute', 'b.what', 'b.cost', 'b.ops', 'b.versus', 'b.risk', 'b.held', 'b.wrong', 'b.board', 'p.result', 'p.loop']) bind(k, NM); return; }
-  const passed = v.verdicts.filter((x) => x.pass === true).length, failed = v.verdicts.filter((x) => x.pass === false);
-  const calls = v.harvest ? (v.harvest.calls / Math.max(1, v.harvest.problems)).toFixed(1) : null;
-  bind('l.wrong', `In ${what} the distilled model still gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} held-out problems (the base: ${c.base.wrong}).`);
-  bind('l.compute', `${dev ? 'The development round' : `Round ${S.shown}`} took ${v.hours.toFixed(1)} hours of model work on one laptop processor; the seal caps a round at ${S.settings.spend.hoursPerRound} hours and all rounds at ${S.settings.spend.hoursInAll}.`);
-  bind('b.what', `In ${what}, the same model went from ${pct(c.base.rate)} to ${pct(c.distilled.rate)} right, cold, on ${c.n} problems it had never seen, after being trained on ${v.train.examples} verified examples of its own working.`);
-  bind('b.cost', `${dev ? 'The development round' : `Round ${S.shown}`} took ${v.hours.toFixed(1)} hours on one laptop processor: ${hrs(v.seconds.harvest)} to harvest, ${hrs(v.seconds.train)} to train, ${hrs(v.seconds.coldBase + v.seconds.coldDistilled)} to test both models.`);
-  bind('b.ops', calls ? `Under the checker, the model needed ${calls} calls on average to finish a problem of the harvest (${v.harvest.calls} calls for ${v.harvest.problems} problems). Cold, an answer is one call: right on ${pct(c.distilled.rate)} of unseen problems after training, against ${pct(c.base.rate)} before.` : NM);
-  bind('b.versus', `Here the model, the data and every change stay on a machine you own; the whole training file is published beside the result (${v.train.examples} examples, ${v.train.unverified} unverified); and the change was decided on ${c.n} unseen problems by a rule fixed in advance.`);
-  bind('b.risk', v.adopted ? `In ${what} the weights cleared the bar and the rule adopted them.` : `In ${what} the weights did not clear the bar and were dissolved; that result is published above, in red.`);
-  bind('b.held', v.held ? `In ${what}, ${v.held.overlap} of ${v.held.n} held-out problems are in the training set, and ${v.held.harvested} were harvested.` : NM);
-  bind('b.wrong', `After training, in ${what}, it gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} unseen problems; before, ${c.base.wrong}.`);
-  bind('b.board', `In ${what}, ${passed} of the 6 claims passed${failed.length ? `; <span class="fail">${failed.map((x) => `${x.id} (${esc(x.name.toLowerCase())})`).join(', ')} failed</span>` : ''}.`);
-  bind('p.result', `${dev ? 'No sealed round is published yet. In the development round, which is not a claim' : `In round ${S.shown}, under the seal`}: ${v.harvest ? `${v.harvest.complete} of ${v.harvest.problems} harvested problems were finished under the checker; ` : ''}${v.train.examples} verified examples trained the model; cold, on ${c.n} held-out problems, it was right on ${c.distilled.right} where the base was right on ${c.base.right} (${(100 * c.lift).toFixed(1)} points; exact McNemar p = ${prob(c.p)}); ${c.gained.length} problems gained and ${c.lost.length} lost; confident wrong answers went from ${c.base.wrong} to ${c.distilled.wrong}. ${passed} of the 6 claims passed${failed.length ? `, and ${failed.map((x) => x.id).join(', ')} failed` : ''}. The rule: ${v.adopted ? 'adopt' : 'dissolve'}.`);
-  const last = ks.length ? S.rounds[ks[ks.length - 1]].verdict : null;
-  bind('p.loop', last && last.next ? `So far: ${many(ks.length, 'sealed round', 'sealed rounds')}. ${last.next.act === 'wait' ? 'The newest was adopted by the rule and waits for a person\'s grant.' : last.next.act === 'full' ? 'The newest did not clear its bar: the house is full, and the loop has stopped.' : last.next.act === 'run' ? 'The newest was adopted and granted; the next round may run.' : `The loop stopped at a cap: ${esc(last.next.why)}.`}` : 'The loop has not started: no sealed round is published yet.');
-}
-function renderWalk() {
+  const card = (who, h, body) => `<div class="act reveal"><span class="num">${who}</span><h3>${h}</h3><p>${body}</p></div>`;
+  const calls = v && v.harvest ? (v.harvest.calls / Math.max(1, v.harvest.problems)).toFixed(1) : null;
+  $('roleCards').innerHTML = card('CHIEF EXECUTIVE', 'It changes when you say.', 'Better at your own work, on your own hardware. No change stands without a measurement and a named yes.')
+    + card('FINANCE', 'No seat. No meter.', c ? `Round ${v.round} took ${v.hours.toFixed(1)} hours on one laptop processor. The cost is a machine you already own.` : `The cost is a machine you already own and the hours it runs. Round 1's hours: ${SEALING}`)
+    + card('OPERATIONS', 'One call, not many.', c && calls ? `Checked, a problem took ${calls} model calls. Cold it is one, right on ${pct(c.distilled.rate)} of unseen problems (before: ${pct(c.base.rate)}).` : `Checked work takes many model calls a problem. Cold it is one. The cold number: ${SEALING}`)
+    + card('TECHNOLOGY', 'One machine. Plain files.', 'Everything runs locally. The training file is text anyone can verify with a calculator.')
+    + card('RISK AND AUDIT', 'Every change, on record.', 'Test set and pass mark fixed first. Full training data. Before and after. Decided by code, signed off by a person.')
+    + card('THE BOARD', 'Nothing unmeasured.', c ? `Round ${v.round}: ${v.verdicts.filter((x) => x.pass === true).length} of 6 claims passed${v.verdicts.some((x) => x.pass === false) ? `; ${v.verdicts.filter((x) => x.pass === false).map((x) => x.id).join(', ')} failed and stay on the page` : ''}.` : `A change that fails its bar is thrown away and published. Round 1: ${SEALING}`);
+  bind('l.parity', p ? `Checked: ${ps} of ${pn} replies identical to plain generation.` : 'The generation check is not published yet.');
+  bind('l.rounds', ks.length ? `${many(ks.length, 'sealed round has', 'sealed rounds have')} run.` : 'No sealed round has run yet.');
+  bind('l.wrong', c ? `After training it still gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} unseen problems.` : 'How often it is still confidently wrong is measured in round 1.');
+  bind('l.compute', c ? `Round ${v.round} took ${v.hours.toFixed(1)} hours of a laptop processor; the seal caps a round at ${S.settings.spend.hoursPerRound}.` : `A round is hours of a laptop processor; the seal caps one at ${S.settings ? S.settings.spend.hoursPerRound : '—'}.`);
+  bind('b.risk', c ? (v.adopted ? `In round ${v.round} the weights cleared the bar.` : `In round ${v.round} they did not, and were dropped.`) : '');
+  bind('b.held', v && v.held ? `In round ${v.round}, ${v.held.overlap} of ${v.held.n} held-out problems are in the training set and ${v.held.harvested} were harvested.` : 'The claims are measured only on problems never harvested and never trained on, and the page counts any overlap.');
+  bind('b.wrong', c ? `In round ${v.round}: ${c.distilled.wrong} of ${c.n} after, ${c.base.wrong} before.` : '');
   const w = S.walk;
-  $('walk').innerHTML = w ? `<h3>A simulated buyer walk</h3><p class="small">${esc(w.note)}</p>${w.personas.map((p) => `<details><summary>${esc(p.who)}: ${esc(p.verdict)}</summary><ul>${p.gaps.map((g) => `<li>${esc(g.gap)} → ${esc(g.fix)}</li>`).join('')}</ul></details>`).join('')}` : '<p class="small">The simulated buyer walk has not been run yet.</p>';
+  $('walk').innerHTML = w ? `<p>${esc(w.note)}</p>${w.personas.map((q) => `<p><b>${esc(q.who)}:</b> ${esc(q.verdict)}${q.gaps.map((g) => `<br>· ${esc(g.gap)} → ${esc(g.fix)}`).join('')}</p>`).join('')}` : '<p>The simulated buyer walk has not been run yet.</p>';
+  const d = S.rounds.dev, dv = d && d.verdict;
+  $('devBox').innerHTML = dv && dv.cold ? `<p>Run before the seal, on other problems, to shape the token limits and the speed of the model's hands. Cold, on ${dv.cold.n} held-out problems: ${dv.cold.base.right} right before, ${dv.cold.distilled.right} after (${dv.cold.gained.length} gained, ${dv.cold.lost.length} lost); confident wrong ${dv.cold.base.wrong} → ${dv.cold.distilled.wrong}; ${dv.train ? dv.train.examples : 0} training examples. The rule would have ${dv.adopted ? 'adopted' : 'dissolved'} it. Its weights are used by no sealed round. <a href="data/dev/verdict.json">Its verdict.</a></p>` : '<p>The development round is not published yet.</p>';
 }
-function render() { renderHero(); renderNumbers(); renderLoop(); renderTrace(); renderBuilt(); renderWords(); renderWalk(); }
+
+// ── the crystal: 24 faces are the six claims of each of four rounds; four more are the organ ──
+function faces() {
+  const out = [], names = Object.keys(CLAIMS.NAMES), ks = sealedList(), most = S.settings ? S.settings.rounds.max : 4;
+  const nextUp = ks.length === 0 ? 1 : (S.rounds[ks[ks.length - 1]].verdict.next || {}).act === 'run' ? ks[ks.length - 1] + 1 : 0;
+  for (let k = 1; k <= 4; k++) for (let i = 0; i < 6; i++) {
+    const v = S.rounds[k] && S.rounds[k].verdict, x = v ? v.verdicts[i] : null;
+    out.push(x ? { state: x.pass === true ? 1 : x.pass === false ? 3 : 2, text: `<b>Round ${k} · ${x.id} ${esc(x.name)}</b> · ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL, kept' : 'sealing now'} · ${esc(x.result)}` }
+      : { state: k === nextUp ? 2 : 0, text: k === nextUp ? `<b>Round ${k} · ${names[i]} ${esc(CLAIMS.NAMES[names[i]])}</b> · sealing now` : k <= most ? `Round ${k} · ${names[i]} · not run: it needs the round before it adopted and granted` : '' });
+  }
+  const g = S.gates, p = S.parity, w = S.weights;
+  out.push({ state: g ? (g.clean ? 1 : 3) : 0, text: g ? `<b>The mutation gate</b> · ${g.killed} of ${g.total} planted bugs caught` : 'The mutation gate' });
+  out.push({ state: S.sealSha ? 1 : 2, text: S.sealSha ? `<b>The seal</b> · ${S.sealSha.slice(0, 12)}…` : '<b>The seal</b> · sealing now' });
+  out.push({ state: p ? (p.cells.same + p.cold.same + p.grown.same === p.cells.n + p.cold.n + p.grown.n ? 1 : 3) : 0, text: '<b>The generation check</b> · batched replies against plain ones' });
+  out.push({ state: w ? (w.verdict.startsWith('same') ? 1 : 3) : 0, text: w ? `<b>The weights</b> · ${w.tensorsCompared} of ${w.tensorsInTheOtherCopy} tensors matched a separate copy` : 'The weights' });
+  while (out.length < 32) out.push({ state: 0, text: '' });
+  return out;
+}
+function render() { renderResult(); renderTrace(); renderWall(); renderClaims(); renderLoop(); renderBuilt(); renderWords(); S.faces = faces(); }
 
 // ── what a visitor can run ──
 // a call that hands back a record's own replies in order, in place of a model
@@ -208,30 +219,31 @@ async function rejudge() {
     if (k > 0 && r.grant) grants[k] = r.grant;
     const v = JUDGE.judge({ which: k === 0 ? 'dev' : k, settings: S.settings, set, seal: S.sealSha, history, grants, harvest, log, coldBase: r.cb, coldDistilled: r.cd, train });
     const { files, at, ...was } = r.verdict;
-    const identical = JSON.stringify(was) === JSON.stringify(v), grown = same === harvest.records.length;
-    out.innerHTML = `${identical && grown ? '<span class="pass">Judged again in this tab: the same verdict.</span>' : '<span class="fail">Judged again in this tab: NOT the published verdict.</span>'} ${same} of ${harvest.records.length} harvested problems grew again identically from the recorded replies; ${v.train ? `${v.train.verified} of ${v.train.examples} training examples verified again by exact arithmetic` : 'the training file was not taken'}; ${v.cold ? `${2 * v.cold.n} cold replies read again` : 'the cold tests were not taken'}; ${v.verdicts.map((x) => `${x.id} ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL' : 'pending'}`).join(', ')}.`;
+    const identical = JSON.stringify(was) === JSON.stringify(v) && same === harvest.records.length;
+    out.innerHTML = `${identical ? '<span class="pass">Judged again here: the same verdict.</span>' : '<span class="fail">Judged again here: NOT the published verdict.</span>'} ${same} of ${harvest.records.length} harvested problems grew again identically · ${v.train ? `${v.train.verified} of ${v.train.examples} training examples verified again` : 'no training file taken'} · ${v.cold ? `${2 * v.cold.n} cold replies read again` : 'no cold test taken'} · ${v.verdicts.map((x) => `${x.id} ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL' : 'pending'}`).join(', ')}${S.shown === 'dev' ? ' · (the development round: not a claim)' : ''}`;
+    if (S.crystal) S.crystal.setEnergy(identical ? 1.3 : 0.4);
   } finally { $('rejudge').disabled = false; }
 }
 function tryTrace() {
   const h = S.trace && S.trace.harvested;
   if (!h || !h.task) { $('tryOut').innerHTML = 'No round is published yet, so there is no example to check.'; return; }
   const v = TRACE.verified({ id: h.task.id, messages: LOOP.opening(h.task.statement, []), reply: $('tryReply').value.replace(/\r\n/g, '\n').replace(/\n+$/, '') }, h.task);
-  $('tryOut').innerHTML = v.ok ? `<span class="pass">Verified.</span> ${many(v.lines, 'line', 'lines')} of working, each one a single step and exactly true, and the answer is the problem's own. This example may be trained on.` : `<span class="fail">Refused: ${esc(v.why)}.</span> This example would not be trained on.`;
+  $('tryOut').innerHTML = v.ok ? `<span class="pass">Verified.</span> ${many(v.lines, 'line', 'lines')}, each a single true step, and the answer is the problem's own. It may be trained on.` : `<span class="fail">Refused: ${esc(v.why)}.</span> It would not be trained on.`;
 }
 function tryRule() {
   const num = (id) => { const x = Number($(id).value); return Number.isInteger(x) && x >= 0 ? x : null; };
   const n = num('rN'), g = num('rG'), l = num('rL'), wb = num('rWB'), wd = num('rWD');
-  if ([n, g, l, wb, wd].includes(null) || n < 1 || g + l > n || wb > n - l || wd > n - g) { $('ruleOut').innerHTML = '<span class="fail">Those numbers cannot all be true of one block of problems.</span> Each must be a whole number; gained and lost together cannot exceed the block; and a problem answered wrongly was not answered rightly.'; return; }
+  if ([n, g, l, wb, wd].includes(null) || n < 1 || g + l > n || wb > n - l || wd > n - g) { $('ruleOut').innerHTML = '<span class="fail">Those numbers cannot all be true of one block of problems.</span>'; return; }
   const tally = (right, wrong) => ({ n, right, wrong, none: n - right - wrong, rate: right / n, silent: wrong / n });
   const cold = { n, base: tally(l, wb), distilled: tally(g, wd), lift: (g - l) / n, gained: Array.from({ length: g }, (_, i) => i), lost: Array.from({ length: l }, (_, i) => i), p: STATS.mcnemar(g, l) };
   const v = CLAIMS.verdicts({ cold }, S.settings), rule = ADOPT.decide(v[0].pass, v[1].pass);
-  $('ruleOut').innerHTML = `Lift ${(100 * cold.lift).toFixed(1)} points, p = ${prob(cold.p)}: K1 ${v[0].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'}. Confident wrong ${wb} → ${wd}: K2 ${v[1].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'}. The rule: <b class="${rule.adopt ? 'pass' : 'fail'}">${rule.adopt ? 'ADOPT' : 'DISSOLVE'}</b> (${esc(rule.why)}).${rule.adopt ? ' Adopted weights would then wait for a person\'s grant.' : ''}`;
+  $('ruleOut').innerHTML = `Lift ${(100 * cold.lift).toFixed(1)} points, p = ${prob(cold.p)}: K1 ${v[0].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'} · wrong ${wb} → ${wd}: K2 ${v[1].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'} · <b class="${rule.adopt ? 'pass' : 'fail'}">${rule.adopt ? 'ADOPT' : 'DISSOLVE'}</b> (${esc(rule.why)})`;
 }
 
 async function load() {
-  const [settings, published, gates, parity, trace, sealText] = await Promise.all([getJSON('data/settings.json'), getJSON('data/published.json'), getJSON('data/gates.json'), getJSON('data/parity.json'), getJSON('data/trace.json'), getText('SEAL.json')]);
+  const [settings, published, gates, parity, weights, trace, sealText] = await Promise.all([getJSON('data/settings.json'), getJSON('data/published.json'), getJSON('data/gates.json'), getJSON('data/parity.json'), getJSON('data/weights.json'), getJSON('data/trace.json'), getText('SEAL.json')]);
   const walk = published && published.walk ? await getJSON('data/walk.json') : null;   // asked for only when it is on file
-  Object.assign(S, { settings, published, gates, parity, trace, walk, sealSha: sealText === null ? null : SHA.sha256(sealText) });
+  Object.assign(S, { settings, published, gates, parity, weights, trace, walk, sealSha: sealText === null ? null : SHA.sha256(sealText) });
   const list = [...(published && published.dev ? ['dev'] : []), ...((published && published.rounds) || []).map(String)];
   for (const w of list) {
     const dir = w === 'dev' ? 'data/dev' : `data/rounds/${w}`;
@@ -249,12 +261,22 @@ const ready = (async () => {
   const h = S.trace && S.trace.harvested;
   if (h) $('tryReply').value = h.reply;
   $('open').addEventListener('change', (e) => openProblem(e.target.value));
-  $('wall').addEventListener('click', (e) => { const id = e.target && e.target.getAttribute && e.target.getAttribute('data-id'); if (id) openProblem(id); });
-  $('moved').addEventListener('click', (e) => { const id = e.target && e.target.getAttribute && e.target.getAttribute('data-open'); if (id) { openProblem(id); if ($('probe').scrollIntoView) $('probe').scrollIntoView({ block: 'center' }); } });
+  $('wallBox').addEventListener('click', (e) => { const id = e.target && e.target.getAttribute && e.target.getAttribute('data-id'); if (id) openProblem(id); });
   $('rejudge').addEventListener('click', rejudge);
   $('tryTrace').addEventListener('click', tryTrace);
-  $('tryReset').addEventListener('click', () => { if (h) $('tryReply').value = h.reply; $('tryOut').innerHTML = 'Press the button.'; });
+  $('tryReset').addEventListener('click', () => { if (h) $('tryReply').value = h.reply; $('tryOut').innerHTML = 'Press Check it.'; });
   $('tryRule').addEventListener('click', tryRule);
+  // the living part: the crystal bound to the claims, the numbers running up, sections rising
+  const idle = $('facet').innerHTML;
+  S.crystal = CRYSTAL.mount($('crystal'), { energy: 0.9 });
+  if (S.crystal) {
+    S.crystal.setFaces(S.faces.map((f) => f.state));
+    S.crystal.onHover((i) => { $('facet').innerHTML = i >= 0 && S.faces[i] && S.faces[i].text ? S.faces[i].text : idle; });
+    S.crystal.onPick((i) => { const el = i < 24 ? $('claims') : $('built'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth' }); });
+    HOUSE.bindScroll(S.crystal, 0.9);
+  }
+  if (typeof document.querySelectorAll === 'function') { for (const el of document.querySelectorAll('[data-count]')) HOUSE.count(el, el.getAttribute('data-count')); }
+  HOUSE.reveal(document); HOUSE.light(document);
   if (typeof navigator !== 'undefined' && navigator.serviceWorker && typeof location !== 'undefined' && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
-window.__distillation = { ready, S, render, rejudge, tryTrace, tryRule, openProblem, paired };
+window.__distillation = { ready, S, render, rejudge, tryTrace, tryRule, openProblem, paired, faces };

@@ -11,14 +11,15 @@ import { fileURLToPath } from 'node:url';
 
 // [namespace, file] in dependency order; each module may import only from the ones above it
 export const KERNELS = [
-  // The Climb's sealed kernels, then The Crystal's (both as vendored), then this repository's own
+  // the house kit (the crystal and the motion), The Climb's sealed kernels, The Crystal's (all as vendored), then this repository's own
+  ['CRYSTAL', 'vendor/house/crystal.js'], ['HOUSE', 'vendor/house/house.js'],
   ['SHA', 'vendor/crystal/vendor/climb/src/sha256.mjs'], ['STATS', 'vendor/crystal/vendor/climb/vendor/stats.mjs'], ['MEMORY', 'vendor/crystal/vendor/climb/vendor/memory.mjs'], ['EXACT', 'vendor/crystal/vendor/climb/src/exact.mjs'], ['CHECK', 'vendor/crystal/vendor/climb/src/checker.mjs'],
   ['PLAN', 'vendor/crystal/vendor/climb/src/plan.mjs'], ['LEFT', 'vendor/crystal/vendor/climb/src/left.mjs'], ['KEEP', 'vendor/crystal/vendor/climb/src/keep.mjs'], ['LOOP', 'vendor/crystal/vendor/climb/src/loop.mjs'], ['TASKS', 'vendor/crystal/vendor/climb/src/tasks.mjs'],
   ['BOND', 'vendor/crystal/src/bond.mjs'], ['GROW', 'vendor/crystal/src/grow.mjs'],
   ['SPLIT', 'src/split.mjs'], ['TRACE', 'src/trace.mjs'], ['COLD', 'src/cold.mjs'], ['ADOPT', 'src/adopt.mjs'], ['ROUNDS', 'src/rounds.mjs'], ['CLAIMS', 'src/claims.mjs'], ['JUDGE', 'src/judge.mjs'],
 ];
 // what bake() writes into the page: these ids, and every data-bind. What a visitor does on the page is their own.
-export const BAKED = ['status', 'wall', 'claimsTable', 'tierTable', 'moved', 'trainTable', 'gauge', 'loopState', 'grantBox', 'traceBox', 'devBox', 'spendTable', 'gateTable', 'walk'];
+export const BAKED = ['facet', 'receipts', 'verdictLine', 'traceStack', 'wallBox', 'claimStack', 'bars', 'gauge', 'loopState', 'loopWins', 'grantBox', 'kernelStack', 'builtWins', 'roleCards', 'walk', 'devBox'];
 const LF = (s) => s.split('\r\n').join('\n');
 const nsOf = (spec, from) => {
   const name = spec.split('/').pop();
@@ -47,7 +48,7 @@ export function build(root = '.') {
     const { code, names } = body(read(file), file);
     return `// ${file}, inlined byte for byte (imports read the scopes above; export removed)\nconst ${ns} = (() => {\n${code}\nreturn { ${names.join(', ')} };\n})();`;
   }).join('\n\n');
-  return read('page/template.html').replace('/*KERNELS*/', () => kernels).replace('/*APP*/', () => read('page/app.js').trim());
+  return read('page/template.html').replace('/*HOUSE_CSS*/', () => read('vendor/house/house.css').trim()).replace('/*KERNELS*/', () => kernels).replace('/*APP*/', () => read('page/app.js').trim());
 }
 
 const escText = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));

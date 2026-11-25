@@ -60,13 +60,13 @@ test('nothing on the page is dead: every control is wired, every number has a wr
   for (const m of template.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(m[1]), `a link goes to #${m[1]}, which is not on the page`);
   for (const m of visible.matchAll(/href="([^"#][^"]*)"/g)) { const h = m[1]; if (/^https?:/.test(h)) continue; assert.ok(existsSync(new URL(h, root)), `a link goes to ${h}, which is not in the repository`); }
   for (const m of template.matchAll(/url\('([^']+)'\)/g)) assert.ok(existsSync(new URL(m[1], root)), `a font is not in the repository: ${m[1]}`);
-  for (const id of ['top', 'start', 'how', 'numbers', 'loop', 'limits', 'blueprint', 'buyers', 'paper']) assert.ok(new RegExp(`<section[^>]*id="${id}"`).test(template), `the page has no ${id} section`);
+  for (const id of ['result', 'how', 'wall', 'claims', 'glass', 'loop', 'built', 'buyers', 'limits']) assert.ok(new RegExp(`<section[^>]*id="${id}"`).test(template), `the page has no ${id} section`);
 });
 
 test('the page says what it must and nothing it must not', () => {
   const text = visible.replace(/<[^>]+>/g, ' ');
   assert.ok(visible.includes('Powered by the Konomi architecture, created by Thomas Frumkin.'));
-  assert.ok(visible.includes('built by Kar')); assert.ok(visible.includes('AI Native Solutions')); assert.ok(visible.includes('support is agreed per deployment, in each deployment\'s agreement'));
+  assert.ok(visible.includes('Built by Kar')); assert.ok(visible.includes('AI Native Solutions')); assert.ok(visible.includes('support is agreed per deployment, in each deployment\'s agreement'));
   assert.ok(!/[£$€]\s?\d|\d\s?(?:pounds|dollars|euros) (?:a|per) (?:month|year|seat|user)|per seat per|pricing/i.test(text), 'no price is put on a product page');
   assert.ok(!/[κφ◊]|\btorus\b/i.test(html.slice(0, html.indexOf('<script type="module">'))), 'no private shorthand on a public page');
   assert.ok(!/claude|anthropic/i.test(text), 'the public name is Kar');
@@ -75,15 +75,28 @@ test('the page says what it must and nothing it must not', () => {
   assert.match(text, /Llama 3\.2 1B Instruct/); assert.match(text, /Llama 3\.2 Community Licence/);
 });
 
-test('once a round is published, no number on the page is left unmeasured, and a failed claim is shown as failed', () => {
-  if (!published.dev && published.rounds.length === 0) { assert.ok(visible.includes('No round is published yet'), 'with nothing published the page says so'); return; }
+test('no number on the page is left unmeasured; what has not landed says "sealing now"; a failed claim is shown as failed', () => {
   const left = [...visible.matchAll(/not measured yet/g)].length;
   assert.equal(left, 0, `${left} places on the page still read "not measured yet"`);
-  const which = published.rounds.length ? `data/rounds/${published.rounds[published.rounds.length - 1]}` : 'data/dev';
-  const v = JSON.parse(read(`${which}/verdict.json`));
-  for (const x of v.verdicts) assert.ok(visible.includes(`<b>${x.id}</b>`), `${x.id} is not on the page`);
-  assert.equal([...visible.matchAll(/<td class="fail">FAIL<\/td>/g)].length, v.verdicts.filter((x) => x.pass === false).length, 'every failed claim is shown as FAIL, and only those');
-  assert.ok(visible.includes(v.adopted ? '<span class="pass">ADOPT</span>' : '<span class="fail">DISSOLVE</span>'));
+  if (published.rounds.length === 0) { assert.ok(visible.includes('sealing now'), 'with no sealed round the page says sealing now'); assert.ok(!/class="(now|bad)" data-count/.test(visible), 'and shows no result as if it had landed'); return; }
+  const v = JSON.parse(read(`data/rounds/${published.rounds[published.rounds.length - 1]}/verdict.json`));
+  const stack = visible.slice(visible.indexOf('id="claimStack"'), visible.indexOf('id="bars"'));
+  for (const x of v.verdicts) assert.ok(stack.includes(`<div class="d">${x.id}</div>`), `${x.id} is not on the page`);
+  assert.equal([...stack.matchAll(/<span class="tag rd">fail · kept<\/span>/g)].length, v.verdicts.filter((x) => x.pass === false).length, 'every failed claim is shown as failed, in red, and only those');
+  assert.ok(visible.includes(v.adopted ? 'The rule: adopt.' : 'The rule: dissolve.'));
+  // every receipt has its source one click away
+  const receipts = visible.slice(visible.indexOf('id="receipts"'), visible.indexOf('id="verdictLine"'));
+  assert.equal([...receipts.matchAll(/class="stat /g)].length, 3); assert.equal([...receipts.matchAll(/class="src" href="data\/rounds\/\d\/verdict\.json"/g)].length, 3);
+});
+
+test('the house standard: crystal hero, receipts, stack, glass, honest expander, and no wall of text', () => {
+  for (const [what, re] of [['the crystal hero', /<canvas id="crystal"/], ['receipts', /class="stats" id="receipts"/], ['the stack', /class="stack /], ['the glass', /class="glass /], ['the honest expander', /<details class="honest /]]) assert.ok(re.test(template), `the page has no ${what}`);
+  // the law of the page: what greets a visitor is numbers and short lines. Prose waits behind a click.
+  const open = visible.replace(/<details[\s\S]*?<\/details>/g, ' ').replace(/<svg[\s\S]*?<\/svg>/g, ' ').replace(/<select[\s\S]*?<\/select>/g, ' ');
+  const words = (s) => s.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  for (const m of open.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) assert.ok(words(m[1]) <= 45, `a paragraph of ${words(m[1])} words greets the visitor: "${m[1].replace(/<[^>]+>/g, ' ').slice(0, 80)}…"`);
+  assert.ok(words(open) <= 1250, `${words(open)} words on the page before any click: a wall of text`);
+  assert.ok([...template.matchAll(/class="claim /g)].length >= 6, 'every section leads with one claim');
 });
 
 test('no private repository name is in anything this repository ships (checked by hash: the names are not listed here)', async () => {

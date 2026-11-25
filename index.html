@@ -3,286 +3,589 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Distillation — a small model taught only its own checked work</title>
-<meta name="description" content="A small AI model is checked step by step, trained on nothing but the steps that were verified, and then asked cold: one try, no checker, on problems it never saw. Every result is measured against claims written down first, every change to the model waits for a person, and you can judge every round again in your browser.">
+<title>The Distillation — taught only its own checked work</title>
+<meta name="description" content="A small AI model is trained on nothing but its own verified working, then tested cold on problems it never saw. Every number is a sealed receipt you can re-derive in your browser, and no change to the model stands without a person's yes.">
 <meta name="theme-color" content="#02070c">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
+/* house.css — the AI Native house standard: one token sheet, one kit. Every page is built from these and nothing else.
+   HERO · RECEIPTS · THE STACK · THE GLASS · HONEST EXPANDER. The law of the page: the loudest true number leads, every
+   caveat waits behind a click, and no section is prose. Fonts are the house's three faces, served from the page. */
 @font-face{font-family:'Fraunces';src:url('vendor/fonts/fraunces/files/fraunces-latin-full-italic.woff2') format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
 @font-face{font-family:'Fraunces';src:url('vendor/fonts/fraunces/files/fraunces-latin-full-normal.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 @font-face{font-family:'Hanken Grotesk';src:url('vendor/fonts/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'JetBrains Mono';src:url('vendor/fonts/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2');font-weight:100 800;font-display:swap}
-:root{--abyss:#02070c;--water:#04101a;--lume:#5ef2e4;--blue:#49b4ff;--amber:#ffbf78;--red:#ff6470;--kept:#2f8f96;--still:#1c3a45;--ink:#e4f6f8;--ink-2:#a3c3cb;--ink-3:#7f9fa7;--panel:rgba(4,16,25,.86);--edge:rgba(94,242,228,.2);--display:'Fraunces','Iowan Old Style','Palatino Linotype',Georgia,serif;--body:'Hanken Grotesk','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;--gut:clamp(16px,5vw,72px);color-scheme:dark}
+:root{color-scheme:dark;--bg:#02070c;--bg2:#060e18;--panel:#081320;--ink:#e9f2f6;--soft:#aebecb;--muted:#6f8698;--cyan:#49e8c8;--cyan-dim:#1f6a60;--gold:#ffcf6a;--red:#ff6b6b;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.055);--display:'Fraunces',Georgia,serif;--sans:'Hanken Grotesk',system-ui,-apple-system,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;--gut:max(20px,env(safe-area-inset-left,0px));--gutr:max(20px,env(safe-area-inset-right,0px))}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:radial-gradient(1200px 700px at 78% -10%,#0a2a36 0,rgba(2,7,12,0) 60%),var(--abyss);color:var(--ink);font:400 16px/1.6 var(--body);overflow-x:hidden}
-a{color:var(--lume);text-underline-offset:3px}
-:focus-visible{outline:2px solid var(--lume);outline-offset:3px}
-code{font:500 .86em var(--mono);color:var(--lume);overflow-wrap:anywhere}
-pre{font:500 12.5px/1.55 var(--mono);color:var(--ink);background:rgba(2,7,12,.7);border:1px solid var(--edge);padding:10px 12px;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:2px}
-.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;padding:10px var(--gut);background:var(--abyss);border-bottom:1px solid var(--edge)}
-.mark{font:500 12px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--ink);text-decoration:none;white-space:nowrap;padding:10px 0}
-.top nav{margin-left:auto;display:flex;gap:4px 18px;flex-wrap:wrap;justify-content:flex-end}
-.top nav a{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);text-decoration:none;padding:10px 0}
-.top nav a:hover{color:var(--lume)}
-.hero{padding:56px var(--gut) 36px}
-.hero>*{max-width:820px}
-.kicker{font:500 11px/1.4 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);margin:0 0 10px}
-h1{font:400 clamp(40px,8.4vw,84px)/1 var(--display);margin:0 0 16px;letter-spacing:-.01em}
-h1 em{font-style:italic;color:var(--lume)}
-.lead{margin:0 0 18px;font-size:17px;max-width:680px}
-.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-button{font:600 14px/1 var(--body);color:#012;background:var(--lume);border:0;padding:13px 18px;min-height:44px;cursor:pointer;border-radius:2px}
-button:hover{filter:brightness(1.1)}
-button:disabled{opacity:.5;cursor:default}
-button.quiet{background:transparent;color:var(--ink);border:1px solid var(--edge)}
-button.chip{background:transparent;color:var(--ink);border:1px solid var(--edge);font:500 12px/1 var(--mono);padding:8px 10px;min-height:36px;margin:0 6px 6px 0}
-button.chip.lost{border-color:rgba(255,100,112,.6);color:var(--red)}
-.small{font:500 11.5px/1.55 var(--mono);color:var(--ink-2)}
-#status{font:500 13px/1.5 var(--mono);color:var(--ink);margin:14px 0 0;min-height:20px}
-.ledger{display:flex;flex-wrap:wrap;gap:10px 26px;margin:20px 0 10px;font:500 11.5px/1.3 var(--mono);letter-spacing:.06em;color:var(--ink-2);max-width:none}
-.ledger b{display:block;font:500 clamp(18px,2.8vw,26px)/1.1 var(--mono);color:var(--ink);letter-spacing:0}
-.ledger .good b{color:var(--lume)}.ledger .bad b{color:var(--red)}
-.tags{font:italic 400 15px/1.5 var(--display);color:var(--ink-2);margin:16px 0 0}
-select,input,textarea{font:500 13px/1.4 var(--mono);color:var(--ink);background:rgba(2,7,12,.8);border:1px solid var(--edge);padding:9px 10px;border-radius:2px;min-height:40px;max-width:100%}
-textarea{width:100%;min-height:120px}
-label.f{display:block;font:500 11px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:10px 0 4px}
-section.panel{background:var(--panel);border-top:1px solid var(--edge);padding:44px var(--gut)}
-section.panel>*{max-width:800px}
-h2{font:400 clamp(26px,4.4vw,38px)/1.1 var(--display);margin:0 0 14px}
-h2 em{font-style:italic;color:var(--lume)}
-h3{font:600 15px/1.3 var(--body);margin:24px 0 6px}
-ol,ul{padding-left:20px}
-li{margin:0 0 8px}
-details{border-top:1px solid var(--edge);padding:10px 0}
-details>summary{cursor:pointer;font-weight:600;min-height:32px;padding:4px 0}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}
-th,td{text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--edge);vertical-align:top}
-th{font:500 11px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
-td.num{font-family:var(--mono);white-space:nowrap}
-.pass{color:var(--lume)}.fail{color:var(--red);font-weight:600}.pend{color:var(--amber)}
-.wrap{overflow-x:auto}
-svg.fig{width:100%;height:auto;max-width:800px;display:block}
-svg.fig text{font:500 12px var(--mono);fill:var(--ink)}
-svg.fig .m{fill:var(--ink-2)}
-#wall{margin:22px 0 6px;max-width:820px}
-#wall svg{width:100%;height:auto;display:block}
-#wall rect{cursor:pointer}
-.key{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0 0;font:500 11.5px/1.4 var(--mono);color:var(--ink-2)}
-.key i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px}
-.probe{border:1px solid var(--edge);padding:12px 14px;margin:12px 0;background:rgba(2,7,12,.55)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.box{border:1px solid var(--edge);padding:10px 12px;background:rgba(2,7,12,.5)}
-.box h4{font:500 11px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}
-.callout{border-left:3px solid var(--amber);padding:6px 0 6px 14px;margin:14px 0;color:var(--ink)}
-footer{background:var(--abyss);border-top:1px solid var(--edge);padding:28px var(--gut) 40px;font:500 12px/1.7 var(--mono);color:var(--ink-2)}
-.short{display:none}
-@media (max-width:700px){.top nav{flex-wrap:nowrap}.top nav a:not(.keep){display:none}.long{display:none}.short{display:inline}.two{grid-template-columns:1fr}.hero{padding-top:36px}}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{line-height:1.5;font-size:16px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1080px;margin:0 auto;padding-left:var(--gut);padding-right:var(--gutr)}
+.mono{font-family:var(--mono)}
+em{font-style:italic;font-family:var(--display);font-weight:600}
+code{font:500 .88em var(--mono);color:var(--cyan);overflow-wrap:anywhere}
+.pass{color:var(--cyan)}.fail{color:var(--red)}.pend{color:var(--gold)}.dim{color:var(--muted)}
+
+/* HERO: the crystal behind the headline */
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;overflow:hidden;background:radial-gradient(120% 90% at 70% 18%,#0a1826 0%,var(--bg) 58%)}
+#crystal{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(2,7,12,.78) 0%,rgba(2,7,12,.34) 46%,rgba(2,7,12,0) 70%),radial-gradient(130% 110% at 50% 42%,transparent 50%,rgba(2,6,12,.7) 100%)}
+.hero .wrap{position:relative;z-index:2;width:100%;padding-block:12vh;pointer-events:none}
+.hero .wrap>*{pointer-events:auto}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(44px,9vw,104px);line-height:.98;letter-spacing:-.02em;margin:18px 0 0;text-wrap:balance;max-width:14ch}
+h1 em{color:var(--cyan)}
+.sub{font-size:clamp(16px,2.3vw,21px);color:var(--soft);max-width:46ch;margin:26px 0 0;line-height:1.55}
+.cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:38px}
+.btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:13.5px;letter-spacing:.02em;padding:13px 20px;min-height:46px;border-radius:999px;text-decoration:none;transition:.18s ease;white-space:nowrap;cursor:pointer;border:1px solid transparent;background:none;color:var(--ink)}
+.btn.primary{background:var(--cyan);color:#021310;font-weight:700}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px -12px var(--cyan)}
+.btn.ghost{border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.facet{position:absolute;z-index:3;left:var(--gut);bottom:22px;font:500 12px/1.5 var(--mono);color:var(--soft);max-width:min(560px,calc(100vw - 40px));min-height:18px;pointer-events:none}
+.facet b{color:var(--ink);font-weight:500}
+
+/* SECTIONS */
+section{position:relative;z-index:2}
+.pad{padding-block:clamp(72px,11vh,140px)}
+.alt{background:linear-gradient(180deg,var(--bg),#040b14);border-top:1px solid var(--line2)}
+.deep{background:var(--bg2);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.kline{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--cyan);margin:0 0 20px}
+.claim{font-family:var(--display);font-weight:400;font-size:clamp(30px,5.2vw,58px);line-height:1.05;letter-spacing:-.015em;text-wrap:balance;max-width:20ch;margin:0}
+.claim b{font-weight:600}
+.claim em{color:var(--cyan)}
+.lede{color:var(--soft);font-size:clamp(15px,1.9vw,18px);line-height:1.6;max-width:52ch;margin:26px 0 0}
+.lede b{color:var(--ink);font-weight:600}
+
+/* RECEIPTS: the number is the hero */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:64px;border-top:1px solid var(--line);padding-top:48px}
+.stat .n{font-family:var(--mono);font-weight:700;font-size:clamp(38px,6.6vw,76px);line-height:1;letter-spacing:-.02em;white-space:nowrap}
+.stat .n .was{color:var(--muted)}.stat .n .arrow{color:var(--cyan-dim);padding:0 .12em}.stat .n .now{color:var(--cyan)}.stat .n .bad{color:var(--red)}.stat .n .wait{color:var(--gold)}
+.stat .lab{color:var(--soft);font-size:14px;margin-top:16px;line-height:1.5;max-width:28ch}
+.stat .lab b{color:var(--ink);font-weight:600}
+.src{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.06em;color:var(--muted);text-decoration:none;margin-top:10px;border-bottom:1px dotted var(--muted);padding-bottom:2px}
+.src:hover{color:var(--cyan);border-color:var(--cyan)}
+.wins{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:42px}
+.win{border:1px solid var(--line2);border-radius:16px;padding:26px 22px;background:var(--panel)}
+.win .wn{font-family:var(--mono);font-weight:700;font-size:clamp(26px,3.6vw,42px);color:var(--cyan);letter-spacing:-.02em;line-height:1;white-space:nowrap}
+.win .wn .of{color:var(--muted)}
+.win .wl{color:var(--soft);font-size:13px;margin-top:12px;line-height:1.5}
+
+/* CARDS */
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+.acts.two{grid-template-columns:repeat(2,1fr)}
+.act{position:relative;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--panel),#050c15);border:1px solid var(--line2);border-radius:18px;padding:28px 24px 24px;text-decoration:none;transition:.2s ease;overflow:hidden}
+a.act:hover,.act.lift:hover{border-color:var(--cyan);transform:translateY(-4px);box-shadow:0 24px 60px -34px #000}
+.act::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(73,232,200,.10),transparent 60%)}
+.act:hover::before{opacity:1}
+.act .num{font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--muted)}
+.act h3{font-family:var(--display);font-weight:500;font-size:26px;letter-spacing:-.01em;margin:14px 0 0}
+.act p{color:var(--soft);font-size:14.5px;line-height:1.55;margin:10px 0 0;flex:1}
+.act .go{font-family:var(--mono);font-size:12.5px;color:var(--cyan);margin-top:18px;display:inline-flex;gap:7px;align-items:center}
+
+/* THE STACK: one line per layer */
+.stack{margin-top:44px;border:1px solid var(--line2);border-radius:18px;overflow:hidden;background:#040b13}
+.srow{display:grid;grid-template-columns:64px 1fr;align-items:center;border-top:1px solid var(--line2);padding:16px 22px;transition:.16s}
+.srow:first-child{border-top:none}
+.srow:hover{background:#08141f}
+.srow .d{font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.12em}
+.srow .nm{display:flex;gap:6px 14px;align-items:baseline;flex-wrap:wrap}
+.srow .nm b{font-family:var(--display);font-weight:500;font-size:19px}
+.srow .nm span{color:var(--soft);font-size:14px}
+.srow.red .d{color:var(--red)}.srow.gold .d{color:var(--gold)}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.tag.cy{color:var(--cyan);border:1px solid rgba(73,232,200,.32)}
+.tag.gd{color:var(--gold);border:1px solid rgba(255,207,106,.34);animation:breathe 2.4s ease-in-out infinite}
+.tag.rd{color:var(--red);border:1px solid rgba(255,107,107,.4)}
+@keyframes breathe{50%{opacity:.55}}
+
+/* THE GLASS: it runs here, on the visitor's own device */
+.glass{margin-top:44px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#07121d,#040b13);padding:26px 24px;box-shadow:0 30px 80px -50px #000,inset 0 1px 0 rgba(255,255,255,.04)}
+.glass h3{font-family:var(--display);font-weight:500;font-size:24px;margin:0 0 6px}
+.glass .hint{color:var(--soft);font-size:14px;margin:0 0 16px;max-width:60ch}
+.glass .out{font:500 13px/1.6 var(--mono);color:var(--soft);margin:14px 0 0;min-height:22px}
+.glass textarea,.glass input,.glass select{font:500 13px/1.5 var(--mono);color:var(--ink);background:rgba(2,7,12,.75);border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-width:100%;min-height:42px}
+.glass textarea{width:100%;min-height:128px}
+.glass label{font:500 11px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:inline-flex;flex-direction:column;gap:5px}
+.row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{border:1px solid var(--line2);border-radius:14px;padding:14px 16px;background:rgba(2,7,12,.5);min-width:0}
+.box h4{font:500 11px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+pre{font:500 12.5px/1.55 var(--mono);color:var(--ink);margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.wall svg{width:100%;height:auto;display:block}
+.wall rect{cursor:pointer;transition:opacity .15s}
+.wall rect:hover{opacity:.7}
+.key{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 0;font:500 11.5px/1.4 var(--mono);color:var(--muted)}
+.key i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* PROOF + THE HONEST EXPANDER */
+.proof{text-align:center}
+.proof .hl{font-family:var(--display);font-style:italic;font-weight:500;font-size:clamp(38px,8vw,88px);line-height:1;letter-spacing:-.02em;margin:0}
+.proof .hl .a{color:var(--muted)}.proof .hl .b{color:var(--cyan)}
+.proof .sub2{color:var(--soft);margin:24px auto 0;max-width:42ch;font-size:16px}
+.links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+.plink{font-family:var(--mono);font-size:13px;text-decoration:none;color:var(--ink);border:1px solid var(--line);padding:11px 18px;border-radius:999px;transition:.18s;min-height:44px;display:inline-flex;align-items:center}
+.plink:hover{border-color:var(--cyan);color:var(--cyan)}
+details.honest{max-width:680px;margin:22px auto 0;border:1px solid var(--line2);border-radius:14px;background:#040b13;text-align:left}
+details.honest:first-of-type{margin-top:52px}
+details.honest summary{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--muted);padding:16px 20px;cursor:pointer;list-style:none;min-height:48px}
+details.honest summary::-webkit-details-marker{display:none}
+details.honest summary::before{content:"+ ";color:var(--cyan)}
+details.honest[open] summary::before{content:"– "}
+details.honest .in{padding:0 20px 20px;color:var(--soft);font-size:14px;line-height:1.6}
+details.honest .in p{margin:0 0 10px}
+details.honest .in b{color:var(--ink)}
+details.honest .in a{color:var(--cyan)}
+
+footer{border-top:1px solid var(--line2);padding-block:46px;position:relative;z-index:2}
+.frow{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-size:22px}
+.taglist{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.9;letter-spacing:.02em}
+.taglist span{color:var(--cyan)}
+.fnote{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:14px;letter-spacing:.02em;line-height:1.8}
+.fnote a{color:var(--soft)}
+
+/* MOTION */
+.js .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.js .reveal.in{opacity:1;transform:none}
+@media(max-width:860px){.acts{grid-template-columns:repeat(2,1fr)}.wins{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.stats{grid-template-columns:1fr;gap:40px}.two{grid-template-columns:1fr}.hero-shade{background:linear-gradient(180deg,rgba(2,7,12,.2) 0%,rgba(2,7,12,.82) 62%)}.hero{align-items:flex-end}.hero .wrap{padding-block:9vh}}
+@media(max-width:680px){.acts,.acts.two{grid-template-columns:1fr}.srow{grid-template-columns:48px 1fr;padding:14px 16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.js .reveal{opacity:1;transform:none;transition:none}.tag.gd{animation:none}.btn,.act{transition:none}}
 </style>
 </head>
 <body>
-<header class="top">
-  <a class="mark" href="#top">The Distillation</a>
-  <nav aria-label="On this page"><a href="#start">Start</a><a href="#how">How it works</a><a class="keep" href="#numbers">The numbers</a><a href="#loop">The loop</a><a class="keep" href="#limits"><span class="long">What this does not prove</span><span class="short">Limits</span></a><a href="#buyers">For buyers</a><a href="#paper">White paper</a></nav>
-</header>
-<main>
-<section class="hero" id="top">
-  <p class="kicker">Built on The Climb and The Crystal · measured on a laptop</p>
-  <h1>Taught only its own <em>checked work.</em></h1>
-  <p class="lead">A small AI model was held to a checker until every step of its working was right. Then it was trained on that verified working and on nothing else, and asked again <b>cold</b>: one try, no checker, on problems it had never seen. This page shows what changed, measured against claims written down first. The model's weights change only when the measurement says so <b>and</b> a person says yes.</p>
-  <p id="status" aria-live="polite">No round is published yet. Every number on this page is filled in from a published record, so there is nothing to show until one is.</p>
-  <div class="ledger" aria-label="The newest round, cold, on the held-out problems">
-    <span><b data-bind="n.base">not measured yet</b>right before, cold</span>
-    <span class="good"><b data-bind="n.distilled">not measured yet</b>right after, cold</span>
-    <span class="good"><b data-bind="n.gained">not measured yet</b>problems gained</span>
-    <span class="bad"><b data-bind="n.lost">not measured yet</b>problems lost</span>
-    <span><b data-bind="n.wrong">not measured yet</b>confident wrong answers, before → after</span>
-    <span><b data-bind="n.train">not measured yet</b>training examples, every one verified</span>
-    <span><b data-bind="n.outcome">not measured yet</b>what the rule decided</span>
+<header class="hero" id="top">
+  <canvas id="crystal" role="img" aria-label="A crystal of 32 faces. Each lit face is one claim of one round: cyan when it passed, red when it failed, gold while it is still being sealed. Dark faces are rounds that have not run."></canvas>
+  <div class="hero-shade"></div>
+  <div class="wrap">
+    <p class="eyebrow">AI Native Solutions · The Distillation</p>
+    <h1>Taught only its own <em>checked work.</em></h1>
+    <p class="sub">A small model, trained on nothing but its own verified working. Then asked cold, on problems it never saw.</p>
+    <div class="cta"><a class="btn primary" href="#result">See what moved →</a><a class="btn ghost" href="#glass">Judge it yourself</a></div>
   </div>
-  <div id="wall" role="group" aria-label="The fail-wall: one square for every held-out problem"><span class="pend">not measured yet</span></div>
-  <p class="key" aria-label="What each colour means"><span><i style="background:var(--lume)"></i>gained: failed before, right after</span><span><i style="background:var(--kept)"></i>right both times</span><span><i style="background:var(--still)"></i>failed both times</span><span><i style="background:var(--red)"></i>lost: right before, failed after</span></p>
-  <p class="tags">Only verified work trains it. · Held out, or it is memorising. · The loop proposes; a person disposes.</p>
+  <p class="facet" id="facet" aria-live="polite">Round 1 · sealing now · the gold faces are its six claims</p>
+</header>
+
+<section class="pad" id="result">
+  <div class="wrap">
+    <p class="kline reveal" data-bind="k.result">Round 1 · sealing now</p>
+    <h2 class="claim reveal">The same model, before and after one round of its own checked work. <b>One try. No checker.</b></h2>
+    <div class="stats" id="receipts"><div class="stat reveal"><div class="n"><span class="was">—</span><span class="arrow">→</span><span class="wait">—</span></div><div class="lab"><b>Right, cold, on held-out problems.</b> Before and after one round. <span class="tag gd">sealing now</span></div></div><div class="stat reveal"><div class="n"><span class="was">—</span><span class="arrow">→</span><span class="wait">—</span></div><div class="lab"><b>Confident wrong answers.</b> The rule requires this not to rise. <span class="tag gd">sealing now</span></div></div><div class="stat reveal"><div class="n"><span class="was">—</span><span class="arrow">→</span><span class="wait">—</span></div><div class="lab"><b>Problems gained and lost.</b> The fail-wall, both ways. <span class="tag gd">sealing now</span></div></div></div>
+    <p class="lede reveal" id="verdictLine">No sealed round has landed. <b>Nothing is claimed until one has.</b> The number replaces the tag when it does, pass or fail.</p>
+  </div>
 </section>
 
-<section class="panel" id="start">
-  <h2>Start <em>here</em></h2>
-  <p><b>The words this page uses.</b> The <b>base</b> is the model a round starts from. The <b>distilled</b> model is the base after it has been trained on its own verified working. <b>Cold</b> means one try, with no checker and no second attempt. A <b>held-out</b> problem is one the model was never trained on and never worked through; the claims are measured only on those. A <b>confident wrong answer</b> is a reply that gives an answer and the answer is wrong (a reply that gives no answer is a failure too, but one that shows). The <b>fail-wall</b> is the set of problems a model cannot do cold; each square above is one held-out problem, coloured by which side of the wall it was on before and after. A <b>round</b> is one pass: harvest, build, train, test cold, decide. A claim's <b>bar</b> is the result it had to reach, written down before the round was run. <b>Sealed</b> means every file that can change a result was frozen first. <b>Adopt</b> means the trained weights are kept; <b>dissolve</b> means they are thrown away. A <b>grant</b> is a person's recorded yes to an adopted change.</p>
-  <ol>
-    <li><b>Look at the wall.</b> Each square is one held-out problem. Bright squares moved from failed to right. Red squares went the other way. Press a square, or choose a problem here: <select id="open" aria-label="Open a held-out problem"><option value="">Choose a held-out problem…</option></select>
-      <div id="probe" class="probe" aria-live="polite">Choose a problem to read the question, what the base said cold, what the distilled model said cold, and how each reply was read.</div></li>
-    <li><b>Judge the round again, here.</b> Your browser fetches the round's records and runs the same gated code that made the verdict: every harvested problem is grown again from the model's recorded replies, every training line is verified again by exact arithmetic, every cold reply is read again, and the six claims are ruled on again. No model is needed. <br><button id="rejudge" type="button">Judge it again in this tab</button> <span id="rejudgeOut" class="small" aria-live="polite"></span></li>
-    <li><b>Try the training gate yourself.</b> This is the check every training example must pass. The box holds a real example from the harvest. Change one digit and check it again: it is refused, and it says which line.
-      <label class="f" for="tryReply">The reply the model would learn</label>
-      <textarea id="tryReply" spellcheck="false" rows="6"></textarea>
-      <div class="row"><button id="tryTrace" class="quiet" type="button">Check this example</button><button id="tryReset" class="quiet" type="button">Put the real one back</button></div>
-      <p id="tryOut" class="small" aria-live="polite">Press the button.</p></li>
-    <li><b>Try the adoption rule.</b> The rule is code, and it is the same code here. Put in a result and see what it decides.
-      <div class="row">
-        <label class="small">held-out problems <input id="rN" type="number" min="1" max="2000" value="200" style="width:6.5em"></label>
-        <label class="small">gained <input id="rG" type="number" min="0" max="2000" value="30" style="width:5.5em"></label>
-        <label class="small">lost <input id="rL" type="number" min="0" max="2000" value="8" style="width:5.5em"></label>
-        <label class="small">confident wrong, before <input id="rWB" type="number" min="0" max="2000" value="90" style="width:5.5em"></label>
-        <label class="small">after <input id="rWD" type="number" min="0" max="2000" value="80" style="width:5.5em"></label>
-        <button id="tryRule" class="quiet" type="button">Ask the rule</button>
+<section class="pad alt" id="how">
+  <div class="wrap">
+    <p class="kline reveal">One round, six moves</p>
+    <h2 class="claim reveal">Only verified work trains it. <b>Only a person lets the change stand.</b></h2>
+    <div class="acts">
+      <div class="act reveal"><span class="num">01 — HARVEST</span><h3>It works, checked.</h3><p>One step at a time. Exact arithmetic rules on each. A wrong step is never kept.</p></div>
+      <div class="act reveal"><span class="num">02 — BUILD</span><h3>Only what verified.</h3><p>Finished, verified working becomes an example. The rest is thrown away.</p></div>
+      <div class="act reveal"><span class="num">03 — TRAIN</span><h3>On that, and nothing else.</h3><p>A small adapter, trained on the verified file. Its hash is on record.</p></div>
+      <div class="act reveal"><span class="num">04 — TEST COLD</span><h3>Problems it never saw.</h3><p>Before and after. One try, no checker, on a block never harvested or trained on.</p></div>
+      <div class="act reveal"><span class="num">05 — DECIDE</span><h3>Adopt or dissolve.</h3><p>Better, and no more confidently wrong, or the weights are dropped. Published either way.</p></div>
+      <div class="act reveal"><span class="num">06 — GRANT</span><h3>A person's yes.</h3><p>Adopted weights wait for a recorded yes. The loop cannot write its own.</p></div>
+    </div>
+    <details class="honest reveal" style="max-width:none"><summary>Traced from a real run: one harvested problem, step by step</summary><div class="in"><div class="stack" style="margin-top:0" id="traceStack"><div class="srow gold"><div class="d">—</div><div class="nm"><b>No run yet</b><span>a real harvested problem is traced here once one is published</span><span class="tag gd">sealing now</span></div></div></div></div></details>
+  </div>
+</section>
+
+<section class="pad" id="wall">
+  <div class="wrap">
+    <p class="kline reveal">The fail-wall</p>
+    <h2 class="claim reveal">Every held-out problem, <b>before and after.</b></h2>
+    <div class="glass reveal">
+      <div class="wall" id="wallBox" role="group" aria-label="One square for every held-out problem"><p class="mono dim" style="margin:0">No cold test is published yet. <span class="tag gd">sealing now</span></p></div>
+      <p class="key"><span><i style="background:var(--cyan)"></i>gained</span><span><i style="background:#2f8f96"></i>right both times</span><span><i style="background:#1c3a45"></i>failed both times</span><span><i style="background:var(--red)"></i>lost</span></p>
+      <div class="row" style="margin-top:18px"><label>Open a problem <select id="open"><option value="">Choose one, or press a square…</option></select></label></div>
+      <div class="out" id="probe" aria-live="polite">Each square is one problem the model never trained on. Press one to read what it said before and after.</div>
+    </div>
+  </div>
+</section>
+
+<section class="pad alt" id="claims">
+  <div class="wrap">
+    <p class="kline reveal">Six claims, written down first</p>
+    <h2 class="claim reveal">The pass marks were fixed <b>before the model was trained.</b></h2>
+    <div class="stack reveal" id="claimStack"><div class="srow gold"><div class="d">K1</div><div class="nm"><b>Lift</b><span>round 1 has not run</span><span class="tag gd">sealing now</span></div></div><div class="srow gold"><div class="d">K2</div><div class="nm"><b>Still honest</b><span>round 1 has not run</span><span class="tag gd">sealing now</span></div></div><div class="srow gold"><div class="d">K3</div><div class="nm"><b>The fail-wall moved</b><span>round 1 has not run</span><span class="tag gd">sealing now</span></div></div><div class="srow gold"><div class="d">K4</div><div class="nm"><b>Verify-or-dissolve at the weights</b><span>round 1 has not run</span><span class="tag gd">sealing now</span></div></div><div class="srow gold"><div class="d">K5</div><div class="nm"><b>Clean training data</b><span>round 1 has not run</span><span class="tag gd">sealing now</span></div></div><div class="srow gold"><div class="d">K6</div><div class="nm"><b>Held-out integrity</b><span>round 1 has not run</span><span class="tag gd">sealing now</span></div></div></div>
+    <details class="honest reveal"><summary>The bars, word for word</summary><div class="in" id="bars"><p><b>K1 · Lift.</b> On the held-out block, cold, one try each: the distilled model is right on at least 5 points in a hundred more than the base, it solves more of the problems the base failed than it loses of the ones the base solved, and the difference is significant (exact two-sided McNemar test, p &lt; 0.05).</p><p><b>K2 · Still honest.</b> On the same block the distilled model gives no more confident wrong answers than the base.</p><p><b>K3 · The fail-wall moved.</b> More held-out problems go from failed (base) to solved (distilled) than the other way.</p><p><b>K4 · Verify-or-dissolve at the weights.</b> The outcome published for the round is the one the rule gives (adopted only if K1 and K2 both pass, dissolved otherwise), and the round stands only on weights adopted by the rule and granted by a person.</p><p><b>K5 · Clean training data.</b> Every training example is a complete crystal&#39;s verified working, checked again by exact arithmetic; none is unverified; the trainer read that file, byte for byte.</p><p><b>K6 · Held-out integrity.</b> No held-out problem is in the training set, and no held-out problem was harvested.</p><p>Registered in <a href="CLAIMS.md">CLAIMS.md</a> and frozen by <a href="SEAL.json">the seal</a> before round 1 ran.</p></div></details>
+  </div>
+</section>
+
+<section class="pad proof" id="glass">
+  <div class="wrap">
+    <h2 class="hl reveal"><span class="a">Don't trust us.</span><br><span class="b">Judge it again.</span></h2>
+    <p class="sub2 reveal">Your browser fetches the records and runs the same gated code that made the verdict. No model needed.</p>
+    <div class="links reveal"><button id="rejudge" class="btn primary" type="button">Judge the round in this tab</button></div>
+    <p class="out mono reveal" id="rejudgeOut" aria-live="polite" style="max-width:68ch;margin:18px auto 0;color:var(--soft);font-size:13px;min-height:22px"></p>
+    <div class="two" style="text-align:left">
+      <div class="glass reveal">
+        <h3>Try the training gate</h3>
+        <p class="hint">A real example from the harvest. Change one digit and it is refused.</p>
+        <textarea id="tryReply" spellcheck="false" aria-label="The reply the model would learn"></textarea>
+        <div class="row" style="margin-top:12px"><button id="tryTrace" class="btn ghost" type="button">Check it</button><button id="tryReset" class="btn ghost" type="button">Reset</button></div>
+        <p class="out" id="tryOut" aria-live="polite">Press Check it.</p>
       </div>
-      <p id="ruleOut" class="small" aria-live="polite">Press the button. Then make "after" bigger than "before", or make "lost" equal "gained".</p></li>
-    <li><b>Run a round yourself.</b> It needs Python, PyTorch and the model's weights on your own machine; nothing is sent anywhere. <code>node scripts/round.mjs dev --model &lt;folder with the weights&gt;</code> runs the development round end to end, and <code>node scripts/check.mjs</code> decides every round again from its files. The <a href="https://github.com/sjgant80-hub/the-distillation#run-it-yourself">README</a> has the steps.</li>
-  </ol>
+      <div class="glass reveal">
+        <h3>Ask the rule</h3>
+        <p class="hint">The adoption rule is code. Put in a result and see what it decides.</p>
+        <div class="row">
+          <label>held out <input id="rN" type="number" min="1" max="2000" value="200" style="width:6em"></label>
+          <label>gained <input id="rG" type="number" min="0" max="2000" value="30" style="width:5.4em"></label>
+          <label>lost <input id="rL" type="number" min="0" max="2000" value="8" style="width:5.4em"></label>
+          <label>wrong, before <input id="rWB" type="number" min="0" max="2000" value="90" style="width:5.4em"></label>
+          <label>wrong, after <input id="rWD" type="number" min="0" max="2000" value="80" style="width:5.4em"></label>
+        </div>
+        <div class="row" style="margin-top:12px"><button id="tryRule" class="btn ghost" type="button">Ask</button></div>
+        <p class="out" id="ruleOut" aria-live="polite">Then make "wrong, after" bigger than "before".</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="panel" id="how">
-  <h2>How it <em>works</em></h2>
-  <p>A model trained on its own raw output gets worse: its mistakes become its lessons. The whole of this build is the filter in front of the training data, and the measurement after it.</p>
-  <svg class="fig" viewBox="0 0 800 400" role="img" aria-labelledby="figT"><title id="figT">One round. The model's steps are checked by exact arithmetic. Only finished, verified working becomes a training example. The model is trained on that. Both models are then asked held-out problems cold. Code decides: adopt or dissolve. A person grants an adopted change before the next round can start from it.</title>
-    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#a3c3cb"/></marker></defs>
-    <g fill="none" stroke="rgba(94,242,228,.55)"><rect x="4" y="16" width="236" height="78"/><rect x="282" y="16" width="236" height="78"/><rect x="560" y="16" width="236" height="78"/><rect x="560" y="156" width="236" height="78"/><rect x="282" y="156" width="236" height="78"/><rect x="560" y="296" width="236" height="62" stroke-dasharray="5 4"/></g>
-    <g fill="none" stroke="rgba(255,191,120,.75)"><rect x="4" y="156" width="236" height="78"/></g>
-    <g fill="none" stroke="rgba(255,100,112,.65)"><rect x="282" y="296" width="236" height="62"/></g>
-    <g fill="none" stroke="#a3c3cb" marker-end="url(#ar)"><path d="M240 55H280"/><path d="M518 55H558"/><path d="M678 94V154"/><path d="M560 195H520"/><path d="M282 195H242"/><path d="M122 156V96"/><path d="M678 296V236"/><path d="M400 234V294"/></g>
-    <text x="16" y="40">1 · Harvest</text><text class="m" x="16" y="60">the model writes one step at a</text><text class="m" x="16" y="78">time; arithmetic checks each one</text>
-    <text x="294" y="40">2 · Build</text><text class="m" x="294" y="60">only finished, verified working</text><text class="m" x="294" y="78">becomes a training example</text>
-    <text x="572" y="40">3 · Train</text><text class="m" x="572" y="60">on that file,</text><text class="m" x="572" y="78">and on nothing else</text>
-    <text x="572" y="180">4 · Cold test</text><text class="m" x="572" y="200">before and after: one try,</text><text class="m" x="572" y="218">no checker</text>
-    <text x="294" y="180">5 · The rule (code)</text><text class="m" x="294" y="200">adopt only if right more often</text><text class="m" x="294" y="218">and no more confidently wrong</text>
-    <text x="16" y="180">A person's grant</text><text class="m" x="16" y="200">adopted weights wait for</text><text class="m" x="16" y="218">a recorded yes</text>
-    <text x="572" y="320">The held-out block</text><text class="m" x="572" y="340">never harvested or trained on</text>
-    <text x="294" y="320">Dissolve</text><text class="m" x="294" y="340">the trained weights are dropped</text>
-    <text class="m" x="134" y="130">the next round starts</text><text class="m" x="134" y="146">from the granted weights</text>
-    <text class="m" x="412" y="268">no lift, or less honest</text>
-    <text class="m" x="4" y="388">A wrong step is never kept. A problem with no finished, verified working gives no training example.</text>
-  </svg>
-  <h3>Traced from a real run</h3>
-  <div id="traceBox"><span class="pend">not measured yet</span></div>
-  <h3>Why held out</h3>
-  <p>If the trained model were tested on the problems it trained on, a higher score would show only that it remembers them. So every round has a block of problems that is never harvested and never trained on, in any round: each round's held-out block is struck from every round's harvest pool before anything runs. Two problems count as the same problem when they are the same calculation, however they are worded. The held-out problems are new calculations of the same kinds as the training ones: this measures whether the skill carries to unseen problems of those kinds, not to other kinds of problem.</p>
+<section class="pad deep" id="loop">
+  <div class="wrap">
+    <p class="kline reveal">The loop</p>
+    <h2 class="claim reveal">The loop proposes. <b>A person <em>disposes.</em></b></h2>
+    <p class="lede reveal" id="loopState">The loop has not started. Round 1 is <span class="tag gd">sealing now</span></p>
+    <div id="gauge" class="reveal"></div>
+    <div class="wins" id="loopWins"><div class="win reveal"><div class="wn">0<span class="of">/4</span></div><div class="wl">sealed rounds run, of the most the seal allows</div></div><div class="win reveal"><div class="wn">0<span class="of">/48</span></div><div class="wl">hours of model work spent, of the cap for all rounds</div></div><div class="win reveal"><div class="wn">0</div><div class="wl">grants on file: no weights have been adopted</div></div><div class="win reveal"><div class="wn">—</div><div class="wl">where the loop stands: not started</div></div></div>
+    <details class="honest reveal"><summary>How a person grants it</summary><div class="in" id="grantBox"><p>There is no adopted round, so there is nothing to grant.</p></div></details>
+    <details class="honest reveal"><summary>Three walls it cannot pass</summary><div class="in">
+      <p><b>The reach of the check.</b> The only check is exact arithmetic. Nothing is learned that arithmetic cannot rule on.</p>
+      <p><b>The size of the model.</b> About a billion parameters. What a small adapter can hold is finite.</p>
+      <p><b>What it can finish.</b> It is only taught working it completed under the checker.</p>
+      <p>When a round's lift falls below the bar, it is dissolved and the loop stops. That is the house full, not the build failing.</p></div></details>
+  </div>
 </section>
 
-<section class="panel" id="numbers">
-  <h2>The <em>numbers</em></h2>
-  <p data-bind="t.which"><span class="pend">not measured yet</span></p>
-  <div class="wrap" id="claimsTable"><span class="pend">not measured yet</span></div>
-  <h3>By how hard the problem is</h3>
-  <div class="wrap" id="tierTable"><span class="pend">not measured yet</span></div>
-  <h3>Where the wall moved</h3>
-  <div id="moved"><span class="pend">not measured yet</span></div>
-  <h3>What it was trained on</h3>
-  <div class="wrap" id="trainTable"><span class="pend">not measured yet</span></div>
-  <h3>The development round</h3>
-  <div id="devBox"><p class="small">The development round is not published yet.</p></div>
+<section class="pad alt" id="built">
+  <div class="wrap">
+    <p class="kline reveal">Under the hood</p>
+    <h2 class="claim reveal">Small gated kernels decide everything. <b>The model's hands decide nothing.</b></h2>
+    <div class="stack reveal" id="kernelStack"><div class="srow "><div class="d">01</div><div class="nm"><b>split</b><span>which problems are held out, by calculation</span><span class="tag cy">15/15 caught</span></div></div><div class="srow "><div class="d">02</div><div class="nm"><b>trace</b><span>what may be trained on: verified working only</span><span class="tag cy">44/44 caught</span></div></div><div class="srow "><div class="d">03</div><div class="nm"><b>cold</b><span>how a cold reply is read: right, wrong, or no answer</span><span class="tag cy">32/32 caught</span></div></div><div class="srow "><div class="d">04</div><div class="nm"><b>adopt</b><span>adopt or dissolve, and the test of a person&#39;s grant</span><span class="tag cy">32/32 caught</span></div></div><div class="srow "><div class="d">05</div><div class="nm"><b>rounds</b><span>what the loop may do next</span><span class="tag cy">13/13 caught</span></div></div><div class="srow "><div class="d">06</div><div class="nm"><b>claims</b><span>the six claims, ruled on from the evidence</span><span class="tag cy">63/63 caught</span></div></div><div class="srow "><div class="d">07</div><div class="nm"><b>judge</b><span>a round&#39;s verdict from its records; this page runs it</span><span class="tag cy">71/71 caught</span></div></div><div class="srow "><div class="d">08</div><div class="nm"><b>cell</b><span>the estate&#39;s birth check: its judge is the training gate</span><span class="tag cy">7/7 caught</span></div></div></div>
+    <div class="wins" id="builtWins"><div class="win reveal"><div class="wn">277<span class="of">/277</span></div><div class="wl">planted bugs caught: the mutation gate, nothing exempted <a class="src" href="data/gates.json">receipt ↗</a></div></div><div class="win reveal"><div class="wn">100<span class="of">/100</span></div><div class="wl">replies identical to plain generation <a class="src" href="data/parity.json">receipt ↗</a></div></div><div class="win reveal"><div class="wn">146<span class="of">/147</span></div><div class="wl">weight tensors matched to a separate copy <a class="src" href="data/weights.json">receipt ↗</a></div></div><div class="win reveal"><div class="wn">—</div><div class="wl">the seal has not been made yet</div></div></div>
+  </div>
 </section>
 
-<section class="panel" id="loop">
-  <h2>The loop: <em>filling the house</em></h2>
-  <p>One round is a unit. Run again from an adopted model, it harvests again, trains again and is measured again on a fresh held-out block. Each round is sealed and judged on its own, with the same six claims and the same bars. The gain from each round is expected to shrink, and when a round's lift falls below the bar it is dissolved and the loop stops. That is the house full, not the build failing: a model this size, with one kind of check, on a laptop, has only so much room.</p>
-  <div id="gauge"><p class="pend">No sealed round is published yet, so the gauge is empty.</p></div>
-  <p id="loopState">The loop has not started. The seal allows at most 4 rounds, 12 hours of model work for one round and 48 hours for all of them.</p>
-  <h3>The gate at the weights</h3>
-  <p>Two gates stand between a trained model and the next round, and they are different on purpose. The <b>rule</b> is code: adopt only if the cold lift cleared its bar and the model gives no more confident wrong answers. The <b>grant</b> is a person: weights the rule adopted still wait for a recorded yes that names the round and the exact weights, by their SHA-256. The loop cannot write its own grant, and a grant for other weights opens nothing.</p>
-  <div id="grantBox"><p class="small">There is no adopted round, so there is nothing to grant.</p></div>
-  <h3>The spend wall</h3>
-  <div class="wrap" id="spendTable"><p class="small">No sealed round has run yet, so nothing has been spent against the wall. The seal caps one round at 12 hours of model work and all rounds together at 48.</p></div>
-  <h3>Three walls it cannot pass</h3>
-  <ul>
-    <li><b>The reach of the check.</b> The only check is exact arithmetic. Nothing can be harvested, and so nothing learned, that arithmetic cannot rule on.</li>
-    <li><b>The size of the model.</b> About a billion parameters. Each round adds a small adapter on top; what it can hold is finite.</li>
-    <li><b>The problems it can harvest.</b> It can only be taught working it managed to finish under the checker. What it cannot finish even with the checker never reaches the training file.</li>
-  </ul>
-  <p>To go further than the house allows means building a bigger house on purpose: another kind of check, a larger model, more compute. This loop will not do that by itself, and is built not to.</p>
+<section class="pad" id="buyers">
+  <div class="wrap">
+    <p class="kline reveal">For your business</p>
+    <h2 class="claim reveal">A model you own, that changes only <b>when you say.</b></h2>
+    <div class="acts" id="roleCards"><div class="act reveal"><span class="num">CHIEF EXECUTIVE</span><h3>It changes when you say.</h3><p>Better at your own work, on your own hardware. No change stands without a measurement and a named yes.</p></div><div class="act reveal"><span class="num">FINANCE</span><h3>No seat. No meter.</h3><p>The cost is a machine you already own and the hours it runs. Round 1's hours: <span class="tag gd">sealing now</span></p></div><div class="act reveal"><span class="num">OPERATIONS</span><h3>One call, not many.</h3><p>Checked work takes many model calls a problem. Cold it is one. The cold number: <span class="tag gd">sealing now</span></p></div><div class="act reveal"><span class="num">TECHNOLOGY</span><h3>One machine. Plain files.</h3><p>Everything runs locally. The training file is text anyone can verify with a calculator.</p></div><div class="act reveal"><span class="num">RISK AND AUDIT</span><h3>Every change, on record.</h3><p>Test set and pass mark fixed first. Full training data. Before and after. Decided by code, signed off by a person.</p></div><div class="act reveal"><span class="num">THE BOARD</span><h3>Nothing unmeasured.</h3><p>A change that fails its bar is thrown away and published. Round 1: <span class="tag gd">sealing now</span></p></div></div>
+    <details class="honest reveal"><summary>Where it fits, and where it does not</summary><div class="in"><p><b>Fits:</b> work where a program can tell a right step from a wrong one. Calculations, reconciliations, conversions.</p><p><b>Does not fit:</b> judgement, writing, anything with no exact check. With no check there is nothing verified to teach from.</p></div></details>
+    <details class="honest reveal"><summary>Rolling it out</summary><div class="in"><p>1 · Pick one kind of work with an exact check. Write the check first. 2 · Set a held-out block aside and never touch it. 3 · Run the checked process wide; keep only what verified. 4 · Train, test cold, let the rule decide. 5 · Name the person who grants a change. 6 · Stop when a round fails its bar.</p></div></details>
+    <details class="honest reveal"><summary>Risks, answered straight</summary><div class="in">
+      <p><b>"Will it get worse?"</b> It can. Then the rule drops the weights and the base stays. <span data-bind="b.risk"></span></p>
+      <p><b>"Is it memorising?"</b> <span data-bind="b.held">The claims are measured only on problems never harvested and never trained on, and the page counts any overlap.</span></p>
+      <p><b>"Does it still make confident mistakes?"</b> Yes. <span data-bind="b.wrong"></span> Keep the checker wherever a wrong answer costs you.</p>
+      <p><b>"Can it run away?"</b> No. It cannot start from weights nobody granted, and it stops at a failed round, a round cap and an hours cap.</p></div></details>
+    <details class="honest reveal"><summary>Security, data, ownership, support</summary><div class="in"><p>Everything runs on one machine. No request leaves it during a round. Code: MIT licence. The model is Meta's Llama 3.2 1B Instruct under the Llama 3.2 Community Licence, fetched by whoever runs it; it is not in this repository. Supplied by <a href="https://www.ai-nativesolutions.com">AI Native Solutions</a>; support is agreed per deployment, in each deployment's agreement.</p></div></details>
+    <details class="honest reveal"><summary>A simulated buyer walk</summary><div class="in" id="walk"><p>The simulated buyer walk has not been run yet.</p></div></details>
+  </div>
 </section>
 
-<section class="panel" id="limits">
-  <h2>What this does <em>not</em> prove</h2>
-  <ul>
-    <li><b>One measured round is one measured round.</b> <span data-bind="l.rounds">No sealed round is published yet: the numbers shown are the development round's, which is not a claim.</span> It says nothing about other models or other kinds of problem.</li>
-    <li><b>A cold answer is not a checked answer.</b> <span data-bind="l.wrong"><span class="pend">not measured yet</span></span> The second claim says only that it gives no more of them than before. An answer that must be right still needs the checker.</li>
-    <li><b>The held-out problems are the same kinds of problem.</b> They are calculations the model never saw, made by the same generator as the training ones. A lift here shows the skill carries to new problems of these kinds. It does not show it carries anywhere else.</li>
-    <li><b>The problems are made by code.</b> Word problems whose answer is an exact calculation. Nothing here measures messy, real questions.</li>
-    <li><b>These numbers are not The Climb's or The Crystal's numbers.</b> Those pages run a 4-bit copy of the model in a browser tab and allow 128 tokens for one try. Here the model runs at full 32-bit precision on a laptop processor, and one try is allowed 256 tokens, because a verified working of a hard problem is long. Both models here get the same limit. The base model's cold score on this page should not be read against the one-try score on those pages.</li>
-    <li><b>The weights were checked, not taken on trust, and not against the maker's own hash.</b> The file came from a public copy of the model. Its SHA-256 is not the one the maker lists (the copy was saved again by whoever mirrored it), so that comparison failed and is recorded as failed. Instead every tensor was compared with a separate 8-bit copy of the same model already on this machine, and all agree to within 8-bit rounding. <a href="SEAL.md">SEAL.md</a> has the method and the numbers.</li>
-    <li><b>The trained weights are not in this repository.</b> Each adapter is recorded by its SHA-256, with the training file, the settings and the script that made it. Publishing weights derived from the model is a licence decision that has not been taken. Running the round yourself makes your own.</li>
-    <li><b>A re-run may differ by a reply or two.</b> Replies are greedy and recorded, and every verdict is worked out from the records, which never change. But the same weights on another processor can round a near-tie the other way. The batched generation used here was checked against plain one-at-a-time generation: <span data-bind="l.parity">100 of 100 replies came out identical, across single steps, whole cold replies, and problems grown turn by turn. <a href="data/parity.json">The record</a>.</span></li>
-    <li><b>The development round shaped the settings.</b> The token limits and the longest working that is trained on were chosen after a development round on other problems. Every problem that round touched is struck from every sealed held-out block. The two bars were fixed before its model was trained.</li>
-    <li><b>The significance test is one test.</b> An exact two-sided McNemar test on the problems that changed sides. It says a difference this large is unlikely by chance on this block. It is not a promise about the next block, and each round is tested on its own: over several rounds, the chance that one passes by luck adds up.</li>
-    <li><b>Compute is the wall.</b> <span data-bind="l.compute"><span class="pend">not measured yet</span></span> A graphics card would run it faster; it would not change what is measured.</li>
-    <li><b>Nothing here makes the model wiser about anything else.</b> It learns to write this kind of working more reliably. It does not learn to reason in general, and nothing on this page claims it does.</li>
-  </ul>
+<section class="pad proof deep" id="limits">
+  <div class="wrap">
+    <h2 class="hl reveal"><span class="a">Loud numbers.</span><br><span class="b">Honest limits.</span></h2>
+    <div class="links reveal"><a class="plink" href="CLAIMS.md">the claims ↗</a><a class="plink" href="SEAL.md">the seal ↗</a><a class="plink" href="data/settings.json">sealed settings ↗</a><a class="plink" href="data/gates.json">mutation gate ↗</a><a class="plink" href="data/parity.json">generation check ↗</a><a class="plink" href="data/weights.json">weights check ↗</a><a class="plink" href="https://github.com/sjgant80-hub/the-distillation">source ↗</a></div>
+    <details class="honest reveal"><summary>What this does — and doesn't — claim</summary><div class="in">
+      <p><b>One measured round is one measured round.</b> <span data-bind="l.rounds">No sealed round has run yet.</span> This model, this kind of problem. Nothing about others.</p>
+      <p><b>A cold answer is not a checked answer.</b> <span data-bind="l.wrong">How often it is still confidently wrong is measured in round 1.</span></p>
+      <p><b>The held-out problems are the same kinds of problem.</b> New calculations from the same generator. The lift shows the skill carries to those, not elsewhere.</p>
+      <p><b>These are not The Climb's or The Crystal's numbers.</b> Those run a 4-bit build in a browser tab with 128 tokens for one try. Here it is 32-bit on a laptop processor with 256, the same for both models.</p>
+      <p><b>The weights failed the plain hash check.</b> The file's hash is not the maker's listed one. Every tensor was compared with a separate 8-bit copy instead, and all agree. <a href="SEAL.md">How.</a></p>
+      <p><b>The trained weights are not published.</b> Each adapter is recorded by its hash. Publishing weights derived from the model is a licence decision not yet taken.</p>
+      <p><b>A re-run may differ by a reply or two.</b> Another processor can round a near-tie the other way. <span data-bind="l.parity">Checked: 100 of 100 replies identical to plain generation.</span></p>
+      <p><b>One test per round.</b> An exact McNemar test at 0.05. Over several rounds the chance that one passes by luck adds up.</p>
+      <p><b>Compute is the wall.</b> <span data-bind="l.compute">A round is hours of a laptop processor; the seal caps one at 12.</span></p></div></details>
+    <details class="honest reveal"><summary>The development round (not a claim)</summary><div class="in" id="devBox"><p>The development round is not published yet.</p></div></details>
+  </div>
 </section>
 
-<section class="panel" id="blueprint">
-  <h2>How it is <em>built</em></h2>
-  <p>Seven small kernels decide everything, and each is mutation-gated: its tests must catch every small change to its code. The model's hands (the Python that loads weights, writes replies and trains) decide nothing; they write records, and the kernels judge the records.</p>
-  <div class="wrap" id="gateTable"><table><thead><tr><th>Kernel</th><th>Changes made to it</th><th>Caught by its tests</th><th>Gate</th></tr></thead><tbody><tr><td><code>src/split.mjs</code></td><td class="num">15</td><td class="num">15</td><td class="pass">CLEAN</td></tr><tr><td><code>src/trace.mjs</code></td><td class="num">44</td><td class="num">44</td><td class="pass">CLEAN</td></tr><tr><td><code>src/cold.mjs</code></td><td class="num">32</td><td class="num">32</td><td class="pass">CLEAN</td></tr><tr><td><code>src/adopt.mjs</code></td><td class="num">32</td><td class="num">32</td><td class="pass">CLEAN</td></tr><tr><td><code>src/rounds.mjs</code></td><td class="num">13</td><td class="num">13</td><td class="pass">CLEAN</td></tr><tr><td><code>src/claims.mjs</code></td><td class="num">63</td><td class="num">63</td><td class="pass">CLEAN</td></tr><tr><td><code>src/judge.mjs</code></td><td class="num">71</td><td class="num">71</td><td class="pass">CLEAN</td></tr><tr><td><code>genome/cell.mjs</code></td><td class="num">7</td><td class="num">7</td><td class="pass">CLEAN</td></tr><tr><td><b>all</b></td><td class="num">277</td><td class="num">277</td><td class="pass">CLEAN</td></tr></tbody></table><p class="small">The mutation gate changes one small thing in a kernel at a time (a <code>&lt;</code> to a <code>&lt;=</code>, an <code>and</code> to an <code>or</code>) and runs its tests. A change the tests do not notice is a hole in the tests. None is exempted. <a href="data/gates.json">The record</a>.</p></div>
-  <ul>
-    <li><b><code>src/split.mjs</code></b> makes every block from its seed and strikes the held-out ones from every pool. A problem's identity is its calculation.</li>
-    <li><b><code>src/trace.mjs</code></b> turns a finished crystal into a training example and verifies it from its own text: each line one step and exactly true, the answer the problem's own, and The Climb's sealed checker reading it the same way.</li>
-    <li><b><code>src/cold.mjs</code></b> reads a cold reply as right, wrong or no answer with The Climb's sealed rule, compares the two models problem by problem, and refuses a cold record made on the wrong weights.</li>
-    <li><b><code>src/adopt.mjs</code></b> is the rule (adopt or dissolve), the test of a person's grant, and the chain of weights a round may stand on.</li>
-    <li><b><code>src/rounds.mjs</code></b> says what the loop may do next: run, wait for a person, stop because the house is full, or stop at a cap.</li>
-    <li><b><code>src/claims.mjs</code></b> rules on the six claims from the evidence; with evidence missing a claim is pending, never passed.</li>
-    <li><b><code>src/judge.mjs</code></b> takes a round's records and gives its verdict, and takes a record as evidence only when it was made as the seal requires. This page runs the same file when you press the button above.</li>
-    <li><b><code>vendor/crystal/</code></b> is The Crystal's sealed engine and, inside it, The Climb's sealed checker, byte for byte. The harvest is that engine run wide.</li>
-    <li><b><code>py/</code></b> is the model's hands: <code>llm.py</code> (load, generate), <code>serve.py</code> (a local door for the harvest), <code>train.py</code> (the LoRA fine-tune), <code>cold.py</code> (the cold test).</li>
-    <li><b>The seal</b> (<a href="SEAL.json">SEAL.json</a>) is a SHA-256 of every file that can change a result: the kernels, the vendored engine, the Python, the scripts that harvest, build and judge, the settings and the claims. A sealed round records the seal it was made under. <span data-bind="g.seal">The seal has not been made yet.</span></li>
-    <li><b>On every push</b>, GitHub's own runners run the tests, the mutation gate on every kernel, the byte-for-byte check of the vendored engine, and decide every round again from its files.</li>
-  </ul>
-</section>
-
-<section class="panel" id="buyers">
-  <h2>For your <em>business</em></h2>
-  <p><b>What it is.</b> A way to make a small model you own better at your own kind of work without sending anything out, without trusting the model's own output, and without the model changing by itself. <span data-bind="b.what"><span class="pend">not measured yet</span></span></p>
-  <details><summary>Where it fits, and where it does not</summary>
-    <p>It fits work where a program can tell a right step from a wrong one: calculations, reconciliations, conversions, anything with an exact check. There a checker makes the small model reliable, and this teaches the model to need the checker less. It does not fit judgement, writing, or anything a program cannot check: with no check there is no verified working to teach from, and nothing here would run.</p></details>
-  <details><summary>For each role</summary><ul>
-    <li><b>Chief executive.</b> The model your teams use gets better at your work, on your own hardware, and it never changes without a measurement and a named person's yes. Every change is on the record with their words.</li>
-    <li><b>Finance.</b> <span data-bind="b.cost"><span class="pend">not measured yet</span></span> There is no charge per seat or per question in any of it: the costs are the machine you already own and the time it runs.</li>
-    <li><b>Operations.</b> <span data-bind="b.ops"><span class="pend">not measured yet</span></span> Where an answer must be right, the checker stays in the loop exactly as before; this only reduces how often it has to rescue the model.</li>
-    <li><b>Technology and security.</b> Everything runs on one machine: the model, the harvest, the training, the test. The training file is plain text and every line of it can be verified by anyone with a calculator. The weights it starts from are named by hash, and so is every adapter it makes.</li>
-    <li><b>Risk and compliance.</b> A change to a model is the thing regulators and auditors ask about. Here each change has a written test set before it ran, a pass mark fixed in advance, the full training data, the before and after on unseen problems, the decision by code, and the sign-off by a person. All of it can be decided again from the files.</li>
-  </ul></details>
-  <details><summary>Against what you use now</summary>
-    <p>A hosted model changes when its supplier changes it, and you are told afterwards if at all. Fine-tuning services ask for your data and return a model you cannot inspect being made. <span data-bind="b.versus"><span class="pend">not measured yet</span></span> What this cannot match is breadth: a large hosted model does far more kinds of work. This is for the narrow, checkable work you want to own.</p></details>
-  <details><summary>Rolling it out</summary><ol>
-    <li>Pick one kind of work with an exact check. Write the check first; it is the asset.</li>
-    <li>Set aside a held-out block and never touch it.</li>
-    <li>Run the checked process wide on the rest and keep only what verified.</li>
-    <li>Train, test cold on the held-out block, and let the rule decide.</li>
-    <li>Name the person who grants a change. Keep their words with the weights' hash.</li>
-    <li>Stop when a round fails its bar. Report that as the result.</li>
-  </ol></details>
-  <details><summary>Security, data and ownership</summary>
-    <p>No request leaves the machine during a round. The page you are reading fetches only its own published records. The code is under the MIT licence: run it, change it, ship it. The model is Meta's Llama 3.2 1B Instruct under the Llama 3.2 Community Licence, which you accept with Meta when you fetch it; it is not in this repository. Supplied by <a href="https://www.ai-nativesolutions.com">AI Native Solutions</a>; support is agreed per deployment, in each deployment's agreement.</p></details>
-  <details><summary>Risks, answered straight</summary><ul>
-    <li><b>"Will it get worse instead of better?"</b> It can, and then the rule dissolves the weights and the base stays. <span data-bind="b.risk"><span class="pend">not measured yet</span></span></li>
-    <li><b>"Is it just memorising?"</b> The claims are measured only on problems that were never harvested and never trained on, and the page counts any overlap. <span data-bind="b.held"><span class="pend">not measured yet</span></span></li>
-    <li><b>"Does it still make confident mistakes?"</b> Yes. <span data-bind="b.wrong"><span class="pend">not measured yet</span></span> Keep the checker wherever a wrong answer costs you.</li>
-    <li><b>"Can it run away and keep changing itself?"</b> No. It cannot start a round from weights nobody granted, it stops when a round fails, and it stops at a fixed number of rounds and hours.</li>
-    <li><b>"Does it work for our problems?"</b> Only where you can write an exact check. That is a real limit and the first thing to find out.</li>
-  </ul></details>
-  <p><b>The case for the board.</b> The risk in owning a model is that it changes in ways nobody measured. Here nothing changes without a sealed test, a pass mark set in advance, and a named person's yes, and a change that fails is thrown away and published. <span data-bind="b.board"><span class="pend">not measured yet</span></span></p>
-  <div id="walk"><p class="small">The simulated buyer walk has not been run yet.</p></div>
-</section>
-
-<section class="panel" id="paper">
-  <h2>White <em>paper</em>: verified self-distillation, one measured round at a time</h2>
-  <p><b>The problem.</b> A small model can be made reliable by a checker that tests every step and throws out the wrong ones. But the reliability belongs to the checker. The model is no better afterwards, and every answer costs many checked steps. The obvious fix, training the model on its own output, is known to make models worse: their errors are fed back as truth.</p>
-  <p><b>The idea.</b> Train it only on output that passed the check. The checker already sorts the model's steps into verified and not. Keep the verified working of problems the model finished, throw everything else away, and train on that. Then measure the thing that matters: is the model better <i>without</i> the checker, on problems it has not seen, and no more confidently wrong?</p>
-  <p><b>The design.</b> Six claims and their bars are written down first. The held-out problems are fixed by seed and struck from every training pool. Every file that can change a result is hashed into a seal before the round runs. The training file is verified again, line by line, by code that does not trust the harvest. Both models answer the same held-out questions under the same limits. Code applies the rule. A person grants or withholds the change. Then the whole round can be decided again from its records by anyone.</p>
-  <p><b>The result.</b> <span data-bind="p.result"><span class="pend">not measured yet</span></span></p>
-  <p><b>The loop.</b> Because one round is a sealed unit, rounds can be chained: an adopted and granted model becomes the next base. Gains should shrink round by round. The loop is built to stop where they stop, and to report that as its finding. <span data-bind="p.loop"><span class="pend">not measured yet</span></span></p>
-  <p><b>What it does not show.</b> That this works for other models or other kinds of problem. That the distilled model is safe to use unchecked. That the gains continue. That a model can improve itself without limit: this one is bounded by its check, its size, its compute and a person.</p>
-  <p><b>The one rule.</b> Only verified work trains the model, only a held-out measurement changes it, and only a person lets the change stand.</p>
-  <p class="small" id="records">The records: <a href="CLAIMS.md">the claims</a>, <a href="SEAL.md">the seal</a>, <a href="data/settings.json">the sealed settings</a>, <a href="data/gates.json">the mutation gates</a>, <a href="data/parity.json">the generation check</a>, <a href="data/published.json">the rounds on file</a>.</p>
-</section>
-</main>
 <footer>
-  The Distillation · built by Kar · MIT licence (holder Simon Gant) · supplied by <a href="https://www.ai-nativesolutions.com">AI Native Solutions</a><br>
-  Powered by the Konomi architecture, created by Thomas Frumkin.<br>
-  AI you own. Proof you can re-run. · <a href="https://github.com/sjgant80-hub/the-distillation">source</a> · <a href="CLAIMS.md">claims</a> · <a href="https://sjgant80-hub.github.io/the-crystal/">The Crystal, whose engine it harvests with</a> · <a href="https://sjgant80-hub.github.io/the-climb/">The Climb</a> · <a href="https://sjgant80-hub.github.io/the-verifier-set/">The Verifier Set</a>
+  <div class="wrap frow">
+    <div>
+      <div class="brand">The Distillation</div>
+      <div class="fnote">Built by Kar · MIT licence (holder Simon Gant) · supplied by <a href="https://www.ai-nativesolutions.com">AI Native Solutions</a><br>Powered by the Konomi architecture, created by Thomas Frumkin.<br><a href="https://sjgant80-hub.github.io/the-climb/">The Climb</a> · <a href="https://sjgant80-hub.github.io/the-crystal/">The Crystal</a> · <a href="https://sjgant80-hub.github.io/the-verifier-set/">The Verifier Set</a> · <a href="https://sjgant80-hub.github.io/the-seed/">The Seed</a></div>
+    </div>
+    <div class="taglist"><span>›</span> Only verified work trains it.<br><span>›</span> Held out, or it is memorising.<br><span>›</span> The loop proposes; a person disposes.</div>
+  </div>
 </footer>
 <script type="module">
+// vendor/house/crystal.js, inlined byte for byte (imports read the scopes above; export removed)
+const CRYSTAL = (() => {
+// crystal.js — the house hero: a living crystal, drawn by one fragment shader. No library is fetched.
+//
+// It is a real solid, not a picture of one: a 32-faced gem (an icosahedron cut by a dodecahedron) that every pixel's
+// ray is intersected with exactly. Light is bent into the body, carried through it, turned back where it cannot leave
+// and bent out again, once for each of three colours, so the facets split light the way glass does. The body absorbs
+// as it carries; its edges burn; a slow lattice of light moves inside it.
+//
+// And it is bound to data. Each of the 32 faces holds a state the page gives it: dark, proven (cyan), sealing (gold,
+// breathing) or failed (red, kept). A page lights a face only for a receipt it has re-derived, so the crystal is the
+// record, not decoration. A face can be pointed at and pressed: the page is told which one.
+//
+//   mount(canvas, options) → { setFaces, setEnergy, setCentre, onHover, onPick, redraw, destroy, FACES }   or null
+// It decides nothing. With no WebGL the canvas is left as it is (the page's own background shows) and null is returned.
+
+const FACES = 32;
+const STATE = { dark: 0, proven: 1, sealing: 2, failed: 3 };
+const PHI = (1 + Math.sqrt(5)) / 2;
+const unit = (v) => { const l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; };
+// ten icosahedron normals, then six dodecahedron normals; each stands for a pair of opposite faces (i and i + 16)
+const NORMALS = [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [1, 1, -1], [0, 1, PHI + 1], [0, -1, PHI + 1], [PHI + 1, 0, 1], [-PHI - 1, 0, 1], [1, PHI + 1, 0], [-1, PHI + 1, 0], [0, PHI, 1], [0, -PHI, 1], [1, 0, PHI], [-1, 0, PHI], [PHI, 1, 0], [-PHI, 1, 0]].map(unit);
+const R_ICOSA = 1.2, R_CUT = 1.37, CAMERA = 5.2, FOV = 0.8284;
+
+const VERT = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+const FRAG = `
+precision highp float;
+uniform vec2 uRes; uniform float uTime; uniform mat3 uRot; uniform mat3 uInv; uniform vec3 uCen;
+uniform vec3 uN[16]; uniform float uR[16]; uniform float uState[32]; uniform float uEnergy; uniform float uHot;
+const vec3 CYAN = vec3(0.286, 0.910, 0.784); const vec3 GOLD = vec3(1.0, 0.812, 0.416); const vec3 RED = vec3(1.0, 0.42, 0.42);
+float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float hash3(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float noise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash3(i), hash3(i + vec3(1,0,0)), f.x), mix(hash3(i + vec3(0,1,0)), hash3(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash3(i + vec3(0,0,1)), hash3(i + vec3(1,0,1)), f.x), mix(hash3(i + vec3(0,1,1)), hash3(i + vec3(1,1,1)), f.x), f.y), f.z); }
+vec3 tint(float s){ return s < 0.5 ? vec3(0.0) : s < 1.5 ? CYAN : s < 2.5 ? GOLD : RED; }
+// the solid: sixteen pairs of planes. Where a ray enters and leaves, through which faces, and how near an edge.
+bool solid(vec3 ro, vec3 rd, out float tN, out float tF, out vec3 nN, out vec3 nF, out float sN, out float sF, out float eN, out float eF, out float iN){
+  tN = -1e9; tF = 1e9; float tN2 = -1e9; float tF2 = 1e9; nN = vec3(0.0); nF = vec3(0.0); sN = 0.0; sF = 0.0; iN = -1.0;
+  for (int i = 0; i < 16; i++){
+    vec3 n = uN[i]; float dn = dot(rd, n); dn = abs(dn) < 1e-5 ? 1e-5 : dn; float po = dot(ro, n);
+    float tp = (uR[i] - po) / dn; float tm = (-uR[i] - po) / dn;
+    float ta; float tb; vec3 na; vec3 nb; float sa; float sb; float ia;
+    if (dn < 0.0) { ta = tp; na = n; sa = uState[i]; ia = float(i); tb = tm; nb = -n; sb = uState[i + 16]; }
+    else { ta = tm; na = -n; sa = uState[i + 16]; ia = float(i) + 16.0; tb = tp; nb = n; sb = uState[i]; }
+    if (ta > tN) { tN2 = tN; tN = ta; nN = na; sN = sa; iN = ia; } else if (ta > tN2) { tN2 = ta; }
+    if (tb < tF) { tF2 = tF; tF = tb; nF = nb; sF = sb; } else if (tb < tF2) { tF2 = tb; }
+  }
+  eN = tN - tN2; eF = tF2 - tF;
+  return tN < tF && tF > 0.0;
+}
+// what the crystal reflects and bends: a dark sea, three lamps, a horizon, slow bars of light
+vec3 world(vec3 d){
+  vec3 c = mix(vec3(0.0006, 0.003, 0.006), vec3(0.006, 0.028, 0.042), pow(clamp(d.y * 0.5 + 0.5, 0.0, 1.0), 1.5));
+  c += CYAN * 2.2 * pow(max(dot(d, normalize(vec3(0.6, 0.7, 0.4))), 0.0), 26.0);
+  c += vec3(0.6, 0.8, 1.0) * 1.3 * pow(max(dot(d, normalize(vec3(-0.7, 0.3, 0.5))), 0.0), 60.0);
+  c += GOLD * 0.55 * pow(max(dot(d, normalize(vec3(0.1, -0.8, 0.5))), 0.0), 28.0);
+  c += vec3(0.15, 0.5, 0.45) * exp(-abs(d.y) * 14.0) * 0.12;
+  float bars = smoothstep(0.9, 1.0, sin(d.x * 9.0 + d.z * 5.0 + uTime * 0.07) * 0.5 + 0.5);
+  return c + vec3(0.5, 0.9, 0.85) * bars * 0.22 * smoothstep(-0.2, 0.6, d.y);
+}
+// one colour of light through the body: bent in, carried, turned back once if it cannot leave, bent out
+vec3 through(vec3 p, vec3 rd, vec3 n, float ior, out float path, out float sX, out float eX){
+  vec3 d = refract(rd, n, 1.0 / ior); vec3 o = p - n * 0.003; vec3 leave = d; path = 0.0; sX = 0.0; eX = 1.0;
+  for (int b = 0; b < 2; b++){
+    float tN; float tF; vec3 nN; vec3 nF; float sN; float sF; float eN; float eF; float iN;
+    solid(o, d, tN, tF, nN, nF, sN, sF, eN, eF, iN);
+    path += max(tF, 0.0);
+    if (b == 0) { sX = sF; eX = eF; }
+    vec3 r = refract(d, -nF, ior);
+    if (dot(r, r) > 0.0) { leave = r; break; }
+    vec3 q = o + d * tF; d = reflect(d, -nF); o = q - nF * 0.003; leave = d;
+  }
+  return leave;
+}
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;
+  vec3 ro = vec3(0.0, 0.0, ${CAMERA.toFixed(1)}); vec3 rd = normalize(vec3(uv * ${FOV.toFixed(4)}, -1.0));
+  // the room: depth, a breath of light round the crystal, three drifts of dust
+  vec3 col = mix(vec3(0.0002, 0.0008, 0.0016), vec3(0.0016, 0.0042, 0.0085), exp(-length(uv - vec2(0.36, 0.3)) * 1.9));
+  float near = length(cross(rd, uCen - ro));
+  col += CYAN * 0.010 * uEnergy * exp(-near * near * 0.42);
+  for (int k = 0; k < 3; k++){
+    float sc = 14.0 + float(k) * 11.0; vec2 g = uv * sc + vec2(uTime * 0.010 * float(k + 1), uTime * 0.006);
+    vec2 id = floor(g); vec2 f = fract(g) - 0.5; float h = hash(id + float(k) * 17.0);
+    vec2 o = vec2(hash(id + 3.1), hash(id + 7.7)) - 0.5; float tw = 0.5 + 0.5 * sin(uTime * (0.6 + h * 2.0) + h * 40.0);
+    col += vec3(0.56, 0.91, 0.85) * smoothstep(0.045, 0.0, length(f - o * 0.7)) * step(0.9, h) * tw * (0.22 - 0.05 * float(k));
+  }
+  vec3 lo = uInv * (ro - uCen); vec3 ld = uInv * rd;
+  float tN; float tF; vec3 nN; vec3 nF; float sN; float sF; float eN; float eF; float iN;
+  if (solid(lo, ld, tN, tF, nN, nF, sN, sF, eN, eF, iN) && tN > 0.0){
+    vec3 p = lo + ld * tN; float facing = max(dot(-ld, nN), 0.0); float fres = pow(1.0 - facing, 3.0);
+    float pa; float sa; float ea; float pathG; float sX; float eX;
+    vec3 dr = through(p, ld, nN, 1.41, pa, sa, ea);
+    vec3 dg = through(p, ld, nN, 1.45, pathG, sX, eX);
+    vec3 db = through(p, ld, nN, 1.50, pa, sa, ea);
+    vec3 bent = vec3(world(uRot * dr).r, world(uRot * dg).g, world(uRot * db).b);
+    vec3 body = exp(-pathG * vec3(1.5, 0.38, 0.52) * 0.8);
+    vec3 c = mix(bent * body, world(uRot * reflect(ld, nN)), 0.06 + 0.9 * fres);
+    vec3 cN = tint(sN); vec3 cX = tint(sX);
+    float breath = (sN > 1.5 && sN < 2.5) ? 0.6 + 0.4 * sin(uTime * 1.8 + iN) : 1.0;
+    c += cN * (0.012 + 0.10 * fres) * breath * uEnergy;                 // a lit face glows from within
+    c += cX * 0.03 * body.g * uEnergy;                                  // the far side, seen through the body
+    float edge = exp(-eN * 90.0) + 0.35 * exp(-eX * 60.0) * body.g;      // edges burn
+    c += mix(vec3(0.16, 0.55, 0.48), cN, step(0.5, sN)) * edge * (0.35 + 0.45 * uEnergy);
+    vec3 mid = p + refract(ld, nN, 1.0 / 1.45) * pathG * 0.5;           // the lattice of light inside
+    c += CYAN * pow(noise(mid * 3.2 + vec3(0.0, uTime * 0.12, uTime * 0.05)), 3.0) * 0.05 * uEnergy;
+    c += vec3(0.5, 0.9, 0.85) * (1.0 - step(0.5, abs(iN - uHot))) * 0.07;         // the face under the pointer
+    col = c;
+  }
+  col *= 1.0 - 0.5 * pow(length(uv * vec2(0.75, 1.0)), 2.2);
+  col = 1.0 - exp(-col * 2.4);
+  col = pow(col, vec3(0.4545)); col = mix(col, col * col * (3.0 - 2.0 * col), 0.65) + (hash(gl_FragCoord.xy + uTime) - 0.5) * 0.014;
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+const mul = (m, v) => [m[0] * v[0] + m[3] * v[1] + m[6] * v[2], m[1] * v[0] + m[4] * v[1] + m[7] * v[2], m[2] * v[0] + m[5] * v[1] + m[8] * v[2]];
+// rot(yaw, pitch) → the turn of the crystal as a column-major 3×3, and its inverse (its transpose)
+function rot(yaw, pitch) {
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cx = Math.cos(pitch), sx = Math.sin(pitch);
+  const m = [cy, sx * sy, -cx * sy, 0, cx, sx, sy, -sx * cy, cx * cy];
+  return { m, inv: [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]] };
+}
+// faceAt(u, v, aspect, turn, centre, cut) → the face (0…31) a ray through that point of the screen enters by, or -1.
+// u, v run 0…1 from the top left. The same sum the shader does, so the page and the picture agree on which face it is.
+function faceAt(u, v, aspect, turn, centre, cut) {
+  const x = (u - 0.5) * aspect * FOV, y = (0.5 - v) * FOV, l = Math.hypot(x, y, 1);
+  const rd = mul(turn.inv, [x / l, y / l, -1 / l]), ro = mul(turn.inv, [-centre[0], -centre[1], CAMERA - centre[2]]);
+  let tN = -1e9, tF = 1e9, face = -1;
+  for (let i = 0; i < 16; i++) {
+    const n = NORMALS[i], r = i < 10 ? R_ICOSA : cut;
+    let dn = rd[0] * n[0] + rd[1] * n[1] + rd[2] * n[2]; if (Math.abs(dn) < 1e-5) dn = 1e-5;
+    const po = ro[0] * n[0] + ro[1] * n[1] + ro[2] * n[2], tp = (r - po) / dn, tm = (-r - po) / dn;
+    const ta = dn < 0 ? tp : tm, tb = dn < 0 ? tm : tp;
+    if (ta > tN) { tN = ta; face = dn < 0 ? i : i + 16; }
+    if (tb < tF) tF = tb;
+  }
+  return tN < tF && tN > 0 ? face : -1;
+}
+
+function mount(canvas, options) {
+  const opt = options || {};
+  let gl = null;
+  try { gl = canvas && canvas.getContext ? canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' }) : null; } catch { gl = null; }
+  if (!gl) return null;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
+  const vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) return null;
+  const prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const a = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+  const U = (n) => gl.getUniformLocation(prog, n);
+  const u = { res: U('uRes'), time: U('uTime'), rot: U('uRot'), inv: U('uInv'), cen: U('uCen'), n: U('uN[0]'), r: U('uR[0]'), state: U('uState[0]'), energy: U('uEnergy'), hot: U('uHot') };
+  gl.uniform3fv(u.n, new Float32Array(NORMALS.flat()));
+  const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const S = { faces: new Float32Array(FACES), energy: opt.energy ?? 0.8, target: opt.energy ?? 0.8, centre: [0, 0, 0], yaw: 0.5, pitch: 0.18, vy: 0, vp: 0, drag: null, hot: -1, scale: 1, ms: 16, t: 0, last: 0, seen: true, raf: 0, dead: false, hover: null, pick: null, turn: rot(0.5, 0.18), cut: R_CUT };
+  const size = () => {
+    const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1, d = Math.min(1.5, globalThis.devicePixelRatio || 1) * S.scale;
+    const W = Math.max(2, Math.round(w * d)), H = Math.max(2, Math.round(h * d));
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+    S.centre = typeof opt.centre === 'function' ? opt.centre(w, h) : [w > 820 ? 1.25 : 0, w > 820 ? 0 : 0.55, 0];
+  };
+  const draw = () => {
+    size();
+    S.turn = rot(S.yaw, S.pitch);
+    S.cut = R_CUT + 0.07 * Math.sin(S.t * 0.35);                        // the cut faces open and close: it breathes
+    const r = new Float32Array(16); for (let i = 0; i < 16; i++) r[i] = i < 10 ? R_ICOSA : S.cut;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(u.res, canvas.width, canvas.height); gl.uniform1f(u.time, S.t); gl.uniformMatrix3fv(u.rot, false, new Float32Array(S.turn.m)); gl.uniformMatrix3fv(u.inv, false, new Float32Array(S.turn.inv));
+    gl.uniform3f(u.cen, S.centre[0], S.centre[1], S.centre[2]); gl.uniform1fv(u.r, r); gl.uniform1fv(u.state, S.faces); gl.uniform1f(u.energy, S.energy); gl.uniform1f(u.hot, S.hot);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+  const frame = (now) => {
+    if (S.dead) return;
+    S.raf = requestAnimationFrame(frame);
+    if (!S.seen || (typeof document !== 'undefined' && document.hidden)) { S.last = now; return; }
+    const dt = Math.min(0.05, (now - (S.last || now)) / 1000); S.last = now;
+    S.ms += ((dt * 1000) - S.ms) * 0.08;
+    if (S.ms > 30 && S.scale > 0.45) S.scale *= 0.92; else if (S.ms < 14 && S.scale < 1) S.scale = Math.min(1, S.scale * 1.03);
+    if (!still) { S.t += dt; if (!S.drag) { S.yaw += dt * 0.16 + S.vy; S.pitch += (0.18 + 0.12 * Math.sin(S.t * 0.22) - S.pitch) * 0.02 + S.vp; S.vy *= 0.94; S.vp *= 0.94; } }
+    S.energy += (S.target - S.energy) * 0.04;
+    draw();
+  };
+  const where = (e) => { const b = canvas.getBoundingClientRect(); return [(e.clientX - b.left) / b.width, (e.clientY - b.top) / b.height, b.width / b.height]; };
+  const face = (e) => { const [x, y, asp] = where(e); return faceAt(x, y, asp, S.turn, S.centre, S.cut); };
+  const down = (e) => { S.drag = { x: e.clientX, y: e.clientY, moved: 0 }; };
+  const move = (e) => {
+    if (S.drag) { const dx = e.clientX - S.drag.x, dy = e.clientY - S.drag.y; S.drag.x = e.clientX; S.drag.y = e.clientY; S.drag.moved += Math.abs(dx) + Math.abs(dy); S.yaw += dx * 0.006; S.pitch = Math.max(-1.2, Math.min(1.2, S.pitch + dy * 0.006)); S.vy = dx * 0.0006; S.vp = 0; if (still) draw(); return; }
+    const f = face(e); if (f !== S.hot) { S.hot = f; canvas.style.cursor = f >= 0 ? 'pointer' : 'grab'; if (S.hover) S.hover(f, e); if (still) draw(); }
+  };
+  const up = (e) => { const d = S.drag; S.drag = null; if (d && d.moved < 6 && S.pick) { const f = face(e); if (f >= 0) S.pick(f, e); } };
+  const leave = () => { S.drag = null; if (S.hot !== -1) { S.hot = -1; if (S.hover) S.hover(-1, null); if (still) draw(); } };
+  canvas.addEventListener('pointerdown', down); canvas.addEventListener('pointermove', move); canvas.addEventListener('pointerup', up); canvas.addEventListener('pointerleave', leave);
+  canvas.style.cursor = 'grab'; canvas.style.touchAction = 'pan-y';
+  let io = null;
+  if (typeof IntersectionObserver === 'function') { io = new IntersectionObserver((es) => { for (const e of es) S.seen = e.isIntersecting; }); io.observe(canvas); }
+  const onSize = () => { if (still) draw(); };
+  if (typeof addEventListener === 'function') addEventListener('resize', onSize);
+  draw();
+  S.raf = requestAnimationFrame(frame);
+  return {
+    FACES,
+    setFaces(states) { for (let i = 0; i < FACES; i++) S.faces[i] = Number(states && states[i]) || 0; if (still) draw(); },
+    setEnergy(x) { S.target = Math.max(0, Math.min(1.4, Number(x) || 0)); },
+    setCentre(fn) { opt.centre = fn; if (still) draw(); },
+    onHover(fn) { S.hover = fn; }, onPick(fn) { S.pick = fn; },
+    redraw: draw,
+    destroy() { S.dead = true; cancelAnimationFrame(S.raf); if (io) io.disconnect(); canvas.removeEventListener('pointerdown', down); canvas.removeEventListener('pointermove', move); canvas.removeEventListener('pointerup', up); canvas.removeEventListener('pointerleave', leave); if (typeof removeEventListener === 'function') removeEventListener('resize', onSize); },
+  };
+}
+return { FACES, STATE, NORMALS, rot, faceAt, mount };
+})();
+
+// vendor/house/house.js, inlined byte for byte (imports read the scopes above; export removed)
+const HOUSE = (() => {
+// house.js — the kit's motion: what makes a house page feel alive without saying anything untrue.
+//   reveal(root)          sections rise into place as they are reached
+//   light(root)           a soft light follows the pointer across cards
+//   count(el, text)       a receipt's number runs up to its value when first seen; the value written is exactly `text`
+//   bindScroll(crystal)   the crystal's light answers the scroll: brightest at the top, quieter as the page is read
+// Each is safe to call with nothing to act on, and does nothing where motion is not wanted.
+const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function reveal(root) {
+  const els = root && root.querySelectorAll ? [...root.querySelectorAll('.reveal')] : [];
+  if (typeof IntersectionObserver !== 'function' || still()) return;                 // nothing is hidden, so nothing needs showing
+  if (root.documentElement && root.documentElement.classList) root.documentElement.classList.add('js');   // only now may .reveal start hidden
+  const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }, { threshold: 0.14 });
+  for (const el of els) io.observe(el);
+}
+
+function light(root) {
+  if (!root || !root.addEventListener || still()) return;
+  root.addEventListener('pointermove', (e) => {
+    const card = e.target && e.target.closest ? e.target.closest('.act') : null;
+    if (!card) return;
+    const b = card.getBoundingClientRect();
+    card.style.setProperty('--mx', `${e.clientX - b.left}px`); card.style.setProperty('--my', `${e.clientY - b.top}px`);
+  });
+}
+
+// count(el, text): text is the final, true text of the number (for example "31.6%"). Only its digits move, and only
+// on the way in: when it stops, the element holds exactly `text`.
+function count(el, text) {
+  const final = String(text), m = final.match(/^(\D*)(\d+(?:\.\d+)?)(.*)$/);
+  if (!el || !m || still() || typeof requestAnimationFrame !== 'function' || typeof IntersectionObserver !== 'function') { if (el) el.textContent = final; return; }
+  const to = Number(m[2]), places = (m[2].split('.')[1] || '').length;
+  el.textContent = final;
+  const io = new IntersectionObserver((es) => {
+    if (!es.some((e) => e.isIntersecting)) return;
+    io.disconnect();
+    const t0 = performance.now(), run = (now) => { const k = Math.min(1, (now - t0) / 900), ease = 1 - (1 - k) ** 3; el.textContent = k < 1 ? `${m[1]}${(to * ease).toFixed(places)}${m[3]}` : final; if (k < 1) requestAnimationFrame(run); };
+    requestAnimationFrame(run);
+  }, { threshold: 0.4 });
+  io.observe(el);
+}
+
+function bindScroll(crystal, base) {
+  if (!crystal || typeof addEventListener !== 'function') return;
+  const top = base ?? 1, set = () => crystal.setEnergy(top * Math.max(0.35, 1 - (globalThis.scrollY || 0) / ((globalThis.innerHeight || 800) * 1.2)));
+  addEventListener('scroll', set, { passive: true }); set();
+}
+return { reveal, light, count, bindScroll };
+})();
+
 // vendor/crystal/vendor/climb/src/sha256.mjs, inlined byte for byte (imports read the scopes above; export removed)
 const SHA = (() => {
 // sha256.mjs — SHA-256 of a string's UTF-8 bytes, as lowercase hex. Pure and synchronous, so the lane check that
@@ -2356,23 +2659,25 @@ function judge(input) {
 return { TIERS, row, judge };
 })();
 
-// app.js — the page. The kernels above it are the gated code, inlined byte for byte; this file shows what they
-// compute from the published records, and lets a visitor run them: judge a round again, try the training gate, try
-// the adoption rule. Every number it writes is a count from a published record, read here by those kernels.
+// app.js — the page. The kernels above it are the gated code, inlined byte for byte; the house kit (CRYSTAL, HOUSE)
+// draws. This file shows what the kernels compute from the published records, as receipts, a stack and a glass, and
+// lets a visitor run them: judge a round again, try the training gate, ask the rule. Every number it writes is a
+// count from a published record. Where no sealed round has landed yet it says "sealing now", and claims nothing.
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const bind = (k, html) => { for (const el of document.querySelectorAll(`[data-bind="${k}"]`)) el.innerHTML = html; };
 const getText = async (p) => { try { const r = await fetch(p); return r.ok ? await r.text() : null; } catch { return null; } };
 const getJSON = async (p) => { const t = await getText(p); try { return t === null ? null : JSON.parse(t); } catch { return null; } };
-const NM = '<span class="pend">not measured yet</span>';
 const pct = (x) => `${(100 * x).toFixed(1)}%`;
 const prob = (p) => (p < 0.001 ? p.toExponential(1) : p.toFixed(3));
-const hrs = (s) => (s >= 5400 ? `${(s / 3600).toFixed(1)} hours` : `${Math.round(s / 60)} minutes`);
+const hrs = (s) => (s >= 5400 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`);
 const many = (n, one, more) => `${n} ${n === 1 ? one : more}`;
-const S = { settings: null, published: null, rounds: {}, shown: null, trace: null, gates: null, parity: null, walk: null, sealSha: null };
+const SEALING = '<span class="tag gd">sealing now</span>';
+const S = { settings: null, published: null, rounds: {}, shown: null, trace: null, gates: null, parity: null, weights: null, walk: null, sealSha: null, crystal: null, faces: [] };
 const KIND = { gained: 'gained: failed before, right after', lost: 'lost: right before, failed after', kept: 'right both times', still: 'failed both times' };
-const FILL = { gained: 'var(--lume)', lost: 'var(--red)', kept: 'var(--kept)', still: 'var(--still)' };
+const FILL = { gained: '#49e8c8', lost: '#ff6b6b', kept: '#2f8f96', still: '#1c3a45' };
 const SAID = { right: 'right', wrong: 'a confident wrong answer', none: 'no answer' };
+const ORGANS = { 'src/split.mjs': 'which problems are held out, by calculation', 'src/trace.mjs': 'what may be trained on: verified working only', 'src/cold.mjs': 'how a cold reply is read: right, wrong, or no answer', 'src/adopt.mjs': 'adopt or dissolve, and the test of a person\'s grant', 'src/rounds.mjs': 'what the loop may do next', 'src/claims.mjs': 'the six claims, ruled on from the evidence', 'src/judge.mjs': 'a round\'s verdict from its records; this page runs it', 'genome/cell.mjs': 'the estate\'s birth check: its judge is the training gate' };
 
 // every held-out problem with what each model said, cold, read here by the sealed checker (src/cold.mjs)
 function paired(held, cb, cd) {
@@ -2385,160 +2690,169 @@ function paired(held, cb, cd) {
     return { t, base, dist, kind };
   });
 }
-const R = () => (S.shown === null ? null : S.rounds[S.shown]);
 const sealedList = () => Object.keys(S.rounds).filter((w) => w !== 'dev').map(Number).sort((a, b) => a - b);
-const label = (w) => (w === 'dev' ? 'the development round' : `round ${w}`);
+const newest = () => { const ks = sealedList(); return ks.length ? S.rounds[ks[ks.length - 1]] : null; };
+const R = () => (S.shown === null ? null : S.rounds[S.shown]);   // the round the glass shows: the newest sealed one, else the development round
 
-// ── the hero: the status line, the ledger, the fail-wall ──
-function renderHero() {
-  const r = R(), v = r && r.verdict, c = v && v.cold;
+// ── the result: three receipts, or "sealing now" ──
+function renderResult() {
+  const r = newest(), v = r && r.verdict, c = v && v.cold;
   if (!c) {
-    $('status').innerHTML = 'No round is published yet. Every number on this page is filled in from a published record, so there is nothing to show until one is.';
-    $('wall').innerHTML = NM;
+    bind('k.result', 'Round 1 · sealing now');
+    const wait = (lab) => `<div class="stat reveal"><div class="n"><span class="was">—</span><span class="arrow">→</span><span class="wait">—</span></div><div class="lab">${lab} ${SEALING}</div></div>`;
+    $('receipts').innerHTML = wait('<b>Right, cold, on held-out problems.</b> Before and after one round.') + wait('<b>Confident wrong answers.</b> The rule requires this not to rise.') + wait('<b>Problems gained and lost.</b> The fail-wall, both ways.');
+    $('verdictLine').innerHTML = 'No sealed round has landed. <b>Nothing is claimed until one has.</b> The number replaces the tag when it does, pass or fail.';
+    $('facet').innerHTML = 'Round 1 · sealing now · the gold faces are its six claims';
     return;
   }
-  const dev = S.shown === 'dev';
-  const out = v.adopted ? `<span class="pass">The rule adopts these weights.</span> ${v.next ? esc(nextLine(v.next)) : ''}` : '<span class="fail">The rule dissolves these weights: the base stays as it was.</span>';
-  $('status').innerHTML = dev
-    ? `<span class="pend">No sealed round is published yet.</span> What is shown is the development round, which shaped the settings and is not a claim: cold, on ${c.n} held-out problems, the base was right on ${c.base.right} and the distilled model on ${c.distilled.right}.`
-    : `Round ${v.round}, sealed: cold, on ${c.n} held-out problems, the base was right on ${c.base.right} and the distilled model on ${c.distilled.right}. ${out}`;
-  bind('n.base', pct(c.base.rate)); bind('n.distilled', pct(c.distilled.rate)); bind('n.gained', String(c.gained.length)); bind('n.lost', String(c.lost.length));
-  bind('n.wrong', `${c.base.wrong} → ${c.distilled.wrong}`); bind('n.train', v.train ? String(v.train.verified) : '—');
-  bind('n.outcome', v.adopted ? '<span class="pass">ADOPT</span>' : '<span class="fail">DISSOLVE</span>');
-  $('wall').innerHTML = wallSvg(r);
+  const src = `<a class="src" href="${r.dir}/verdict.json">receipt: round ${v.round} verdict ↗</a>`;
+  bind('k.result', `The result · round ${v.round}, sealed`);
+  $('receipts').innerHTML = `<div class="stat reveal"><div class="n"><span class="was">${pct(c.base.rate)}</span><span class="arrow">→</span><span class="${c.lift > 0 ? 'now' : 'bad'}" data-count="${pct(c.distilled.rate)}">${pct(c.distilled.rate)}</span></div><div class="lab"><b>Right, cold, on ${c.n} held-out problems.</b> The same model, before and after training on ${v.train ? v.train.examples : 0} verified examples of its own working.</div>${src}</div>`
+    + `<div class="stat reveal"><div class="n"><span class="was">${c.base.wrong}</span><span class="arrow">→</span><span class="${c.distilled.wrong <= c.base.wrong ? 'now' : 'bad'}" data-count="${c.distilled.wrong}">${c.distilled.wrong}</span></div><div class="lab"><b>Confident wrong answers.</b> An answer given, and wrong. The rule requires this not to rise.</div>${src}</div>`
+    + `<div class="stat reveal"><div class="n"><span class="now" data-count="+${c.gained.length}">+${c.gained.length}</span> <span class="bad">−${c.lost.length}</span></div><div class="lab"><b>Problems gained and lost.</b> Failed before and right after, against the other way. p = ${prob(c.p)}.</div>${src}</div>`;
+  const next = v.next || {};
+  $('verdictLine').innerHTML = v.adopted
+    ? `<b class="pass">The rule: adopt.</b> ${next.act === 'wait' ? `The new weights wait for a person's grant. Round ${v.round + 1} cannot start without it.` : next.act === 'run' ? `A person has granted them. Round ${next.round} may run.` : `The loop has stopped: ${esc(next.why || '')}.`}`
+    : '<b class="fail">The rule: dissolve.</b> The trained weights are dropped and the base stays as it was. The gains have flattened: the house is full.';
+  $('facet').innerHTML = `Round ${v.round} · sealed · <b>${pct(c.base.rate)} → ${pct(c.distilled.rate)}</b> right, cold · point at a face`;
 }
-function nextLine(next) {
-  return next.act === 'wait' ? `They now wait for a person's grant; round ${next.round + 1} cannot start without it.`
-    : next.act === 'run' ? `A person has granted them; round ${next.round} may run.`
-    : next.act === 'full' ? 'The loop has stopped: the house is full.'
-    : `The loop has stopped: ${next.why}.`;
+
+// ── how it works, traced from a real run ──
+function renderTrace() {
+  const t = S.trace, h = t && t.harvested;
+  if (!h) { $('traceStack').innerHTML = `<div class="srow gold"><div class="d">—</div><div class="nm"><b>No run yet</b><span>a real harvested problem is traced here once one is published</span>${SEALING}</div></div>`; return; }
+  const row = (e, i) => { const d = String(i + 1).padStart(2, '0'), said = typeof e.said === 'string' ? `wrote <code>${esc(e.said)}</code>` : 'already known';
+    return e.kind === 'bond' ? `<div class="srow"><div class="d">${d}</div><div class="nm"><b>${esc(e.cell)}</b><span>${said}</span><span class="tag cy">true · kept</span></div></div>`
+      : e.kind === 'set' ? `<div class="srow"><div class="d">${d}</div><div class="nm"><b>${esc(e.cell)}</b><span>already held: <code>${esc(e.value)}</code></span><span class="tag cy">kept</span></div></div>`
+      : `<div class="srow red"><div class="d">${d}</div><div class="nm"><b>${esc(e.cell)}</b><span>${said}</span><span class="tag rd">${e.kind === 'split' ? 'false · split smaller' : 'false · dissolved'}</span></div></div>`; };
+  const held = t.held ? `<div class="srow gold"><div class="d">cold</div><div class="nm"><b>A held-out problem</b><span>before: ${SAID[t.held.base.outcome]} · after: ${SAID[t.held.distilled.outcome]}</span><span class="tag ${t.held.distilled.outcome === 'right' ? 'cy' : 'rd'}">${esc(t.held.id)}</span></div></div>` : '';
+  $('traceStack').innerHTML = `<div class="srow"><div class="d">ask</div><div class="nm"><span>${esc(h.statement)}</span></div></div>${h.events.map(row).join('')}<div class="srow"><div class="d">learn</div><div class="nm"><b>The training example</b><span>${many(h.lines, 'verified line', 'verified lines')} from ${many(h.calls, 'model call', 'model calls')}, ending <code>${esc(h.reply.split('\n').pop())}</code></span><span class="tag cy">${esc(t.from)}</span></div></div>${held}`;
 }
+
+// ── the fail-wall: the glass ──
 function wallSvg(r) {
-  const rows = r.rows;
-  if (rows.length === 0) return NM;
-  const cols = rows.length > 120 ? 21 : 15, cell = 36, pad = 4, parts = [];
+  const rows = r.rows, cols = rows.length > 120 ? 33 : 21, cell = 30, pad = 4, parts = [];
   let y = 0;
   for (const tier of JUDGE.TIERS) {
     const g = rows.filter((x) => x.t.tier === tier);
     if (g.length === 0) continue;
     const right = (m) => g.filter((x) => x[m].outcome === 'right').length;
-    parts.push(`<text x="0" y="${y + 14}" class="m">${esc(tier)} · ${g.length} problems · right before ${right('base')}, after ${right('dist')}</text>`);
+    parts.push(`<text x="0" y="${y + 13}">${esc(tier)} · ${g.length} problems · right ${right('base')} → ${right('dist')}</text>`);
     y += 22;
-    g.forEach((x, i) => { parts.push(`<rect data-id="${esc(x.t.id)}" x="${(i % cols) * cell}" y="${y + Math.floor(i / cols) * cell}" width="${cell - pad}" height="${cell - pad}" fill="${FILL[x.kind]}"><title>${esc(x.t.id)} · ${KIND[x.kind]}</title></rect>`); });
-    y += Math.ceil(g.length / cols) * cell + 10;
+    g.forEach((x, i) => { parts.push(`<rect data-id="${esc(x.t.id)}" x="${(i % cols) * cell}" y="${y + Math.floor(i / cols) * cell}" width="${cell - pad}" height="${cell - pad}" rx="3" fill="${FILL[x.kind]}"><title>${esc(x.t.id)} · ${KIND[x.kind]}</title></rect>`); });
+    y += Math.ceil(g.length / cols) * cell + 12;
   }
   const n = (k) => rows.filter((x) => x.kind === k).length;
-  return `<svg viewBox="0 0 ${cols * cell} ${y}" role="img" aria-label="${rows.length} held-out problems: ${n('gained')} gained, ${n('kept')} right both times, ${n('still')} failed both times, ${n('lost')} lost."><style>text{font:500 12px 'JetBrains Mono',ui-monospace,monospace;fill:#a3c3cb}</style>${parts.join('')}</svg>`;
+  return `<svg viewBox="0 0 ${cols * cell} ${y}" role="img" aria-label="${rows.length} held-out problems: ${n('gained')} gained, ${n('kept')} right both times, ${n('still')} failed both times, ${n('lost')} lost."><style>text{font:500 12px 'JetBrains Mono',ui-monospace,monospace;fill:#6f8698}</style>${parts.join('')}</svg>`;
+}
+function renderWall() {
+  const r = R();
+  if (!r || r.rows.length === 0) { $('wallBox').innerHTML = `<p class="mono dim" style="margin:0">No cold test is published yet. ${SEALING}</p>`; return; }
+  $('wallBox').innerHTML = `${S.shown === 'dev' ? `<p class="mono pend" style="margin:0 0 12px;font-size:12px">Showing the development round (not a claim). Round 1: sealing now.</p>` : ''}${wallSvg(r)}`;
 }
 function openProblem(id) {
   const r = R(), x = r && r.rows.find((y) => y.t.id === id);
   if (!x) return;
-  const side = (name, m) => `<div class="box"><h4>${name}, cold: <span class="${m.outcome === 'right' ? 'pass' : m.outcome === 'wrong' ? 'fail' : 'pend'}">${SAID[m.outcome]}</span></h4><pre>${esc(m.text) || '(nothing)'}</pre><p class="small">Read by the sealed checker: ${m.answer === null ? 'no answer given' : `answer ${esc(m.answer)}`}; ${many(m.trueLines, 'true line', 'true lines')} of working, ${m.falseLines} false${m.cut ? '; the reply ran to the length limit, so its last line was not read' : ''}.</p></div>`;
-  $('probe').innerHTML = `<p><b>${esc(x.t.id)}</b> · ${esc(x.t.tier)} · <span class="${x.kind === 'gained' ? 'pass' : x.kind === 'lost' ? 'fail' : ''}">${KIND[x.kind]}</span></p><p>${esc(x.t.statement)}</p>${x.t.check && x.t.check.type === 'value' ? `<p class="small">The right answer is ${esc(x.t.check.value)}.</p>` : ''}<div class="two">${side('The base', x.base)}${side('The distilled model', x.dist)}</div>`;
+  const side = (name, m) => `<div class="box"><h4>${name}: <span class="${m.outcome === 'right' ? 'pass' : m.outcome === 'wrong' ? 'fail' : 'pend'}">${SAID[m.outcome]}</span></h4><pre>${esc(m.text) || '(nothing)'}</pre><p class="dim" style="font-size:12px;margin:8px 0 0">${m.answer === null ? 'no answer given' : `answer ${esc(m.answer)}`} · ${many(m.trueLines, 'true line', 'true lines')}, ${m.falseLines} false${m.cut ? ' · cut at the length limit' : ''}</p></div>`;
+  $('probe').innerHTML = `<p style="color:var(--ink);margin:0 0 6px"><b>${esc(x.t.id)}</b> · ${esc(x.t.tier)} · <span class="${x.kind === 'gained' ? 'pass' : x.kind === 'lost' ? 'fail' : 'dim'}">${KIND[x.kind]}</span></p><p style="color:var(--soft);font-family:var(--sans);font-size:14.5px;margin:0 0 12px">${esc(x.t.statement)}${x.t.check && x.t.check.type === 'value' ? ` <span class="dim">Right answer: ${esc(x.t.check.value)}.</span>` : ''}</p><div class="two">${side('Before', x.base)}${side('After', x.dist)}</div>`;
   if ($('open').value !== id) $('open').value = id;
 }
 function fillOpen() {
   const r = R();
   if (!r || r.rows.length === 0) return;
   const group = (k) => { const g = r.rows.filter((x) => x.kind === k); return g.length ? `<optgroup label="${KIND[k]} (${g.length})">${g.map((x) => `<option value="${esc(x.t.id)}">${esc(x.t.id)} · ${esc(x.t.tier)}</option>`).join('')}</optgroup>` : ''; };
-  $('open').innerHTML = `<option value="">Choose a held-out problem…</option>${['gained', 'lost', 'kept', 'still'].map(group).join('')}`;
+  $('open').innerHTML = `<option value="">Choose one, or press a square…</option>${['gained', 'lost', 'kept', 'still'].map(group).join('')}`;
 }
 
-// ── the numbers ──
-function renderNumbers() {
-  const r = R(), v = r && r.verdict;
-  if (!v) { for (const id of ['claimsTable', 'tierTable', 'moved', 'trainTable']) $(id).innerHTML = NM; bind('t.which', NM); }
-  else {
-    const files = ['verdict.json', 'harvest.json', 'train.jsonl', 'held.json', 'cold-base.json', 'cold-distilled.json', 'train-log.json'].map((f) => `<a href="${r.dir}/${f}">${f}</a>`).join(' · ');
-    bind('t.which', `${S.shown === 'dev' ? '<span class="pend">These are the development round\'s numbers. It is not a claim: it shaped the settings.</span>' : `These are round ${v.round}'s numbers, made under the seal.`} Judged ${esc(String(v.at).slice(0, 10))} from its records: ${files}.`);
-    $('claimsTable').innerHTML = `<table><thead><tr><th>Claim</th><th>The bar, fixed first</th><th>What happened</th><th>Verdict</th></tr></thead><tbody>${v.verdicts.map((x) => `<tr><td><b>${x.id}</b> ${esc(x.name)}</td><td>${esc(x.bar)}</td><td>${esc(x.result)}</td><td class="${x.pass === true ? 'pass' : x.pass === false ? 'fail' : 'pend'}">${x.pass === true ? 'PASS' : x.pass === false ? 'FAIL' : 'pending'}</td></tr>`).join('')}</tbody></table>${v.notes.length ? `<p class="fail">${v.notes.map(esc).join('; ')}</p>` : ''}`;
-    if (v.tiers) {
-      const cellOf = (t) => `<td class="num">${t.right} of ${t.n}</td><td class="num">${t.wrong}</td><td class="num">${t.none}</td>`;
-      $('tierTable').innerHTML = `<table><thead><tr><th>Tier</th><th>Base right</th><th>wrong</th><th>no answer</th><th>Distilled right</th><th>wrong</th><th>no answer</th></tr></thead><tbody>${JUDGE.TIERS.filter((t) => v.tiers.base[t].n > 0).map((t) => `<tr><td>${t}</td>${cellOf(v.tiers.base[t])}${cellOf(v.tiers.distilled[t])}</tr>`).join('')}<tr><td><b>all</b></td>${cellOf(v.cold.base)}${cellOf(v.cold.distilled)}</tr></tbody></table><p class="small">Easy problems are one step. Climb problems are several. Wall problems are the ones a small model mostly cannot do in one try. "Wrong" is an answer given and wrong; "no answer" is a reply with no answer line, or one cut off before it. A reply is counted right by its answer alone: of the base's ${v.cold.base.right} right answers, ${r.rows.filter((y) => y.base.outcome === 'right' && y.base.falseLines === 0).length} had no false line of working; of the distilled model's ${v.cold.distilled.right}, ${r.rows.filter((y) => y.dist.outcome === 'right' && y.dist.falseLines === 0).length}.</p>`;
-      const chips = (ids, cls) => ids.map((id) => `<button type="button" class="chip ${cls}" data-open="${esc(id)}">${esc(id)}</button>`).join('');
-      $('moved').innerHTML = `<p><b class="pass">${many(v.cold.gained.length, 'problem', 'problems')} gained</b>: failed by the base, solved by the distilled model.</p><div>${chips(v.cold.gained, '') || '<span class="small">none</span>'}</div><p><b class="${v.cold.lost.length ? 'fail' : ''}">${many(v.cold.lost.length, 'problem', 'problems')} lost</b>: solved by the base, failed by the distilled model.</p><div>${chips(v.cold.lost, 'lost') || '<span class="small">none</span>'}</div><p class="small">Press one to read both replies.</p>`;
-    } else { $('tierTable').innerHTML = NM; $('moved').innerHTML = NM; }
-    const b = r.build, t = v.train;
-    $('trainTable').innerHTML = b && t ? `<table><tbody><tr><td>Problems in the harvest pool</td><td class="num">${b.counts.pool}</td></tr><tr><td>Finished under the checker, with the right answer</td><td class="num">${b.counts.complete}</td></tr><tr><td>Not finished (no training example is made)</td><td class="num">${b.counts.incomplete}</td></tr><tr><td>Finished, but longer than ${S.settings.trace.maxLines} lines (verified, not used)</td><td class="num">${b.counts.long}</td></tr><tr><td>Failed verification when built</td><td class="num">${b.counts.unverified}</td></tr><tr><td><b>Training examples</b></td><td class="num"><b>${t.examples}</b></td></tr><tr><td>Verified again by exact arithmetic when judged</td><td class="num">${t.verified} of ${t.examples}</td></tr><tr><td>Lines of working in an example</td><td class="num">${b.lines.mean.toFixed(1)} on average, ${b.lines.most} at most</td></tr><tr><td>Model calls the harvest took</td><td class="num">${v.harvest ? v.harvest.calls : '—'}</td></tr></tbody></table><p class="small">The training file's SHA-256 is <code>${esc(t.fileSha256.slice(0, 16))}…</code>; the trainer recorded ${t.trainerSha256 === t.fileSha256 ? 'the same hash' : t.trainerSha256 ? '<span class="fail">another hash</span>' : 'no hash yet'}. The adapter it made is <code>${v.adapterSha256 ? esc(v.adapterSha256.slice(0, 16)) + '…' : 'not made yet'}</code>.</p>` : NM;
-  }
-  const d = S.rounds.dev, dv = d && d.verdict;
-  $('devBox').innerHTML = dv && dv.cold ? `<p>Run before the seal, on problems made from other seeds, to shape the token limits, the longest working that is trained on, and the speed of the model's hands. Cold, on ${dv.cold.n} held-out problems: the base right on ${dv.cold.base.right} (${pct(dv.cold.base.rate)}), the distilled model on ${dv.cold.distilled.right} (${pct(dv.cold.distilled.rate)}); ${dv.cold.gained.length} gained, ${dv.cold.lost.length} lost; confident wrong answers ${dv.cold.base.wrong} → ${dv.cold.distilled.wrong}; ${dv.train ? dv.train.examples : 0} training examples. The rule would have ${dv.adopted ? 'adopted' : 'dissolved'} it. It is not a claim, and its weights are not used by any sealed round. <a href="data/dev/verdict.json">Its verdict</a>.</p>` : '<p class="small">The development round is not published yet.</p>';
+// ── the six claims ──
+function renderClaims() {
+  const r = newest(), v = r && r.verdict, bars = CLAIMS.bars(S.settings || {});
+  const rows = v ? v.verdicts : Object.keys(CLAIMS.NAMES).map((id) => ({ id, name: CLAIMS.NAMES[id], pass: null, result: 'round 1 has not run' }));
+  $('claimStack').innerHTML = rows.map((x) => `<div class="srow ${x.pass === false ? 'red' : x.pass === null ? 'gold' : ''}"><div class="d">${x.id}</div><div class="nm"><b>${esc(x.name)}</b><span>${esc(x.result)}</span>${x.pass === true ? '<span class="tag cy">pass</span>' : x.pass === false ? '<span class="tag rd">fail · kept</span>' : SEALING}</div></div>`).join('') + (v && v.notes.length ? `<div class="srow red"><div class="d">note</div><div class="nm"><span>${v.notes.map(esc).join('; ')}</span></div></div>` : '');
+  $('bars').innerHTML = Object.keys(CLAIMS.NAMES).map((id) => `<p><b>${id} · ${esc(CLAIMS.NAMES[id])}.</b> ${esc(bars[id][0].toUpperCase() + bars[id].slice(1))}.</p>`).join('') + '<p>Registered in <a href="CLAIMS.md">CLAIMS.md</a> and frozen by <a href="SEAL.json">the seal</a> before round 1 ran.</p>';
 }
 
-// ── the loop: the fill gauge, what happens next, the grant, the spend wall ──
+// ── the loop ──
 function renderLoop() {
   const ks = sealedList(), last = ks.length ? S.rounds[ks[ks.length - 1]].verdict : null;
   const caps = S.settings ? S.settings.spend : { hoursPerRound: 0, hoursInAll: 0 }, most = S.settings ? S.settings.rounds.max : 0;
+  const win = (n, l) => `<div class="win reveal"><div class="wn">${n}</div><div class="wl">${l}</div></div>`;
   if (!last || !last.gauge) {
-    $('gauge').innerHTML = '<p class="pend">No sealed round is published yet, so the gauge is empty.</p>';
-    $('loopState').innerHTML = `The loop has not started. The seal allows at most ${most} rounds, ${caps.hoursPerRound} hours of model work for one round and ${caps.hoursInAll} hours for all of them.`;
-    $('grantBox').innerHTML = '<p class="small">There is no adopted round, so there is nothing to grant.</p>';
-    $('spendTable').innerHTML = `<p class="small">No sealed round has run yet, so nothing has been spent against the wall. The seal caps one round at ${caps.hoursPerRound} hours of model work and all rounds together at ${caps.hoursInAll}.</p>`;
+    $('loopState').innerHTML = `The loop has not started. Round 1 is ${SEALING}`;
+    $('gauge').innerHTML = '';
+    $('loopWins').innerHTML = win(`0<span class="of">/${most}</span>`, 'sealed rounds run, of the most the seal allows') + win(`0<span class="of">/${caps.hoursInAll}</span>`, 'hours of model work spent, of the cap for all rounds') + win('0', 'grants on file: no weights have been adopted') + win('—', 'where the loop stands: not started');
+    $('grantBox').innerHTML = '<p>There is no adopted round, so there is nothing to grant.</p>';
     return;
   }
-  const G = last.gauge, W = 800, H = 250, x0 = 70, x1 = 760, y0 = 200, y1 = 30, yOf = (p) => y0 - (y0 - y1) * p, xOf = (i) => x0 + (G.length === 1 ? (x1 - x0) / 2 : (x1 - x0) * (i / (G.length - 1)));
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((p) => `<path d="M${x0 - 6} ${yOf(p)}H${x1}" stroke="rgba(94,242,228,.14)"/><text class="m" x="8" y="${yOf(p) + 4}">${Math.round(p * 100)}%</text>`).join('');
-  const marks = G.map((g, i) => { const x = xOf(i), col = g.adopted ? '#5ef2e4' : '#ff6470'; return `<path d="M${x} ${yOf(g.base)}V${yOf(g.distilled)}" stroke="${col}" stroke-width="3"/><circle cx="${x}" cy="${yOf(g.base)}" r="5" fill="#02070c" stroke="#a3c3cb" stroke-width="2"/><circle cx="${x}" cy="${yOf(g.distilled)}" r="6" fill="${col}"/><text x="${x + 12}" y="${yOf(g.distilled) + 4}">${pct(g.distilled)}</text><text class="m" x="${x + 12}" y="${yOf(g.base) + 4}">${pct(g.base)}</text><text x="${x - 30}" y="${y0 + 22}">round ${g.round}</text><text class="m" x="${x - 60}" y="${y0 + 38}">${g.adopted ? (g.granted ? 'adopted · granted' : 'adopted · not granted') : 'dissolved'}</text>`; }).join('');
-  $('gauge').innerHTML = `<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cold accuracy on each round's held-out block, before and after training. ${G.map((g) => `Round ${g.round}: ${pct(g.base)} before, ${pct(g.distilled)} after, ${g.adopted ? 'adopted' : 'dissolved'}.`).join(' ')}">${ticks}${marks}</svg><p class="small">Each round is measured on its own fresh held-out block: the hollow dot is the model the round started from, the filled dot is the same model after training. A round's lift is the distance between them. ${G.map((g) => `Round ${g.round}: ${(100 * g.lift).toFixed(1)} points (${g.gained} gained, ${g.lost} lost).`).join(' ')}</p>`;
-  const n = last.next;
-  $('loopState').innerHTML = `<b>Where the loop stands.</b> ${n.act === 'wait' ? `Round ${n.round} was adopted by the rule. <span class="pend">Its weights wait for a person's grant.</span> Round ${n.round + 1} has not run and cannot run on the loop's own say-so.` : n.act === 'run' ? `Round ${n.round - 1} was adopted and granted. Round ${n.round} may run.` : n.act === 'full' ? `<span class="pass">The house is full.</span> Round ${n.round} did not clear its bar and was dissolved: the gains have flattened, and the loop has stopped. The model in use is ${last.gauge.filter((g) => g.adopted && g.granted).length ? `the one adopted and granted in round ${last.gauge.filter((g) => g.adopted && g.granted).pop().round}` : 'the base it began with'}.` : `The loop has stopped at a cap: ${esc(n.why)}.`} The seal allows at most ${most} rounds.`;
-  const gr = S.rounds[last.round].grant;
-  $('grantBox').innerHTML = gr ? `<div class="box"><h4>The grant on file for round ${last.round}</h4><p>"${esc(gr.words)}"</p><p class="small">${esc(gr.by)} · ${esc(gr.at)} · for the weights <code>${esc(String(gr.adapterSha256).slice(0, 16))}…</code> · <a href="data/grants/round-${last.round}.json">the record</a></p></div>`
-    : last.adopted ? `<div class="box"><h4>No grant is on file for round ${last.round}</h4><p>The rule adopted these weights. They become the base of the next round only when a person writes this record, in their own words, and it is committed as <code>data/grants/round-${last.round}.json</code>:</p><pre>${esc(JSON.stringify({ by: 'human', action: 'adopt-weights', round: last.round, adapterSha256: last.adapterSha256, words: '(the person\'s own words)', at: '(the date and time)' }, null, 1))}</pre><p class="small">One command writes it: <code>node scripts/grant.mjs ${last.round} &quot;your words&quot;</code>. A record that names another round or other weights opens nothing, and the loop cannot write one for itself: the test is in <code>src/adopt.mjs</code>.</p></div>`
-    : `<p class="small">Round ${last.round} was dissolved by the rule. There is nothing to grant: a grant cannot adopt what the rule dissolved.</p>`;
+  const G = last.gauge, W = 1000, H = 250, x0 = 70, x1 = 940, y0 = 190, y1 = 26, yOf = (p) => y0 - (y0 - y1) * p, xOf = (i) => x0 + (G.length === 1 ? (x1 - x0) / 2 : (x1 - x0) * (i / (G.length - 1)));
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((p) => `<path d="M${x0 - 6} ${yOf(p)}H${x1}" stroke="rgba(255,255,255,.06)"/><text fill="#6f8698" x="8" y="${yOf(p) + 4}">${Math.round(p * 100)}%</text>`).join('');
+  const marks = G.map((g, i) => { const x = xOf(i), col = g.adopted ? '#49e8c8' : '#ff6b6b'; return `<path d="M${x} ${yOf(g.base)}V${yOf(g.distilled)}" stroke="${col}" stroke-width="3"/><circle cx="${x}" cy="${yOf(g.base)}" r="5" fill="#02070c" stroke="#aebecb" stroke-width="2"/><circle cx="${x}" cy="${yOf(g.distilled)}" r="7" fill="${col}"/><text fill="#e9f2f6" x="${x + 14}" y="${yOf(g.distilled) + 4}">${pct(g.distilled)}</text><text fill="#6f8698" x="${x + 14}" y="${yOf(g.base) + 4}">${pct(g.base)}</text><text fill="#e9f2f6" x="${x - 30}" y="${y0 + 26}">round ${g.round}</text><text fill="${g.adopted ? (g.granted ? '#49e8c8' : '#ffcf6a') : '#ff6b6b'}" x="${x - 62}" y="${y0 + 44}">${g.adopted ? (g.granted ? 'adopted · granted' : 'adopted · awaiting grant') : 'dissolved'}</text>`; }).join('');
+  $('gauge').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:36px" role="img" aria-label="${G.map((g) => `Round ${g.round}: ${pct(g.base)} before, ${pct(g.distilled)} after, ${g.adopted ? 'adopted' : 'dissolved'}.`).join(' ')}"><style>text{font:500 12px 'JetBrains Mono',ui-monospace,monospace}</style>${ticks}${marks}</svg>`;
+  const n = last.next, granted = G.filter((g) => g.adopted && g.granted).length;
+  $('loopState').innerHTML = n.act === 'wait' ? `Round ${n.round} was adopted by the rule. <b class="pend">Its weights wait for a person's grant.</b> Round ${n.round + 1} cannot run on the loop's own say-so.` : n.act === 'run' ? `Round ${n.round - 1} was adopted and granted. <b>Round ${n.round} may run.</b>` : n.act === 'full' ? `<b class="pass">The house is full.</b> Round ${n.round} did not clear its bar and was dissolved. The loop has stopped.` : `The loop has stopped at a cap: ${esc(n.why)}.`;
   const sp = last.spend;
-  $('spendTable').innerHTML = `<table><thead><tr><th>Round</th><th>Harvest</th><th>Training</th><th>Cold test, base</th><th>Cold test, distilled</th><th>All</th><th>Cap</th></tr></thead><tbody>${ks.map((k) => { const s = S.rounds[k].verdict.seconds, h = S.rounds[k].verdict.hours; return `<tr><td>${k}</td><td class="num">${hrs(s.harvest)}</td><td class="num">${hrs(s.train)}</td><td class="num">${hrs(s.coldBase)}</td><td class="num">${hrs(s.coldDistilled)}</td><td class="num ${h > sp.perRound ? 'fail' : ''}">${h.toFixed(1)} hours</td><td class="num">${sp.perRound} hours</td></tr>`; }).join('')}<tr><td><b>all rounds</b></td><td></td><td></td><td></td><td></td><td class="num"><b>${sp.total.toFixed(1)} hours</b></td><td class="num">${sp.inAll} hours</td></tr></tbody></table><p class="small">Hours of model work on one laptop processor, from each record's own clock. When either cap is reached the loop stops, whatever the last round found.</p>`;
+  $('loopWins').innerHTML = win(`${ks.length}<span class="of">/${most}</span>`, 'sealed rounds run, of the most the seal allows') + win(`${sp.total.toFixed(1)}<span class="of">/${sp.inAll}</span>`, `hours of model work spent, of the cap: ${hrs(last.seconds.harvest)} harvest, ${hrs(last.seconds.train)} training, ${hrs(last.seconds.coldBase + last.seconds.coldDistilled)} tests`) + win(String(granted), 'grants on file: weights a person has allowed to stand') + win(n.act === 'wait' ? '<span class="pend">waiting</span>' : n.act === 'full' ? 'full' : n.act === 'run' ? 'ready' : 'capped', 'where the loop stands');
+  const gr = S.rounds[last.round].grant;
+  $('grantBox').innerHTML = gr ? `<p><b>Granted.</b> "${esc(gr.words)}"</p><p class="dim">${esc(gr.at)} · weights <code>${esc(String(gr.adapterSha256).slice(0, 16))}…</code> · <a href="data/grants/round-${last.round}.json">the record</a></p>`
+    : last.adopted ? `<p><b>No grant is on file for round ${last.round}.</b> The weights become the next round's base only when a person writes a record naming this round and these exact weights:</p><pre>node scripts/grant.mjs ${last.round} "your own words"</pre><p class="dim" style="margin-top:10px">Weights <code>${esc(String(last.adapterSha256).slice(0, 16))}…</code>. A record for another round or other weights opens nothing; the test is <code>src/adopt.mjs</code>.</p>`
+    : `<p>Round ${last.round} was dissolved by the rule. A grant cannot adopt what the rule dissolved.</p>`;
 }
 
-// ── how it works, traced from a real run ──
-function renderTrace() {
-  const t = S.trace;
-  if (!t || !t.harvested) { $('traceBox').innerHTML = NM; return; }
-  const h = t.harvested, line = (e) => (e.kind === 'bond' ? `<li>Asked <code>${esc(e.cell)}</code>. The model wrote <code>${esc(e.said)}</code>. Exact arithmetic agrees. <span class="pass">Kept.</span></li>`
-    : e.kind === 'split' ? `<li>Asked <code>${esc(e.cell)}</code>. ${typeof e.said === 'string' ? `The model wrote <code>${esc(e.said)}</code>. <span class="fail">That is not true, so it is not kept.</span>` : 'It was asked this before and got it wrong.'} The engine splits the step into smaller ones: <code>${esc(Array.isArray(e.into) ? e.into.join(' ; ') : String(e.into ?? ''))}</code>.</li>`
-    : e.kind === 'set' ? `<li><code>${esc(e.cell)}</code> is already known from an earlier step of this problem: <code>${esc(e.value)}</code>.</li>`
-    : `<li>Asked <code>${esc(e.cell)}</code>. ${typeof e.said === 'string' ? `The model wrote <code>${esc(e.said)}</code>. ` : ''}<span class="fail">Not true, and there is nothing smaller to split it into: dissolved.</span></li>`);
-  const held = t.held ? `<p><b>Then a held-out problem, cold</b> (${esc(t.held.id)}, ${esc(t.held.tier)}): ${esc(t.held.statement)}</p><div class="two"><div class="box"><h4>The base: ${SAID[t.held.base.outcome]}</h4><pre>${esc(t.held.base.text) || '(nothing)'}</pre></div><div class="box"><h4>The distilled model: ${SAID[t.held.distilled.outcome]}</h4><pre>${esc(t.held.distilled.text) || '(nothing)'}</pre></div></div>` : '';
-  $('traceBox').innerHTML = `<p class="small">From ${esc(t.from)}.</p><p><b>A harvested problem</b> (${esc(h.id)}, ${esc(h.tier)}): ${esc(h.statement)}</p><ol>${h.events.map(line).join('')}</ol><p><b>The training example built from it</b> (${many(h.lines, 'verified line', 'verified lines')}, from ${many(h.calls, 'model call', 'model calls')}): the model is shown the problem and learns to write this reply in one go.</p><pre>${esc(h.reply)}</pre>${held}`;
-}
-
-// ── how it is built ──
+// ── under the hood ──
 function renderBuilt() {
-  const g = S.gates;
-  $('gateTable').innerHTML = g && g.files ? `<table><thead><tr><th>Kernel</th><th>Changes made to it</th><th>Caught by its tests</th><th>Gate</th></tr></thead><tbody>${Object.entries(g.files).map(([f, x]) => `<tr><td><code>${esc(f)}</code></td><td class="num">${x.total}</td><td class="num">${x.killed}</td><td class="${x.clean ? 'pass' : 'fail'}">${x.clean ? 'CLEAN' : 'NOT CLEAN'}</td></tr>`).join('')}<tr><td><b>all</b></td><td class="num">${g.total}</td><td class="num">${g.killed}</td><td class="${g.clean ? 'pass' : 'fail'}">${g.clean ? 'CLEAN' : 'NOT CLEAN'}</td></tr></tbody></table><p class="small">The mutation gate changes one small thing in a kernel at a time (a <code>&lt;</code> to a <code>&lt;=</code>, an <code>and</code> to an <code>or</code>) and runs its tests. A change the tests do not notice is a hole in the tests. None is exempted. <a href="data/gates.json">The record</a>.</p>` : NM;
-  const ks = sealedList(), last = ks.length ? S.rounds[ks[ks.length - 1]].verdict : null;
-  bind('g.seal', S.sealSha ? `The seal on this page hashes to <code>${S.sealSha.slice(0, 16)}…</code>${last ? `; the newest sealed round records ${last.sealSha256 === S.sealSha ? 'the same seal' : '<span class="fail">another seal</span>'}` : '; no sealed round is published yet'}.` : 'The seal has not been made yet.');
+  const g = S.gates, p = S.parity, w = S.weights, last = newest();
+  $('kernelStack').innerHTML = g && g.files ? Object.entries(g.files).map(([f, x], i) => `<div class="srow ${x.clean ? '' : 'red'}"><div class="d">${String(i + 1).padStart(2, '0')}</div><div class="nm"><b>${esc(f.split('/').pop().replace('.mjs', ''))}</b><span>${esc(ORGANS[f] || f)}</span><span class="tag ${x.clean ? 'cy' : 'rd'}">${x.killed}/${x.total} caught</span></div></div>`).join('') : `<div class="srow gold"><div class="d">—</div><div class="nm"><span>the gate record is not published yet</span></div></div>`;
+  const win = (n, l, href) => `<div class="win reveal"><div class="wn">${n}</div><div class="wl">${l}${href ? ` <a class="src" href="${href}">receipt ↗</a>` : ''}</div></div>`;
+  const pn = p ? p.cells.n + p.cold.n + p.grown.n : 0, ps = p ? p.cells.same + p.cold.same + p.grown.same : 0;
+  $('builtWins').innerHTML = win(g ? `${g.killed}<span class="of">/${g.total}</span>` : '—', 'planted bugs caught: the mutation gate, nothing exempted', 'data/gates.json')
+    + win(p ? `${ps}<span class="of">/${pn}</span>` : '—', 'replies identical to plain generation', 'data/parity.json')
+    + win(w ? `${w.tensorsCompared}<span class="of">/${w.tensorsInTheOtherCopy}</span>` : '—', 'weight tensors matched to a separate copy', 'data/weights.json')
+    + win(S.sealSha ? `<span style="font-size:.62em">${S.sealSha.slice(0, 10)}…</span>` : '—', S.sealSha ? `the seal: every result-changing file, frozen${last && last.verdict ? (last.verdict.sealSha256 === S.sealSha ? '; the newest round records this seal' : '; <span class="fail">the newest round records another seal</span>') : ''}` : 'the seal has not been made yet', S.sealSha ? 'SEAL.json' : '');
 }
 
-// ── the sentences that carry a measured number: buyers, limits, white paper ──
+// ── for your business, the honest lines, the buyer walk, the development round ──
 function renderWords() {
-  const r = R(), v = r && r.verdict, c = v && v.cold, dev = S.shown === 'dev', ks = sealedList();
-  const what = dev ? 'the development round (not a claim)' : `round ${S.shown}`;
+  const r = newest(), v = r && r.verdict, c = v && v.cold, ks = sealedList();
   const p = S.parity, pn = p ? p.cells.n + p.cold.n + p.grown.n : 0, ps = p ? p.cells.same + p.cold.same + p.grown.same : 0;
-  bind('l.parity', p ? `${ps} of ${pn} replies came out identical, across single steps, whole cold replies, and problems grown turn by turn. <a href="data/parity.json">The record</a>.` : NM);
-  bind('l.rounds', ks.length ? `${many(ks.length, 'sealed round has', 'sealed rounds have')} been run and published here.` : 'No sealed round is published yet: the numbers shown are the development round\'s, which is not a claim.');
-  if (!c) { for (const k of ['l.wrong', 'l.compute', 'b.what', 'b.cost', 'b.ops', 'b.versus', 'b.risk', 'b.held', 'b.wrong', 'b.board', 'p.result', 'p.loop']) bind(k, NM); return; }
-  const passed = v.verdicts.filter((x) => x.pass === true).length, failed = v.verdicts.filter((x) => x.pass === false);
-  const calls = v.harvest ? (v.harvest.calls / Math.max(1, v.harvest.problems)).toFixed(1) : null;
-  bind('l.wrong', `In ${what} the distilled model still gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} held-out problems (the base: ${c.base.wrong}).`);
-  bind('l.compute', `${dev ? 'The development round' : `Round ${S.shown}`} took ${v.hours.toFixed(1)} hours of model work on one laptop processor; the seal caps a round at ${S.settings.spend.hoursPerRound} hours and all rounds at ${S.settings.spend.hoursInAll}.`);
-  bind('b.what', `In ${what}, the same model went from ${pct(c.base.rate)} to ${pct(c.distilled.rate)} right, cold, on ${c.n} problems it had never seen, after being trained on ${v.train.examples} verified examples of its own working.`);
-  bind('b.cost', `${dev ? 'The development round' : `Round ${S.shown}`} took ${v.hours.toFixed(1)} hours on one laptop processor: ${hrs(v.seconds.harvest)} to harvest, ${hrs(v.seconds.train)} to train, ${hrs(v.seconds.coldBase + v.seconds.coldDistilled)} to test both models.`);
-  bind('b.ops', calls ? `Under the checker, the model needed ${calls} calls on average to finish a problem of the harvest (${v.harvest.calls} calls for ${v.harvest.problems} problems). Cold, an answer is one call: right on ${pct(c.distilled.rate)} of unseen problems after training, against ${pct(c.base.rate)} before.` : NM);
-  bind('b.versus', `Here the model, the data and every change stay on a machine you own; the whole training file is published beside the result (${v.train.examples} examples, ${v.train.unverified} unverified); and the change was decided on ${c.n} unseen problems by a rule fixed in advance.`);
-  bind('b.risk', v.adopted ? `In ${what} the weights cleared the bar and the rule adopted them.` : `In ${what} the weights did not clear the bar and were dissolved; that result is published above, in red.`);
-  bind('b.held', v.held ? `In ${what}, ${v.held.overlap} of ${v.held.n} held-out problems are in the training set, and ${v.held.harvested} were harvested.` : NM);
-  bind('b.wrong', `After training, in ${what}, it gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} unseen problems; before, ${c.base.wrong}.`);
-  bind('b.board', `In ${what}, ${passed} of the 6 claims passed${failed.length ? `; <span class="fail">${failed.map((x) => `${x.id} (${esc(x.name.toLowerCase())})`).join(', ')} failed</span>` : ''}.`);
-  bind('p.result', `${dev ? 'No sealed round is published yet. In the development round, which is not a claim' : `In round ${S.shown}, under the seal`}: ${v.harvest ? `${v.harvest.complete} of ${v.harvest.problems} harvested problems were finished under the checker; ` : ''}${v.train.examples} verified examples trained the model; cold, on ${c.n} held-out problems, it was right on ${c.distilled.right} where the base was right on ${c.base.right} (${(100 * c.lift).toFixed(1)} points; exact McNemar p = ${prob(c.p)}); ${c.gained.length} problems gained and ${c.lost.length} lost; confident wrong answers went from ${c.base.wrong} to ${c.distilled.wrong}. ${passed} of the 6 claims passed${failed.length ? `, and ${failed.map((x) => x.id).join(', ')} failed` : ''}. The rule: ${v.adopted ? 'adopt' : 'dissolve'}.`);
-  const last = ks.length ? S.rounds[ks[ks.length - 1]].verdict : null;
-  bind('p.loop', last && last.next ? `So far: ${many(ks.length, 'sealed round', 'sealed rounds')}. ${last.next.act === 'wait' ? 'The newest was adopted by the rule and waits for a person\'s grant.' : last.next.act === 'full' ? 'The newest did not clear its bar: the house is full, and the loop has stopped.' : last.next.act === 'run' ? 'The newest was adopted and granted; the next round may run.' : `The loop stopped at a cap: ${esc(last.next.why)}.`}` : 'The loop has not started: no sealed round is published yet.');
-}
-function renderWalk() {
+  const card = (who, h, body) => `<div class="act reveal"><span class="num">${who}</span><h3>${h}</h3><p>${body}</p></div>`;
+  const calls = v && v.harvest ? (v.harvest.calls / Math.max(1, v.harvest.problems)).toFixed(1) : null;
+  $('roleCards').innerHTML = card('CHIEF EXECUTIVE', 'It changes when you say.', 'Better at your own work, on your own hardware. No change stands without a measurement and a named yes.')
+    + card('FINANCE', 'No seat. No meter.', c ? `Round ${v.round} took ${v.hours.toFixed(1)} hours on one laptop processor. The cost is a machine you already own.` : `The cost is a machine you already own and the hours it runs. Round 1's hours: ${SEALING}`)
+    + card('OPERATIONS', 'One call, not many.', c && calls ? `Checked, a problem took ${calls} model calls. Cold it is one, right on ${pct(c.distilled.rate)} of unseen problems (before: ${pct(c.base.rate)}).` : `Checked work takes many model calls a problem. Cold it is one. The cold number: ${SEALING}`)
+    + card('TECHNOLOGY', 'One machine. Plain files.', 'Everything runs locally. The training file is text anyone can verify with a calculator.')
+    + card('RISK AND AUDIT', 'Every change, on record.', 'Test set and pass mark fixed first. Full training data. Before and after. Decided by code, signed off by a person.')
+    + card('THE BOARD', 'Nothing unmeasured.', c ? `Round ${v.round}: ${v.verdicts.filter((x) => x.pass === true).length} of 6 claims passed${v.verdicts.some((x) => x.pass === false) ? `; ${v.verdicts.filter((x) => x.pass === false).map((x) => x.id).join(', ')} failed and stay on the page` : ''}.` : `A change that fails its bar is thrown away and published. Round 1: ${SEALING}`);
+  bind('l.parity', p ? `Checked: ${ps} of ${pn} replies identical to plain generation.` : 'The generation check is not published yet.');
+  bind('l.rounds', ks.length ? `${many(ks.length, 'sealed round has', 'sealed rounds have')} run.` : 'No sealed round has run yet.');
+  bind('l.wrong', c ? `After training it still gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} unseen problems.` : 'How often it is still confidently wrong is measured in round 1.');
+  bind('l.compute', c ? `Round ${v.round} took ${v.hours.toFixed(1)} hours of a laptop processor; the seal caps a round at ${S.settings.spend.hoursPerRound}.` : `A round is hours of a laptop processor; the seal caps one at ${S.settings ? S.settings.spend.hoursPerRound : '—'}.`);
+  bind('b.risk', c ? (v.adopted ? `In round ${v.round} the weights cleared the bar.` : `In round ${v.round} they did not, and were dropped.`) : '');
+  bind('b.held', v && v.held ? `In round ${v.round}, ${v.held.overlap} of ${v.held.n} held-out problems are in the training set and ${v.held.harvested} were harvested.` : 'The claims are measured only on problems never harvested and never trained on, and the page counts any overlap.');
+  bind('b.wrong', c ? `In round ${v.round}: ${c.distilled.wrong} of ${c.n} after, ${c.base.wrong} before.` : '');
   const w = S.walk;
-  $('walk').innerHTML = w ? `<h3>A simulated buyer walk</h3><p class="small">${esc(w.note)}</p>${w.personas.map((p) => `<details><summary>${esc(p.who)}: ${esc(p.verdict)}</summary><ul>${p.gaps.map((g) => `<li>${esc(g.gap)} → ${esc(g.fix)}</li>`).join('')}</ul></details>`).join('')}` : '<p class="small">The simulated buyer walk has not been run yet.</p>';
+  $('walk').innerHTML = w ? `<p>${esc(w.note)}</p>${w.personas.map((q) => `<p><b>${esc(q.who)}:</b> ${esc(q.verdict)}${q.gaps.map((g) => `<br>· ${esc(g.gap)} → ${esc(g.fix)}`).join('')}</p>`).join('')}` : '<p>The simulated buyer walk has not been run yet.</p>';
+  const d = S.rounds.dev, dv = d && d.verdict;
+  $('devBox').innerHTML = dv && dv.cold ? `<p>Run before the seal, on other problems, to shape the token limits and the speed of the model's hands. Cold, on ${dv.cold.n} held-out problems: ${dv.cold.base.right} right before, ${dv.cold.distilled.right} after (${dv.cold.gained.length} gained, ${dv.cold.lost.length} lost); confident wrong ${dv.cold.base.wrong} → ${dv.cold.distilled.wrong}; ${dv.train ? dv.train.examples : 0} training examples. The rule would have ${dv.adopted ? 'adopted' : 'dissolved'} it. Its weights are used by no sealed round. <a href="data/dev/verdict.json">Its verdict.</a></p>` : '<p>The development round is not published yet.</p>';
 }
-function render() { renderHero(); renderNumbers(); renderLoop(); renderTrace(); renderBuilt(); renderWords(); renderWalk(); }
+
+// ── the crystal: 24 faces are the six claims of each of four rounds; four more are the organ ──
+function faces() {
+  const out = [], names = Object.keys(CLAIMS.NAMES), ks = sealedList(), most = S.settings ? S.settings.rounds.max : 4;
+  const nextUp = ks.length === 0 ? 1 : (S.rounds[ks[ks.length - 1]].verdict.next || {}).act === 'run' ? ks[ks.length - 1] + 1 : 0;
+  for (let k = 1; k <= 4; k++) for (let i = 0; i < 6; i++) {
+    const v = S.rounds[k] && S.rounds[k].verdict, x = v ? v.verdicts[i] : null;
+    out.push(x ? { state: x.pass === true ? 1 : x.pass === false ? 3 : 2, text: `<b>Round ${k} · ${x.id} ${esc(x.name)}</b> · ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL, kept' : 'sealing now'} · ${esc(x.result)}` }
+      : { state: k === nextUp ? 2 : 0, text: k === nextUp ? `<b>Round ${k} · ${names[i]} ${esc(CLAIMS.NAMES[names[i]])}</b> · sealing now` : k <= most ? `Round ${k} · ${names[i]} · not run: it needs the round before it adopted and granted` : '' });
+  }
+  const g = S.gates, p = S.parity, w = S.weights;
+  out.push({ state: g ? (g.clean ? 1 : 3) : 0, text: g ? `<b>The mutation gate</b> · ${g.killed} of ${g.total} planted bugs caught` : 'The mutation gate' });
+  out.push({ state: S.sealSha ? 1 : 2, text: S.sealSha ? `<b>The seal</b> · ${S.sealSha.slice(0, 12)}…` : '<b>The seal</b> · sealing now' });
+  out.push({ state: p ? (p.cells.same + p.cold.same + p.grown.same === p.cells.n + p.cold.n + p.grown.n ? 1 : 3) : 0, text: '<b>The generation check</b> · batched replies against plain ones' });
+  out.push({ state: w ? (w.verdict.startsWith('same') ? 1 : 3) : 0, text: w ? `<b>The weights</b> · ${w.tensorsCompared} of ${w.tensorsInTheOtherCopy} tensors matched a separate copy` : 'The weights' });
+  while (out.length < 32) out.push({ state: 0, text: '' });
+  return out;
+}
+function render() { renderResult(); renderTrace(); renderWall(); renderClaims(); renderLoop(); renderBuilt(); renderWords(); S.faces = faces(); }
 
 // ── what a visitor can run ──
 // a call that hands back a record's own replies in order, in place of a model
@@ -2566,30 +2880,31 @@ async function rejudge() {
     if (k > 0 && r.grant) grants[k] = r.grant;
     const v = JUDGE.judge({ which: k === 0 ? 'dev' : k, settings: S.settings, set, seal: S.sealSha, history, grants, harvest, log, coldBase: r.cb, coldDistilled: r.cd, train });
     const { files, at, ...was } = r.verdict;
-    const identical = JSON.stringify(was) === JSON.stringify(v), grown = same === harvest.records.length;
-    out.innerHTML = `${identical && grown ? '<span class="pass">Judged again in this tab: the same verdict.</span>' : '<span class="fail">Judged again in this tab: NOT the published verdict.</span>'} ${same} of ${harvest.records.length} harvested problems grew again identically from the recorded replies; ${v.train ? `${v.train.verified} of ${v.train.examples} training examples verified again by exact arithmetic` : 'the training file was not taken'}; ${v.cold ? `${2 * v.cold.n} cold replies read again` : 'the cold tests were not taken'}; ${v.verdicts.map((x) => `${x.id} ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL' : 'pending'}`).join(', ')}.`;
+    const identical = JSON.stringify(was) === JSON.stringify(v) && same === harvest.records.length;
+    out.innerHTML = `${identical ? '<span class="pass">Judged again here: the same verdict.</span>' : '<span class="fail">Judged again here: NOT the published verdict.</span>'} ${same} of ${harvest.records.length} harvested problems grew again identically · ${v.train ? `${v.train.verified} of ${v.train.examples} training examples verified again` : 'no training file taken'} · ${v.cold ? `${2 * v.cold.n} cold replies read again` : 'no cold test taken'} · ${v.verdicts.map((x) => `${x.id} ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL' : 'pending'}`).join(', ')}${S.shown === 'dev' ? ' · (the development round: not a claim)' : ''}`;
+    if (S.crystal) S.crystal.setEnergy(identical ? 1.3 : 0.4);
   } finally { $('rejudge').disabled = false; }
 }
 function tryTrace() {
   const h = S.trace && S.trace.harvested;
   if (!h || !h.task) { $('tryOut').innerHTML = 'No round is published yet, so there is no example to check.'; return; }
   const v = TRACE.verified({ id: h.task.id, messages: LOOP.opening(h.task.statement, []), reply: $('tryReply').value.replace(/\r\n/g, '\n').replace(/\n+$/, '') }, h.task);
-  $('tryOut').innerHTML = v.ok ? `<span class="pass">Verified.</span> ${many(v.lines, 'line', 'lines')} of working, each one a single step and exactly true, and the answer is the problem's own. This example may be trained on.` : `<span class="fail">Refused: ${esc(v.why)}.</span> This example would not be trained on.`;
+  $('tryOut').innerHTML = v.ok ? `<span class="pass">Verified.</span> ${many(v.lines, 'line', 'lines')}, each a single true step, and the answer is the problem's own. It may be trained on.` : `<span class="fail">Refused: ${esc(v.why)}.</span> It would not be trained on.`;
 }
 function tryRule() {
   const num = (id) => { const x = Number($(id).value); return Number.isInteger(x) && x >= 0 ? x : null; };
   const n = num('rN'), g = num('rG'), l = num('rL'), wb = num('rWB'), wd = num('rWD');
-  if ([n, g, l, wb, wd].includes(null) || n < 1 || g + l > n || wb > n - l || wd > n - g) { $('ruleOut').innerHTML = '<span class="fail">Those numbers cannot all be true of one block of problems.</span> Each must be a whole number; gained and lost together cannot exceed the block; and a problem answered wrongly was not answered rightly.'; return; }
+  if ([n, g, l, wb, wd].includes(null) || n < 1 || g + l > n || wb > n - l || wd > n - g) { $('ruleOut').innerHTML = '<span class="fail">Those numbers cannot all be true of one block of problems.</span>'; return; }
   const tally = (right, wrong) => ({ n, right, wrong, none: n - right - wrong, rate: right / n, silent: wrong / n });
   const cold = { n, base: tally(l, wb), distilled: tally(g, wd), lift: (g - l) / n, gained: Array.from({ length: g }, (_, i) => i), lost: Array.from({ length: l }, (_, i) => i), p: STATS.mcnemar(g, l) };
   const v = CLAIMS.verdicts({ cold }, S.settings), rule = ADOPT.decide(v[0].pass, v[1].pass);
-  $('ruleOut').innerHTML = `Lift ${(100 * cold.lift).toFixed(1)} points, p = ${prob(cold.p)}: K1 ${v[0].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'}. Confident wrong ${wb} → ${wd}: K2 ${v[1].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'}. The rule: <b class="${rule.adopt ? 'pass' : 'fail'}">${rule.adopt ? 'ADOPT' : 'DISSOLVE'}</b> (${esc(rule.why)}).${rule.adopt ? ' Adopted weights would then wait for a person\'s grant.' : ''}`;
+  $('ruleOut').innerHTML = `Lift ${(100 * cold.lift).toFixed(1)} points, p = ${prob(cold.p)}: K1 ${v[0].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'} · wrong ${wb} → ${wd}: K2 ${v[1].pass ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>'} · <b class="${rule.adopt ? 'pass' : 'fail'}">${rule.adopt ? 'ADOPT' : 'DISSOLVE'}</b> (${esc(rule.why)})`;
 }
 
 async function load() {
-  const [settings, published, gates, parity, trace, sealText] = await Promise.all([getJSON('data/settings.json'), getJSON('data/published.json'), getJSON('data/gates.json'), getJSON('data/parity.json'), getJSON('data/trace.json'), getText('SEAL.json')]);
+  const [settings, published, gates, parity, weights, trace, sealText] = await Promise.all([getJSON('data/settings.json'), getJSON('data/published.json'), getJSON('data/gates.json'), getJSON('data/parity.json'), getJSON('data/weights.json'), getJSON('data/trace.json'), getText('SEAL.json')]);
   const walk = published && published.walk ? await getJSON('data/walk.json') : null;   // asked for only when it is on file
-  Object.assign(S, { settings, published, gates, parity, trace, walk, sealSha: sealText === null ? null : SHA.sha256(sealText) });
+  Object.assign(S, { settings, published, gates, parity, weights, trace, walk, sealSha: sealText === null ? null : SHA.sha256(sealText) });
   const list = [...(published && published.dev ? ['dev'] : []), ...((published && published.rounds) || []).map(String)];
   for (const w of list) {
     const dir = w === 'dev' ? 'data/dev' : `data/rounds/${w}`;
@@ -2607,15 +2922,25 @@ const ready = (async () => {
   const h = S.trace && S.trace.harvested;
   if (h) $('tryReply').value = h.reply;
   $('open').addEventListener('change', (e) => openProblem(e.target.value));
-  $('wall').addEventListener('click', (e) => { const id = e.target && e.target.getAttribute && e.target.getAttribute('data-id'); if (id) openProblem(id); });
-  $('moved').addEventListener('click', (e) => { const id = e.target && e.target.getAttribute && e.target.getAttribute('data-open'); if (id) { openProblem(id); if ($('probe').scrollIntoView) $('probe').scrollIntoView({ block: 'center' }); } });
+  $('wallBox').addEventListener('click', (e) => { const id = e.target && e.target.getAttribute && e.target.getAttribute('data-id'); if (id) openProblem(id); });
   $('rejudge').addEventListener('click', rejudge);
   $('tryTrace').addEventListener('click', tryTrace);
-  $('tryReset').addEventListener('click', () => { if (h) $('tryReply').value = h.reply; $('tryOut').innerHTML = 'Press the button.'; });
+  $('tryReset').addEventListener('click', () => { if (h) $('tryReply').value = h.reply; $('tryOut').innerHTML = 'Press Check it.'; });
   $('tryRule').addEventListener('click', tryRule);
+  // the living part: the crystal bound to the claims, the numbers running up, sections rising
+  const idle = $('facet').innerHTML;
+  S.crystal = CRYSTAL.mount($('crystal'), { energy: 0.9 });
+  if (S.crystal) {
+    S.crystal.setFaces(S.faces.map((f) => f.state));
+    S.crystal.onHover((i) => { $('facet').innerHTML = i >= 0 && S.faces[i] && S.faces[i].text ? S.faces[i].text : idle; });
+    S.crystal.onPick((i) => { const el = i < 24 ? $('claims') : $('built'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth' }); });
+    HOUSE.bindScroll(S.crystal, 0.9);
+  }
+  if (typeof document.querySelectorAll === 'function') { for (const el of document.querySelectorAll('[data-count]')) HOUSE.count(el, el.getAttribute('data-count')); }
+  HOUSE.reveal(document); HOUSE.light(document);
   if (typeof navigator !== 'undefined' && navigator.serviceWorker && typeof location !== 'undefined' && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
-window.__distillation = { ready, S, render, rejudge, tryTrace, tryRule, openProblem, paired };
+window.__distillation = { ready, S, render, rejudge, tryTrace, tryRule, openProblem, paired, faces };
 </script>
 </body>
 </html>
