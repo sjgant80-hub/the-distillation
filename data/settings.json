@@ -1,0 +1,74 @@
+{
+ "v": "the-distillation-settings/1",
+ "model": {
+  "name": "Llama-3.2-1B-Instruct",
+  "weightsSha256": "1ff795ff6a07e6a68085d206fb84417da2f083f68391c2843cd2b8ac6df8538f",
+  "precision": "float32",
+  "runtime": "PyTorch on a laptop CPU"
+ },
+ "harvest": {
+  "maxTokens": 24,
+  "maxTicks": 256
+ },
+ "cold": {
+  "maxTokens": 256,
+  "batch": 8
+ },
+ "train": {
+  "rank": 16,
+  "alpha": 32,
+  "targets": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "epochs": 3,
+  "learningRate": 0.0002,
+  "batch": 8,
+  "seed": 20261125
+ },
+ "dev": {
+  "harvestSeed": 20261301,
+  "harvestSheets": 30,
+  "testSeed": 20261302,
+  "testSheets": 12
+ },
+ "rounds": {
+  "max": 4,
+  "harvestSheets": 120,
+  "testSheets": 40,
+  "seeds": [
+   {
+    "harvest": 20261401,
+    "test": 20261501
+   },
+   {
+    "harvest": 20261402,
+    "test": 20261502
+   },
+   {
+    "harvest": 20261403,
+    "test": 20261503
+   },
+   {
+    "harvest": 20261404,
+    "test": 20261504
+   }
+  ]
+ },
+ "spend": {
+  "hoursPerRound": 12,
+  "hoursInAll": 48
+ },
+ "trace": {
+  "maxLines": 24
+ },
+ "bars": {
+  "liftPoints": 5,
+  "alpha": 0.05
+ }
+}

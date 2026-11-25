@@ -1,0 +1,8 @@
+{
+  "name": "the-distillation",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Depth 5: a small model learns from its own verified traces and is tested cold on problems it never saw; adopted only if it wins clean. Round after round, until its house is full.",
+  "license": "MIT"
+}

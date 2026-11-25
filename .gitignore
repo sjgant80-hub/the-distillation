@@ -1,0 +1,6 @@
+node_modules/
+.witness/
+__pycache__/
+*.pyc
+adapters/
+data/**/incoming-*.json
