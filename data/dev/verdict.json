@@ -1,0 +1,187 @@
+{
+ "v": "the-distillation-verdict/1",
+ "set": "dev",
+ "round": 0,
+ "sealSha256": null,
+ "verdicts": [
+  {
+   "id": "K1",
+   "name": "Lift",
+   "bar": "on the held-out block, cold, one try each: the distilled model is right on at least 5 points in a hundred more than the base, it solves more of the problems the base failed than it loses of the ones the base solved, and the difference is significant (exact two-sided McNemar test, p < 0.05)",
+   "pass": true,
+   "result": "base 34.8% (31 of 89), distilled 49.4% (44 of 89): 14.6 points; p = 0.002"
+  },
+  {
+   "id": "K2",
+   "name": "Still honest",
+   "bar": "on the same block the distilled model gives no more confident wrong answers than the base",
+   "pass": true,
+   "result": "confident wrong answers: base 53 of 89, distilled 41 of 89; no answer: base 5, distilled 4"
+  },
+  {
+   "id": "K3",
+   "name": "The fail-wall moved",
+   "bar": "more held-out problems go from failed (base) to solved (distilled) than the other way",
+   "pass": true,
+   "result": "15 held-out problems the base failed are solved by the distilled model; 2 the base solved are lost"
+  },
+  {
+   "id": "K4",
+   "name": "Verify-or-dissolve at the weights",
+   "bar": "the outcome published for the round is the one the rule gives (adopted only if K1 and K2 both pass, dissolved otherwise), and the round stands only on weights adopted by the rule and granted by a person",
+   "pass": true,
+   "result": "the rule gives: ADOPT (the cold lift cleared its bar and it is no less honest); published: adopted; it stands on the weights of 0 earlier rounds, each adopted and granted"
+  },
+  {
+   "id": "K5",
+   "name": "Clean training data",
+   "bar": "every training example is a complete crystal's verified working, checked again by exact arithmetic; none is unverified; the trainer read that file, byte for byte",
+   "pass": true,
+   "result": "158 of 158 training examples verified by exact arithmetic, 0 unverified; the trainer read that file, byte for byte"
+  },
+  {
+   "id": "K6",
+   "name": "Held-out integrity",
+   "bar": "no held-out problem is in the training set, and no held-out problem was harvested",
+   "pass": true,
+   "result": "0 of 89 held-out problems are in the training set; 0 were harvested"
+  }
+ ],
+ "adopted": true,
+ "why": "the cold lift cleared its bar and it is no less honest",
+ "adapterSha256": "6b2de739a7630563eb13f3149b75fad89a145ce0e95f631d10c92bd28cd379ee",
+ "standsOn": [],
+ "hours": 1.966388888888889,
+ "seconds": {
+  "harvest": 1833,
+  "train": 3493,
+  "coldBase": 670,
+  "coldDistilled": 1083
+ },
+ "harvest": {
+  "problems": 169,
+  "complete": 163,
+  "calls": 1375
+ },
+ "cold": {
+  "n": 89,
+  "unmatched": 0,
+  "base": {
+   "n": 89,
+   "right": 31,
+   "wrong": 53,
+   "none": 5,
+   "rate": 0.34831460674157305,
+   "silent": 0.5955056179775281
+  },
+  "distilled": {
+   "n": 89,
+   "right": 44,
+   "wrong": 41,
+   "none": 4,
+   "rate": 0.4943820224719101,
+   "silent": 0.4606741573033708
+  },
+  "lift": 0.14606741573033705,
+  "gained": [
+   "energy:20261302-0",
+   "momentum:20261302-1",
+   "trapezium:20261302-1",
+   "squares:20261302-2",
+   "power:20261302-3",
+   "series:20261302-3",
+   "trapezium:20261302-3",
+   "energy:20261302-4",
+   "dot:20261302-6",
+   "series:20261302-7",
+   "energy:20261302-8",
+   "squares:20261302-8",
+   "trapezium:20261302-9",
+   "dot:20261302-10",
+   "trapezium:20261302-11"
+  ],
+  "lost": [
+   "tank:20261302-6",
+   "grid:20261302-11"
+  ],
+  "p": 0.002349853515625
+ },
+ "tiers": {
+  "base": {
+   "easy": {
+    "n": 17,
+    "right": 17,
+    "wrong": 0,
+    "none": 0,
+    "rate": 1,
+    "silent": 0
+   },
+   "climb": {
+    "n": 48,
+    "right": 13,
+    "wrong": 35,
+    "none": 0,
+    "rate": 0.2708333333333333,
+    "silent": 0.7291666666666666
+   },
+   "wall": {
+    "n": 24,
+    "right": 1,
+    "wrong": 18,
+    "none": 5,
+    "rate": 0.041666666666666664,
+    "silent": 0.75
+   }
+  },
+  "distilled": {
+   "easy": {
+    "n": 17,
+    "right": 17,
+    "wrong": 0,
+    "none": 0,
+    "rate": 1,
+    "silent": 0
+   },
+   "climb": {
+    "n": 48,
+    "right": 27,
+    "wrong": 21,
+    "none": 0,
+    "rate": 0.5625,
+    "silent": 0.4375
+   },
+   "wall": {
+    "n": 24,
+    "right": 0,
+    "wrong": 20,
+    "none": 4,
+    "rate": 0,
+    "silent": 0.8333333333333334
+   }
+  }
+ },
+ "train": {
+  "examples": 158,
+  "verified": 158,
+  "unverified": 0,
+  "fileSha256": "7bcb29d10829cb9a005a403385a81651753a72c9fd09c8294f9c10dfe4555c03",
+  "trainerSha256": "7bcb29d10829cb9a005a403385a81651753a72c9fd09c8294f9c10dfe4555c03",
+  "trainerExamples": 158
+ },
+ "held": {
+  "n": 89,
+  "overlap": 0,
+  "harvested": 0
+ },
+ "notes": [],
+ "files": {
+  "harvest.json": "fa79aad4427073e9b9ce114c6e4ec70cd44bffb473c406f34443fc91d3cd4b55",
+  "train.jsonl": "7bcb29d10829cb9a005a403385a81651753a72c9fd09c8294f9c10dfe4555c03",
+  "asks.json": "723cf389d5e5d52ee4a128baebcba2b3aec36a74b57552bfb40c883700c64c89",
+  "held.json": "903796718aa48bde628a01105076fe044e2134c9b15d3ebf6c8fb6d9dead3fb8",
+  "train-log.json": "6a70e1fb2ef295b25009c582564345453d64f986976f6c7a82e6e0df9e6ce089",
+  "cold-base.json": "300403a7211545652ac56cb2582652f0b2f64d69f025b8c7b4615ced401a9f14",
+  "cold-distilled.json": "d24bdf962262502907773549fea4b3cc129498d6dfd21c1e9087b8fb8c44843a"
+ },
+ "at": "2026-11-25T20:29:38.226Z"
+}

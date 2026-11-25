@@ -44,6 +44,15 @@ Every problem it touched, harvested or held out, is struck from every sealed hel
 4. *What a record must say to be evidence.* The judge was made to refuse a harvest, a trainer's log or a cold test
    that does not itself say it was made on the sealed weights with the sealed settings.
 
+**What the development round found**, so that nobody has to wonder what was seen before the seal
+([data/dev/verdict.json](data/dev/verdict.json)): 163 of 169 harvested problems finished under the checker, giving
+158 verified training examples. Cold, on 89 held-out problems, the base model was right on 31 and the trained model
+on 44 (15 gained, 2 lost; exact McNemar p = 0.002); confident wrong answers went from 53 to 41. All of the gain was
+in the middle tier (13 to 27 of 48). The hardest tier did not move (1 of 24 before, 0 of 24 after). The rule would
+have adopted it. None of this is a claim: the sealed rounds are run on other problems, and the number of problems, the
+seeds, the bars and the training settings of those rounds were all committed before this result existed. Its weights
+are used by no sealed round.
+
 ## The weights
 
 The model is Llama 3.2 1B Instruct. The weights file (`model.safetensors`, 2,471,645,608 bytes) was fetched from a

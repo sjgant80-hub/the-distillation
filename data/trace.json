@@ -1,0 +1,95 @@
+{
+ "v": "the-distillation-trace/1",
+ "from": "the development round",
+ "harvested": {
+  "id": "tank:20261301-0",
+  "tier": "climb",
+  "statement": "A tank is 13 cm long, 12 cm wide and 26 cm deep. Volume = length × width × depth. How many cubic centimetres?",
+  "task": {
+   "id": "tank:20261301-0",
+   "sheet": 0,
+   "family": "tank",
+   "tier": "climb",
+   "statement": "A tank is 13 cm long, 12 cm wide and 26 cm deep. Volume = length × width × depth. How many cubic centimetres?",
+   "ask": "13 × 12 × 26",
+   "check": {
+    "type": "value",
+    "value": "4056"
+   }
+  },
+  "calls": 8,
+  "events": [
+   {
+    "kind": "bond",
+    "cell": "13 × 12",
+    "said": "13 × 12 = 156",
+    "value": "156",
+    "into": null
+   },
+   {
+    "kind": "split",
+    "cell": "156 × 26",
+    "said": "156 × 26 = 4066",
+    "value": null,
+    "into": "156 × 26 = 156 × 20 + 156 × 6"
+   },
+   {
+    "kind": "bond",
+    "cell": "156 × 20",
+    "said": "156 × 20 = 3120",
+    "value": "3120",
+    "into": null
+   },
+   {
+    "kind": "bond",
+    "cell": "156 × 6",
+    "said": "156 × 6 = 936",
+    "value": "936",
+    "into": null
+   },
+   {
+    "kind": "split",
+    "cell": "3120 + 936",
+    "said": "3120 + 936 = 4066",
+    "value": null,
+    "into": "3120 + 936 = 3120 + 900 + 30 + 6"
+   },
+   {
+    "kind": "bond",
+    "cell": "3120 + 900",
+    "said": "3120 + 900 = 4020",
+    "value": "4020",
+    "into": null
+   },
+   {
+    "kind": "bond",
+    "cell": "30 + 6",
+    "said": "30 + 6 = 36",
+    "value": "36",
+    "into": null
+   },
+   {
+    "kind": "bond",
+    "cell": "4020 + 36",
+    "said": "4020 + 36 = 4056",
+    "value": "4056",
+    "into": null
+   }
+  ],
+  "reply": "13 × 12 = 156\n156 × 20 = 3120\n156 × 6 = 936\n3120 + 900 = 4020\n30 + 6 = 36\n4020 + 36 = 4056\nANSWER: 4056",
+  "lines": 6
+ },
+ "held": {
+  "id": "energy:20261302-0",
+  "tier": "climb",
+  "statement": "A 16 kg cart moves at 29 m/s. Kinetic energy = 0.5 × mass × speed × speed. How many joules?",
+  "base": {
+   "text": "29 × 16 = 464\n0.5 × 16 = 8\n464 + 8 = 472\nANSWER: 472",
+   "outcome": "wrong"
+  },
+  "distilled": {
+   "text": "0.5 × 16 = 8\n29 × 29 = 841\n8 × 841 = 6728\nANSWER: 6728",
+   "outcome": "right"
+  }
+ }
+}
