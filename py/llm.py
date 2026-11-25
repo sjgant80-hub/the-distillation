@@ -7,6 +7,7 @@
 # and the worked examples) is worked out once, and — for the harvest, where each problem's conversation only grows — a
 # conversation worked out for one call is kept, so the next call for that problem works out only its new turn. A row
 # takes over the kept work for as many opening tokens as it shares, exactly; the rest is padded on the RIGHT and masked.
+# A conversation whose reply has ended leaves the batch, so no work is spent on it while the others finish.
 # Attention is causal, so a real token never sees padding, and each token is given the position its own conversation
 # has reached. py/parity.py checks all of this against the library's plain one-at-a-time generation.
 import hashlib
@@ -140,31 +141,46 @@ class LLM:
         base = torch.tensor(took) + lens
         nxt = out.logits[torch.arange(B), lens - 1].argmax(dim=-1)
         past = out.past_key_values
-        done = torch.zeros(B, dtype=torch.bool)
+        done = [False] * B
         written = [[] for _ in range(B)]
+        kept = {}                                # row → its own work, taken the moment it stops writing
         stop = torch.tensor(STOP_IDS)
-        fed = 0
+        rows = list(range(B))                    # the conversations still being written, in batch order
         for step in range(max_new_tokens):
-            hit = torch.isin(nxt, stop)
-            for i in range(B):
-                if not done[i] and not hit[i]:
-                    written[i].append(int(nxt[i]))
-            done = done | hit
-            if bool(done.all()) or step == max_new_tokens - 1:
+            hit = torch.isin(nxt, stop).tolist()
+            for j, i in enumerate(rows):
+                if hit[j]:
+                    done[i] = True
+                else:
+                    written[i].append(int(nxt[j]))
+            last = step == max_new_tokens - 1
+            if keep:
+                # a row that has stopped has had every token it wrote fed back; a row cut off at the limit has not
+                # had its last one. Either way, what is worked out is taken before the row leaves the batch.
+                for j, i in enumerate(rows):
+                    if hit[j] or last:
+                        g = len(written[i]) - (0 if hit[j] else 1)
+                        kept[i] = (g, self._row(past, j, took[i], P, int(lens[i]), L, g))
+            stay = [j for j in range(len(rows)) if not hit[j]]
+            if not stay or last:
                 break
-            mask = torch.cat([mask, torch.ones((B, 1), dtype=torch.long)], dim=1)
+            if len(stay) < len(rows):            # a finished conversation is not worked on any further
+                pick = torch.tensor(stay)
+                past.batch_select_indices(pick)
+                mask, base, nxt = mask[pick], base[pick], nxt[pick]
+                rows = [rows[j] for j in stay]
+            mask = torch.cat([mask, torch.ones((len(rows), 1), dtype=torch.long)], dim=1)
             out = self.model(input_ids=nxt.unsqueeze(1), attention_mask=mask, position_ids=(base + step).unsqueeze(1), past_key_values=past, use_cache=True)
             past = out.past_key_values
             nxt = out.logits[:, -1].argmax(dim=-1)
-            fed += 1
         if keep:
             for i in range(B):
-                g = min(len(written[i]), fed)    # the written tokens that were fed back, and so are worked out
+                g, kv = kept[i]
                 e, n = lay["found"][i]
                 if e is not None and n == e["ids"].shape[0]:
                     self._drop(e)                # this conversation carries that one on whole: the older one is not needed
-                self._keep(torch.cat([seqs[i], torch.tensor(written[i][:g], dtype=torch.long)]), self._row(past, i, took[i], P, int(lens[i]), L, g))
-        return [{"text": self.tok.decode(written[i], skip_special_tokens=True), "tokens": len(written[i]), "prompt": int(seqs[i].shape[0]), "cut": not bool(done[i])} for i in range(B)]
+                self._keep(torch.cat([seqs[i], torch.tensor(written[i][:g], dtype=torch.long)]), kv)
+        return [{"text": self.tok.decode(written[i], skip_special_tokens=True), "tokens": len(written[i]), "prompt": int(seqs[i].shape[0]), "cut": not done[i]} for i in range(B)]
 
     @torch.no_grad()
     def generate_plain(self, messages, max_new_tokens):

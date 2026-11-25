@@ -1,6 +1,6 @@
 // publish.mjs — what the page reads. First every round on file is decided again from its own files (scripts/check.mjs);
 // only if that holds does it write:
-//   data/published.json   which rounds are on file, and which carry a person's grant
+//   data/published.json   which rounds are on file, which carry a person's grant, and whether the buyer walk is on file
 //   data/trace.json       one real harvested problem (every reply the model gave, what bonded, what was dissolved, and
 //                         the training example built from it) and one real held-out problem (what each model said,
 //                         cold), taken from the newest round on file, for the page's "how it works"
@@ -19,7 +19,7 @@ const at = (p) => new URL(`../${p}`, import.meta.url), has = (p) => existsSync(a
 export async function derived() {
   const { lines, rounds } = await checked();
   const sealed = rounds.filter((r) => r !== 'dev').map(Number);
-  const published = { v: 'the-distillation-published/1', dev: rounds.includes('dev'), rounds: sealed, grants: sealed.filter((k) => has(`data/grants/round-${k}.json`)) };
+  const published = { v: 'the-distillation-published/1', dev: rounds.includes('dev'), rounds: sealed, grants: sealed.filter((k) => has(`data/grants/round-${k}.json`)), walk: has('data/walk.json') };
   let trace = null;
   const which = sealed.length ? String(sealed[sealed.length - 1]) : rounds.includes('dev') ? 'dev' : null;
   if (which !== null) {
