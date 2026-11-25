@@ -55,3 +55,23 @@ test('compare: the two models on the same problems, the fail-wall both ways, and
   assert.deepEqual([s.gained, s.lost, s.lift], [[], [], 0]);
   for (const bad of HOSTILE) { assert.equal(C.compare(bad, dist).n, 0); assert.equal(C.compare(base, bad).n, 0); assert.equal(C.compare(base, bad).unmatched, 5); }
 });
+
+test('made: a cold record is evidence only when it is whole and was made on the right weights at the right limit', () => {
+  const W = 'a'.repeat(64), A1 = 'b'.repeat(64), A2 = 'c'.repeat(64);
+  const file = (over) => ({ complete: true, weightsSha256: W, adapters: [A1, A2], maxTokens: 256, ...over });
+  const want = (over) => ({ weightsSha256: W, adapters: [A1, A2], maxTokens: 256, ...over });
+  assert.equal(C.made(file(), want()), true);
+  assert.equal(C.made(file({ adapters: [] }), want({ adapters: [] })), true, 'the model as published: no adapters');
+  assert.equal(C.made(file({ complete: false }), want()), false); assert.equal(C.made(file({ complete: 'yes' }), want()), false);
+  assert.equal(C.made(file({ weightsSha256: 'd'.repeat(64) }), want()), false, 'other base weights');
+  assert.equal(C.made(file({ weightsSha256: undefined }), want({ weightsSha256: undefined })), false, 'no weights named is not a match');
+  assert.equal(C.made(file({ weightsSha256: '' }), want({ weightsSha256: '' })), false);
+  assert.equal(C.made(file({ adapters: [A2, A1] }), want()), false, 'the order of the adapters is part of it');
+  assert.equal(C.made(file({ adapters: [A1] }), want()), false); assert.equal(C.made(file(), want({ adapters: [A1] })), false);
+  assert.equal(C.made(file({ adapters: [A1, 'd'.repeat(64)] }), want()), false, 'the last adapter is another');
+  assert.equal(C.made(file({ adapters: ['', ''] }), want({ adapters: ['', ''] })), false, 'an adapter with no name is not a match');
+  assert.equal(C.made(file({ adapters: null }), want()), false); assert.equal(C.made(file(), want({ adapters: null })), false);
+  assert.equal(C.made(file({ maxTokens: 128 }), want()), false, 'another token limit');
+  assert.equal(C.made(file({ maxTokens: '256' }), want({ maxTokens: '256' })), false);
+  for (const bad of HOSTILE) { assert.equal(C.made(bad, want()), false); assert.equal(C.made(file(), bad), false); }
+});

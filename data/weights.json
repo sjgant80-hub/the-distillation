@@ -1,0 +1,21 @@
+{
+ "v": "the-distillation-weights/1",
+ "file": "model.safetensors",
+ "bytes": 2471645608,
+ "sha256": "1ff795ff6a07e6a68085d206fb84417da2f083f68391c2843cd2b8ac6df8538f",
+ "against": {
+  "what": "Ollama's llama3.2:1b, its own 8-bit (Q8_0) build",
+  "blob": "sha256:74701a8c35f6c8d9a4b91f3f3497643001d63e0c7a84e085bed452548fa88d45",
+  "bytes": 1321082688
+ },
+ "tensorsCompared": 146,
+ "tensorsInTheOtherCopy": 147,
+ "weightsCompared": 1235814400,
+ "largestMissInRoundingSteps": 0.5862,
+ "sameWeightsMustStayUnder": 0.6,
+ "notMatched": [],
+ "notMapped": [
+  "rope_freqs.weight"
+ ],
+ "verdict": "same weights, to within 8-bit rounding, on every tensor compared"
+}

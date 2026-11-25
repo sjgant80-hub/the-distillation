@@ -3,8 +3,8 @@
 # and whole problems grown call by call the way the harvest asks them (each round one call from every problem, the
 # conversations kept between rounds).
 #   python py/parity.py <model dir> <convos.json> [cells] [cold] [grown problems]
-import json, sys, time
-from llm import LLM
+import importlib, json, os, sys, time
+LLM = importlib.import_module(os.environ.get("LLM_MODULE", "llm")).LLM   # the module under test (the sealed one unless another is named)
 
 model_dir, path = sys.argv[1], sys.argv[2]
 n_cells, n_cold = int(sys.argv[3]) if len(sys.argv) > 3 else 24, int(sys.argv[4]) if len(sys.argv) > 4 else 8

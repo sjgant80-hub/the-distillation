@@ -35,7 +35,8 @@ export function unique(tasks) {
   return { tasks: out, repeats };
 }
 
-// block(seed, sheets) → the unique problems of that many sheets of the generator
+// block(seed, sheets) → the unique problems of that many sheets of the generator (a count that is not a whole number
+// of sheets makes none: the generator's own rule)
 export const block = (seed, sheets) => unique(T.set(seed, sheets)).tasks;
 
 // less(tasks, struck) → the tasks whose identity is not among the struck tasks' identities
@@ -57,14 +58,14 @@ export function overlap(training, held) {
 //                                               pool: that round's harvest block, less EVERY round's held block
 // A pool keeps only problems that carry a calculation: the engine has nothing to grow on the others.
 export function plan(settings) {
-  const int = (v) => (Number.isInteger(v) && v > 0 ? v : 0), grows = (t) => typeof get(t, 'ask') === 'string';
+  const grows = (t) => typeof get(t, 'ask') === 'string';
   const dev = get(settings, 'dev'), R = get(settings, 'rounds'), seeds = Array.isArray(get(R, 'seeds')) ? R.seeds : [];
-  const devHeld = block(get(dev, 'testSeed'), int(get(dev, 'testSheets'))), devHarvest = block(get(dev, 'harvestSeed'), int(get(dev, 'harvestSheets')));
-  const helds = seeds.map((s) => less(block(get(s, 'test'), int(get(R, 'testSheets'))), [...devHeld, ...devHarvest]));
+  const devHeld = block(get(dev, 'testSeed'), get(dev, 'testSheets')), devHarvest = block(get(dev, 'harvestSeed'), get(dev, 'harvestSheets'));
+  const helds = seeds.map((s) => less(block(get(s, 'test'), get(R, 'testSheets')), [...devHeld, ...devHarvest]));
   const every = helds.flat();
   return {
     dev: { held: devHeld, pool: less(devHarvest, devHeld).filter(grows) },
-    rounds: seeds.map((s, i) => ({ round: i + 1, held: helds[i], pool: less(block(get(s, 'harvest'), int(get(R, 'harvestSheets'))), every).filter(grows) })),
+    rounds: seeds.map((s, i) => ({ round: i + 1, held: helds[i], pool: less(block(get(s, 'harvest'), get(R, 'harvestSheets')), every).filter(grows) })),
   };
 }
 

@@ -98,6 +98,7 @@ last adopted and granted model. "The distilled model" is the base with the round
 ## The development round
 
 Before the seal, a development round was run on problems made from other seeds, to shape the engineering: the token
-limits, the longest working that is trained on, the speed of the model's hands. Its problems are struck from every
-sealed pool and every sealed held-out block. Its records are published in `data/dev/` and it is not a claim: no
-sealed bar is decided by it, and the two bars above were fixed in `data/settings.json` before its model was trained.
+limits, the longest working that is trained on, the speed of the model's hands. Every problem it touched, harvested
+or held out, is struck from every sealed held-out block, so no sealed claim is measured on a problem the settings
+were shaped on. Its records are published in `data/dev/` and it is not a claim: no sealed bar is decided by it, and
+the two bars above were fixed in `data/settings.json` before its model was trained.

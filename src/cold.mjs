@@ -13,6 +13,9 @@
 //   tally(rows)                  { n, right, wrong, none, rate, silent }   rows: [{ outcome }]
 //   compare(base, distilled)     the two models on the same problems: both tallies, the fail-wall (problems the base
 //                                failed and the distilled model solved, and the other way), and the exact McNemar p
+//   made(file, want)             true only for a whole cold record made as it had to be: on these base weights, with
+//                                these adapters in this order, at this token limit. A record made any other way is
+//                                not evidence.
 // Pure and total.
 import { rule } from '../vendor/crystal/vendor/climb/src/checker.mjs';
 import LOOP from '../vendor/crystal/vendor/climb/src/loop.mjs';
@@ -59,4 +62,13 @@ export function compare(base, distilled) {
   return { n: both.length, unmatched, base: tb, distilled: td, lift: td.rate - tb.rate, gained, lost, p: mcnemar(gained.length, lost.length) };
 }
 
-export default { OUTCOMES, asking, read, tally, compare };
+// made(file, want) → boolean. file: a cold record ({ complete, weightsSha256, adapters, maxTokens }); want: { weightsSha256, adapters, maxTokens }
+export function made(file, want) {
+  const have = get(file, 'adapters'), need = get(want, 'adapters');
+  if (get(file, 'complete') !== true || !Array.isArray(have) || !Array.isArray(need) || have.length !== need.length) return false;
+  if (str(get(want, 'weightsSha256')) === '' || get(file, 'weightsSha256') !== get(want, 'weightsSha256')) return false;
+  if (!Number.isInteger(get(want, 'maxTokens')) || get(file, 'maxTokens') !== get(want, 'maxTokens')) return false;
+  return have.every((s, i) => str(s) !== '' && s === need[i]);
+}
+
+export default { OUTCOMES, asking, read, tally, compare, made };

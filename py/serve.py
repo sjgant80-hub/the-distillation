@@ -3,7 +3,7 @@
 # one batch. Listens on 127.0.0.1 only. It answers a conversation with the model's greedy reply and decides nothing.
 #   python py/serve.py <model dir> [port] [adapter dir ...]
 #   POST /ask   {"messages": [...], "max_tokens": 24}  →  {"text", "ms", "prompt", "reply", "cut"}
-#   GET  /info  →  what is loaded (model folder, weights sha256, adapters, calls answered)
+#   GET  /info  →  what is loaded (model folder, weights sha256, each merged adapter's sha256 in order, calls answered)
 import json, queue, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from llm import LLM, sha256_file
@@ -14,7 +14,7 @@ adapters = sys.argv[3:]
 BATCH, WINDOW = 16, 0.08
 
 llm = LLM(model_dir, adapters)
-info = {"model": model_dir.replace("\\", "/").rstrip("/").split("/")[-1], "weights_sha256": sha256_file(f"{model_dir}/model.safetensors"), "adapters": [a.replace("\\", "/").rstrip("/").split("/")[-1] for a in adapters], "calls": 0, "batches": 0}
+info = {"model": model_dir.replace("\\", "/").rstrip("/").split("/")[-1], "weights_sha256": sha256_file(f"{model_dir}/model.safetensors"), "adapters": [sha256_file(f"{a}/adapter_model.safetensors") for a in adapters], "calls": 0, "batches": 0}
 jobs = queue.Queue()
 
 

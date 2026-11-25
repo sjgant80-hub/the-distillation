@@ -12,8 +12,11 @@ export const GATED = [
   ['src/adopt.mjs', ['test/adopt.test.mjs']],
   ['src/rounds.mjs', ['test/rounds.test.mjs']],
   ['src/claims.mjs', ['test/claims.test.mjs']],
+  ['src/judge.mjs', ['test/judge.test.mjs']],
+  ['genome/cell.mjs', ['test/genome.test.mjs']],
 ];
 export const NOTHING_TO_MUTATE = {
+  'genome/io.mjs, judge.mjs, lane.mjs, health.mjs, tombstone.mjs': "the estate genome's hook template, byte for byte; gated in estate-genome (template/genome), exercised here by the birth check in CI",
   'vendor/crystal/**': "The Crystal's kernels (and The Climb's inside them), byte for byte as each seal froze them; gated in the-crystal and the-climb (data/gates.json there) and compared with The Crystal's repository on every push (scripts/vendor.mjs --check)",
   'py/llm.py, py/serve.py, py/cold.py, py/train.py': "the model's hands: they load the weights, write replies and train the adapter, and decide nothing. Every reply and every training line is judged from the records by the gated kernels above. The generation path is checked against the library's own plain generation (py/parity.py, recorded in data/parity.json); the trainer's loss is checked against the whole-example loss on every step it runs",
   'page/*.js': 'the glass: it draws the published records and decides nothing; every verdict on the page is made again in the tab by the gated kernels',

@@ -18,7 +18,7 @@ test('six claims, each with its name, its sealed bar and a verdict; with every p
   assert.deepEqual(v.map((x) => x.pass), [true, true, true, true, true, true]);
   for (const x of v) { assert.equal(x.name, K.NAMES[x.id]); assert.equal(x.bar, K.bars(SETTINGS)[x.id]); assert.equal(typeof x.result, 'string'); }
   assert.match(K.bars(SETTINGS).K1, /at least 5 points/); assert.match(K.bars(SETTINGS).K1, /p < 0\.05/);
-  assert.equal(v[0].result, 'base 30.0% (60 of 200), distilled 45.0% (90 of 200): 15.0 points; p = 2.00e-5');
+  assert.equal(v[0].result, 'base 30.0% (60 of 200), distilled 45.0% (90 of 200): 15.0 points; p = 2.0e-5');
   assert.equal(v[2].result, '40 held-out problems the base failed are solved by the distilled model; 10 the base solved are lost');
 });
 
@@ -39,6 +39,9 @@ test('K1 lift: the bar in points, the exact test, and more gained than lost — 
   assert.equal(pass({ cold: cold({ lift: 0.049 }) }, 'K1'), false);
   assert.equal(pass({ cold: cold({ p: 0.05 }) }, 'K1'), false, 'p must be below alpha, not at it');
   assert.equal(pass({ cold: cold({ p: 0.0499 }) }, 'K1'), true);
+  // the p-value is written to be read: three decimal places, and powers of ten only below a thousandth
+  const said = (p) => K.verdicts({ cold: cold({ p }) }, SETTINGS)[0].result.split('p = ')[1];
+  assert.deepEqual([said(0.164), said(0.0312), said(0.001), said(0.00099), said(1), said(4.72e-4)], ['0.164', '0.031', '0.001', '9.9e-4', '1.000', '4.7e-4']);
   assert.equal(pass({ cold: cold({ gained: ids(10, 'g'), lost: ids(10, 'l') }) }, 'K1'), false);
   assert.equal(pass({ cold: cold({ lift: -0.2, gained: ids(2, 'g'), lost: ids(40, 'l') }) }, 'K1'), false, 'a significant difference the wrong way is not a lift');
 });
@@ -66,6 +69,10 @@ test('K4 verify-or-dissolve: the published outcome is the rule\'s, adopt or diss
   assert.match(K.verdicts(ev({ adopted: false, standsOn: [], allowed: [] }, flat), SETTINGS)[3].result, /the rule gives: DISSOLVE .*published: dissolved/);
   // it may stand only on the weights the chain allows, in that order
   assert.equal(pass(ev({ adopted: true, standsOn: [SHA], allowed: [SHA] }), 'K4'), true);
+  const said = (o) => K.verdicts(ev(o), SETTINGS)[3].result;
+  assert.equal(said({ adopted: true, standsOn: [SHA], allowed: [SHA] }), 'the rule gives: ADOPT (the cold lift cleared its bar and it is no less honest); published: adopted; it stands on the weights of 1 earlier round, each adopted and granted');
+  assert.match(said({ adopted: true, standsOn: [], allowed: [] }), /it stands on the weights of 0 earlier rounds, each adopted and granted$/);
+  assert.match(said({ adopted: true, standsOn: [SHA, 'b'.repeat(64)], allowed: [SHA] }), /it stands on the weights of 2 earlier rounds, NOT all adopted and granted$/);
   assert.equal(pass(ev({ adopted: true, standsOn: [SHA], allowed: [] }), 'K4'), false, 'it stood on weights nobody granted');
   assert.equal(pass(ev({ adopted: true, standsOn: [], allowed: [SHA] }), 'K4'), false);
   assert.equal(pass(ev({ adopted: true, standsOn: [SHA, 'b'.repeat(64)], allowed: ['b'.repeat(64), SHA] }), 'K4'), false, 'the order is part of it');

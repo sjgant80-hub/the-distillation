@@ -64,6 +64,9 @@ test('verified: an example is only-true by arithmetic alone, and every way of sp
   spoil('13 × 12 = 150 + 6\n156 × 26 = 4056\nANSWER: 4056', 'line 1 is not a true step');     // the right side is not a plain number
   spoil('I think 13 × 12 = 156\n156 × 26 = 4056\nANSWER: 4056', 'line 1 is not a true step');
   spoil('13 × 12 = 156\n\n156 × 26 = 4056\nANSWER: 4056', 'line 2 is not a true step');
+  // the second opinion: lines this file's own check would pass, that The Climb's sealed checker reads otherwise
+  spoil('13 × 12 = +156\n156 × 26 = 4056\nANSWER: 4056', 'the sealed checker reads it otherwise');   // it does not read the first line as a step
+  spoil('13 × 12 = 156\n156 × 26 = 4056\nANSWER: +4056', 'the sealed checker reads it otherwise');   // it does not take that as the answer
   // true steps, the right answer, but of another problem's conversation
   assert.equal(TR.verified({ ...ex, messages: LOOP.opening('Work out something else.', []) }, tank).why, 'the conversation is not the problem\'s');
   assert.equal(TR.verified({ ...ex, messages: null }, tank).ok, false);

@@ -17,6 +17,8 @@ import { decide } from './adopt.mjs';
 const get = (o, k) => { try { return o == null ? undefined : o[k]; } catch { return undefined; } };
 const int = (x) => Number.isInteger(x) && x >= 0;
 const pct = (x) => `${(100 * x).toFixed(1)}%`;
+// a p-value as a reader meets it: three decimal places, or powers of ten once it is smaller than that can show
+const prob = (p) => (p < 0.001 ? p.toExponential(1) : p.toFixed(3));
 
 export const NAMES = {
   K1: 'Lift', K2: 'Still honest', K3: 'The fail-wall moved', K4: 'Verify-or-dissolve at the weights', K5: 'Clean training data', K6: 'Held-out integrity',
@@ -48,13 +50,13 @@ export function verdicts(ev, settings) {
   const measured = c != null && int(get(c, 'n')) && c.n > 0 && Array.isArray(get(c, 'gained')) && Array.isArray(get(c, 'lost')) && typeof get(c, 'p') === 'number' && typeof lift === 'number' && typeof alpha === 'number';
   if (measured) {
     const g = c.gained.length, l = c.lost.length;
-    out.K1 = { pass: c.lift * 100 >= lift && c.p < alpha && g > l, result: `base ${pct(c.base.rate)} (${c.base.right} of ${c.n}), distilled ${pct(c.distilled.rate)} (${c.distilled.right} of ${c.n}): ${(100 * c.lift).toFixed(1)} points; p = ${c.p.toExponential(2)}` };
+    out.K1 = { pass: c.lift * 100 >= lift && c.p < alpha && g > l, result: `base ${pct(c.base.rate)} (${c.base.right} of ${c.n}), distilled ${pct(c.distilled.rate)} (${c.distilled.right} of ${c.n}): ${(100 * c.lift).toFixed(1)} points; p = ${prob(c.p)}` };
     out.K2 = { pass: c.distilled.wrong <= c.base.wrong, result: `confident wrong answers: base ${c.base.wrong} of ${c.n}, distilled ${c.distilled.wrong} of ${c.n}; no answer: base ${c.base.none}, distilled ${c.distilled.none}` };
     out.K3 = { pass: g > l, result: `${g} held-out problems the base failed are solved by the distilled model; ${l} the base solved are lost` };
   } else for (const k of ['K1', 'K2', 'K3']) out[k] = { pass: null, result: 'the cold test has not been run' };
   if (o != null && typeof get(o, 'adopted') === 'boolean' && Array.isArray(get(o, 'standsOn')) && Array.isArray(get(o, 'allowed')) && measured) {
     const rule = decide(out.K1.pass, out.K2.pass), stood = same(o.standsOn, o.allowed);
-    out.K4 = { pass: o.adopted === rule.adopt && stood, result: `the rule gives: ${rule.adopt ? 'ADOPT' : 'DISSOLVE'} (${rule.why}); published: ${o.adopted ? 'adopted' : 'dissolved'}; it stands on ${o.standsOn.length} earlier round${o.standsOn.length === 1 ? '' : 's'}' weights, ${stood ? 'each adopted and granted' : 'NOT all adopted and granted'}` };
+    out.K4 = { pass: o.adopted === rule.adopt && stood, result: `the rule gives: ${rule.adopt ? 'ADOPT' : 'DISSOLVE'} (${rule.why}); published: ${o.adopted ? 'adopted' : 'dissolved'}; it stands on the weights of ${o.standsOn.length} earlier ${o.standsOn.length === 1 ? 'round' : 'rounds'}, ${stood ? 'each adopted and granted' : 'NOT all adopted and granted'}` };
   } else out.K4 = { pass: null, result: 'no outcome has been published' };
   if (t != null && int(get(t, 'examples')) && int(get(t, 'verified')) && int(get(t, 'unverified')) && typeof get(t, 'fileSha256') === 'string') {
     const read = typeof get(t, 'trainerSha256') === 'string' ? t.trainerSha256 === t.fileSha256 && get(t, 'trainerExamples') === t.examples : null;

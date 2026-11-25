@@ -41,3 +41,20 @@ test('the chain a new round may stand on: every earlier round adopted by the rul
   assert.deepEqual(A.chain([], {}), []);
   for (const bad of HOSTILE) { assert.deepEqual(A.chain(bad, {}), []); assert.deepEqual(A.chain(h, bad), []); }
 });
+
+test('stood: the one chain of weights every part of a round was made on, or nothing', () => {
+  assert.deepEqual(A.stood([[], [], [], []]), [], 'round 1: every part on the model as published');
+  assert.deepEqual(A.stood([[SHA1], [SHA1], [SHA1]]), [SHA1]);
+  assert.deepEqual(A.stood([[SHA1, SHA2], [SHA1, SHA2]]), [SHA1, SHA2]);
+  assert.deepEqual(A.stood([[SHA1]]), [SHA1], 'one part agrees with itself');
+  assert.equal(A.stood([[SHA1], [SHA2]]), null, 'two parts on different weights');
+  assert.equal(A.stood([[SHA1, SHA2], [SHA2, SHA1]]), null, 'the order is part of it');
+  assert.equal(A.stood([[SHA1], []]), null); assert.equal(A.stood([[], [SHA1]]), null, 'one part on fewer weights than another');
+  assert.equal(A.stood([[SHA1], [SHA1, SHA2]]), null);
+  assert.equal(A.stood([[SHA1], null]), null, 'a missing part'); assert.equal(A.stood([null, [SHA1]]), null);
+  assert.equal(A.stood([['short'], ['short']]), null, 'weights are named by a whole SHA-256');
+  assert.equal(A.stood([[SHA1, 7], [SHA1, 7]]), null);
+  assert.equal(A.stood([]), null, 'no parts is no round');
+  const parts = [[SHA1], [SHA1]], got = A.stood(parts); got.push('x'); assert.deepEqual(parts[0], [SHA1], 'the answer is its own list');
+  for (const bad of HOSTILE) assert.equal(A.stood(bad), null);
+});

@@ -4,6 +4,7 @@
 // Several problems are grown side by side; the record is written as it goes, and a stopped harvest carries on.
 //   node scripts/harvest.mjs <dev | round number> [--port 8850] [--side 8] [--limit N]
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import G from '../vendor/crystal/src/grow.mjs';
 import SPLIT from '../src/split.mjs';
 
@@ -18,6 +19,9 @@ const dir = which === 'dev' ? 'data/dev' : `data/rounds/${Number(which)}`, path 
 mkdirSync(new URL(`../${dir}/`, import.meta.url), { recursive: true });
 const at = (p) => new URL(`../${p}`, import.meta.url);
 
+// a sealed round is harvested under the seal, and says which: the seal is every file that can change a result
+const seal = which === 'dev' ? null : existsSync(at('SEAL.json')) ? createHash('sha256').update(readFileSync(at('SEAL.json'))).digest('hex') : undefined;
+if (seal === undefined) { console.error('there is no seal: a sealed round is not harvested before SEAL.json exists'); process.exit(1); }
 const info = await (await fetch(`http://127.0.0.1:${port}/info`)).json();
 if (info.weights_sha256 !== settings.model.weightsSha256) { console.error('the model behind the door is not the one the settings name'); process.exit(1); }
 // a dropped connection is tried again: the same conversation always gets the same greedy reply, so asking twice
@@ -34,8 +38,9 @@ const call = async (messages, maxTokens) => {
 };
 
 const prior = existsSync(at(path)) ? JSON.parse(readFileSync(at(path), 'utf8')) : null;
-const out = prior && prior.set === which ? prior : { v: 'the-distillation-harvest/1', set: which, model: info.model, weightsSha256: info.weights_sha256, adapters: info.adapters, started: new Date().toISOString(), seconds: 0, records: [], complete: false };
-if (JSON.stringify(out.adapters) !== JSON.stringify(info.adapters)) { console.error('a harvest begun with other adapters cannot be carried on'); process.exit(1); }
+const out = prior && prior.set === which ? prior : { v: 'the-distillation-harvest/1', set: which, sealSha256: seal, model: info.model, weightsSha256: info.weights_sha256, adapters: info.adapters, settings: settings.harvest, started: new Date().toISOString(), seconds: 0, records: [], complete: false };
+if (JSON.stringify(out.adapters) !== JSON.stringify(info.adapters) || out.weightsSha256 !== info.weights_sha256) { console.error('a harvest begun on other weights cannot be carried on'); process.exit(1); }
+if ((out.sealSha256 ?? null) !== seal) { console.error('a harvest begun under another seal cannot be carried on'); process.exit(1); }
 const done = new Set(out.records.map((r) => r.id)), todo = set.pool.filter((t) => !done.has(t.id)).slice(0, limit);
 const save = () => writeFileSync(at(path), JSON.stringify(out));
 const t0 = Date.now(), base = out.seconds;

@@ -1,0 +1,37 @@
+{
+ "v": "the-distillation-parity/1",
+ "at": "2026-11-25T18:01:41.235Z",
+ "note": "py/parity.py: the batched generation (right-padded, kept work taken over) against the library's own one-at-a-time generation, on the same conversations, the same weights. \"same\" counts replies that are identical, character for character. Seconds are for a laptop processor and were taken with other work running.",
+ "model": "Llama-3.2-1B-Instruct, float32",
+ "cells": {
+  "n": 16,
+  "same": 16,
+  "plain_s": 71.8,
+  "batched_s": 34.3,
+  "plain_per": 4.49,
+  "batched_per": 2.14,
+  "first_differences": []
+ },
+ "cold": {
+  "n": 8,
+  "same": 8,
+  "plain_s": 105.1,
+  "batched_s": 42.2,
+  "plain_per": 13.13,
+  "batched_per": 5.28,
+  "first_differences": []
+ },
+ "grown": {
+  "problems": 16,
+  "rounds": 12,
+  "n": 60,
+  "same": 60,
+  "plain_per": 4.81,
+  "batched_per": 1.08,
+  "tokens_taken_over": 11886,
+  "tokens_worked_out": 793,
+  "kept": 27,
+  "kept_tokens": 6105,
+  "first_differences": []
+ }
+}

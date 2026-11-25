@@ -71,3 +71,12 @@ test('the plan: every held-out block is struck from every pool, the sealed block
   assert.deepEqual(S.plan({ dev: { harvestSeed: 11, harvestSheets: -1, testSeed: 12, testSheets: 1.5 }, rounds: { harvestSheets: 0, testSheets: 0, seeds: [{ harvest: 1, test: 2 }] } }), { dev: { held: [], pool: [] }, rounds: [{ round: 1, held: [], pool: [] }] });
   for (const bad of HOSTILE) assert.deepEqual(S.plan(bad), { dev: { held: [], pool: [] }, rounds: [] });
 });
+
+test('a block of no sheets, fewer than none, or part of a sheet is empty, and so is every block planned from such a count', () => {
+  for (const n of [0, -1, 2.5, 'x', null, undefined, Infinity]) assert.deepEqual(S.block(21, n), [], String(n));
+  assert.equal(S.block(21, 1).length > 0, true);
+  for (const n of [0, -1, 2.5, '3']) {
+    const p = S.plan({ dev: { harvestSeed: 11, harvestSheets: n, testSeed: 12, testSheets: n }, rounds: { harvestSheets: n, testSheets: n, seeds: [{ harvest: 21, test: 31 }] } });
+    assert.deepEqual([p.dev.held, p.dev.pool, p.rounds[0].held, p.rounds[0].pool], [[], [], [], []], String(n));
+  }
+});

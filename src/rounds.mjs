@@ -16,7 +16,7 @@ import { validGrant } from './adopt.mjs';
 
 const get = (o, k) => { try { return o == null ? undefined : o[k]; } catch { return undefined; } };
 const num = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
-const pos = (x) => (typeof x === 'number' && Number.isFinite(x) && x > 0 ? x : 0);
+const pos = (x) => (Number.isFinite(x) ? Math.max(0, x) : 0);
 
 export function spend(history, settings) {
   const perRound = pos(get(get(settings, 'spend'), 'hoursPerRound')), inAll = pos(get(get(settings, 'spend'), 'hoursInAll'));

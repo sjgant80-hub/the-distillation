@@ -10,6 +10,9 @@
 //
 //   chain(history, grants)  the adapters a new round may stand on: each earlier round the rule adopted AND a person
 //                           granted, in order, with no gap. One round without both ends the chain there.
+//   stood(parts)            the one chain of weights every part of a round was made on (its harvest, its training,
+//                           its two cold tests), or null when a part is missing or they differ: a round whose parts
+//                           were made on different weights stands on nothing.
 // Pure and total.
 
 const get = (o, k) => { try { return o == null ? undefined : o[k]; } catch { return undefined; } };
@@ -45,4 +48,16 @@ export function chain(history, grants) {
   return out;
 }
 
-export default { decide, validGrant, chain };
+// stood(parts) → [sha…] (the chain they all name, in order) or null. parts: one list of adapter SHA-256s for each
+// part of the round.
+export function stood(parts) {
+  const P = Array.isArray(parts) ? parts : [];
+  if (P.length === 0) return null;
+  for (const p of P) {
+    if (!Array.isArray(p) || p.length !== get(P[0], 'length')) return null;
+    for (const [i, s] of p.entries()) if (!SHA.test(str(s)) || s !== P[0][i]) return null;
+  }
+  return [...P[0]];
+}
+
+export default { decide, validGrant, chain, stood };

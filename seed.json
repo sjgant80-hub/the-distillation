@@ -1,0 +1,54 @@
+{
+  "genome": "1",
+  "name": "the-distillation",
+  "kind": "repo",
+  "purpose": "Trains a small AI model only on its own working that exact arithmetic verified, then measures it cold (one try, no checker) on problems it never saw. The trained weights are kept only if it is right more often and no more confidently wrong, and a later round starts from them only when a person grants it. Every round is sealed and can be judged again from its records.",
+  "lane": {
+    "id": "the-distillation-training-gate",
+    "accepts": "a calculation and a reply of worked steps ending in ANSWER: n, offered as a training example",
+    "refuses": "anything that is not an exact calculation: there is no check for it, so nothing can be verified or trained on"
+  },
+  "interface": {
+    "in": "{\"ask\":\"13 × 12 × 26\",\"reply\":\"13 × 12 = 156\\n156 × 26 = 4056\\nANSWER: 4056\"}",
+    "out": "verified when every line is one step and exactly true and the answer is the calculation's own; unverified when any line or the answer is not; refused when what is asked is not a calculation"
+  },
+  "judge": {
+    "what": "a reply may be trained on only when every line of its working is a single true step and its answer is the calculation's own",
+    "run": "node genome/judge.mjs",
+    "cases": {
+      "good": {
+        "ask": "13 × 12 × 26",
+        "reply": "13 × 12 = 156\n156 × 26 = 4056\nANSWER: 4056"
+      },
+      "bad": {
+        "ask": "13 × 12 × 26",
+        "reply": "13 × 12 = 156\n156 × 26 = 4057\nANSWER: 4057"
+      }
+    }
+  },
+  "boundary": {
+    "run": "node genome/lane.mjs",
+    "inLane": {
+      "ask": "7 × 8",
+      "reply": "7 × 8 = 56\nANSWER: 56"
+    },
+    "outOfLane": {
+      "ask": "the best pizza topping",
+      "reply": "cheese"
+    },
+    "escalate": "kar"
+  },
+  "health": {
+    "run": "node genome/health.mjs"
+  },
+  "tombstone": {
+    "apply": "node genome/tombstone.mjs apply",
+    "restore": "node genome/tombstone.mjs restore"
+  },
+  "provenance": {
+    "repo": "sjgant80-hub/the-distillation",
+    "by": "Kar, for Simon Gant",
+    "born": "2026-11-25",
+    "grownFrom": "sjgant80-hub/the-crystal, as sealed"
+  }
+}
