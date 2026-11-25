@@ -3,10 +3,10 @@
  "round": 1,
  "stage": "harvest",
  "harvest": {
-  "done": 350,
+  "done": 360,
   "total": 573,
-  "complete": 345,
-  "calls": 2733
+  "complete": 354,
+  "calls": 2874
  },
  "train": null,
  "cold": {
@@ -16,5 +16,5 @@
  "verdict": null,
  "done": false,
  "failed": false,
- "at": "2026-11-25T23:08:00.761Z"
+ "at": "2026-11-25T23:15:07.071Z"
 }
