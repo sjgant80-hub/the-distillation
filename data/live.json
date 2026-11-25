@@ -1,8 +1,13 @@
 {
  "v": "the-distillation-live/1",
  "round": 1,
- "stage": "starting",
- "harvest": null,
+ "stage": "harvest",
+ "harvest": {
+  "done": 40,
+  "total": 573,
+  "complete": 40,
+  "calls": 193
+ },
  "train": null,
  "cold": {
   "base": null,
@@ -11,5 +16,5 @@
  "verdict": null,
  "done": false,
  "failed": false,
- "at": "2026-11-25T22:11:31.417Z"
+ "at": "2026-11-25T22:18:33.498Z"
 }
