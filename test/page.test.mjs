@@ -60,7 +60,7 @@ test('nothing on the page is dead: every control is wired, every number has a wr
   for (const m of template.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(m[1]), `a link goes to #${m[1]}, which is not on the page`);
   for (const m of visible.matchAll(/href="([^"#][^"]*)"/g)) { const h = m[1]; if (/^https?:/.test(h)) continue; assert.ok(existsSync(new URL(h, root)), `a link goes to ${h}, which is not in the repository`); }
   for (const m of template.matchAll(/url\('([^']+)'\)/g)) assert.ok(existsSync(new URL(m[1], root)), `a font is not in the repository: ${m[1]}`);
-  for (const id of ['result', 'how', 'wall', 'claims', 'glass', 'loop', 'built', 'buyers', 'limits']) assert.ok(new RegExp(`<section[^>]*id="${id}"`).test(template), `the page has no ${id} section`);
+  for (const id of ['live', 'result', 'how', 'wall', 'claims', 'glass', 'loop', 'built', 'buyers', 'limits']) assert.ok(new RegExp(`<section[^>]*id="${id}"`).test(template), `the page has no ${id} section`);
 });
 
 test('the page says what it must and nothing it must not', () => {
@@ -119,4 +119,8 @@ test('the README opens with the live page, and says what the page says about the
   const readme = read('README.md');
   assert.ok(readme.startsWith('**Live page: https://sjgant80-hub.github.io/the-distillation/**'));
   assert.ok(readme.includes('Powered by the Konomi architecture, created by Thomas Frumkin.')); assert.ok(readme.includes('## Run it yourself'));
+  // the README's figures are the records' figures
+  const g = JSON.parse(read('data/gates.json')), p = JSON.parse(read('data/parity.json'));
+  assert.ok(readme.includes('**' + g.killed + ' / ' + g.total + '**'), 'the mutation gate, as its record has it'); assert.equal(g.clean, true);
+  assert.ok(readme.includes('**' + (p.cells.same + p.cold.same + p.grown.same) + ' / ' + (p.cells.n + p.cold.n + p.grown.n) + '**'), 'the generation check, as its record has it');
 });

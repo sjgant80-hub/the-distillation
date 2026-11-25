@@ -191,6 +191,25 @@ function faces() {
   while (out.length < 32) out.push({ state: 0, text: '' });
   return out;
 }
+// ── the loop, live: the round as it runs, from its own log (scripts/live.mjs). Telemetry, never a verdict ──
+const STAGES = [['harvest', 'Harvest'], ['build', 'Build'], ['train', 'Train'], ['cold-base', 'Test cold: before'], ['cold-distilled', 'Test cold: after'], ['judged', 'Verdict']];
+function renderLive(l) {
+  if (!l || !l.stage || l.stage === 'idle') { $('liveBox').innerHTML = 'No round is running right now.'; return; }
+  const at = STAGES.findIndex(([k]) => k === l.stage), what = l.round === 'dev' ? 'The development round' : `Round ${l.round}`;
+  const chips = STAGES.map(([, name], i) => `<span class="tag ${l.done || i < at ? 'cy' : i === at ? 'gd' : 'off'}">${name}</span>`).join('');
+  const t = l.train, h = l.harvest, c = l.stage === 'cold-distilled' ? l.cold.distilled : l.cold.base;
+  let line = `${what} is starting.`, spark = '';
+  if (l.stage === 'harvest' && h) line = `${what}: <b>${h.done} of ${h.total}</b> problems worked under the checker · ${h.complete} finished · ${h.calls} model calls.`;
+  if (l.stage === 'build') line = `${what}: <b>${l.examples}</b> verified examples built. Training starts next.`;
+  if (l.stage === 'train' && t) line = `${what}: training on its own verified working · <b>step ${t.step} of ${t.steps}</b>${t.loss.length ? ` · training loss ${t.loss[0].toFixed(3)} → ${t.loss[t.loss.length - 1].toFixed(3)}` : ''}.`;
+  if ((l.stage === 'cold-base' || l.stage === 'cold-distilled') && c) line = `${what}: asking held-out problems cold, ${l.stage === 'cold-base' ? 'before' : 'after'} training · <b>${c.done} of ${c.total}</b>.`;
+  if (l.stage === 'judged') line = `${what}: judged. ${(l.verdict || []).map((x) => `<span class="${x.pass === true ? 'pass' : x.pass === false ? 'fail' : 'pend'}">${x.id}</span>`).join(' ')} · the numbers are published once every record has been checked again.`;
+  if (l.failed) line += ' <span class="fail">The run stopped on an error; it carries on from its records.</span>';
+  if (t && t.loss.length > 1) { const top = Math.max(...t.loss, 0.001), pts = t.loss.map((y, i) => `${(i / (t.loss.length - 1) * 300).toFixed(1)},${(58 - 54 * Math.min(1, y / top)).toFixed(1)}`).join(' '); spark = `<svg class="spark" viewBox="0 0 300 60" preserveAspectRatio="none" role="img" aria-label="Training loss on its own verified working, falling from ${t.loss[0].toFixed(3)} to ${t.loss[t.loss.length - 1].toFixed(3)}."><polyline points="${pts}" fill="none" stroke="#49e8c8" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><span class="dim" style="font-size:11.5px">training loss on its own verified working, step by step</span>`; }
+  $('liveBox').innerHTML = `<div class="chips">${chips}</div>${line}${spark}<br><span class="dim" style="font-size:11.5px">as of ${esc(String(l.at || '').replace('T', ' ').slice(0, 16))} UTC</span>`;
+  if (S.crystal && !l.done && !l.failed) S.crystal.setEnergy(1.15);
+}
+
 function render() { renderResult(); renderTrace(); renderWall(); renderClaims(); renderLoop(); renderBuilt(); renderWords(); S.faces = faces(); }
 
 // ── what a visitor can run ──
@@ -266,6 +285,9 @@ const ready = (async () => {
   $('tryTrace').addEventListener('click', tryTrace);
   $('tryReset').addEventListener('click', () => { if (h) $('tryReply').value = h.reply; $('tryOut').innerHTML = 'Press Check it.'; });
   $('tryRule').addEventListener('click', tryRule);
+  const live = async () => renderLive(await getJSON(`data/live.json?${typeof Date === 'function' && typeof location !== 'undefined' ? Date.now() : ''}`));
+  await live();
+  if (typeof location !== 'undefined' && typeof setInterval === 'function') setInterval(live, 60000);   // the loop, as it runs
   // the living part: the crystal bound to the claims, the numbers running up, sections rising
   const idle = $('facet').innerHTML;
   S.crystal = CRYSTAL.mount($('crystal'), { energy: 0.9 });

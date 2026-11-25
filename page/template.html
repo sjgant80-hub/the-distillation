@@ -17,15 +17,27 @@
   <canvas id="crystal" role="img" aria-label="A crystal of 32 faces. Each lit face is one claim of one round: cyan when it passed, red when it failed, gold while it is still being sealed. Dark faces are rounds that have not run."></canvas>
   <div class="hero-shade"></div>
   <div class="wrap">
-    <p class="eyebrow">AI Native Solutions · The Distillation</p>
+    <p class="eyebrow">AI Native Solutions · The Distillation · verified self-improvement</p>
     <h1>Taught only its own <em>checked work.</em></h1>
     <p class="sub">A small model, trained on nothing but its own verified working. Then asked cold, on problems it never saw.</p>
-    <div class="cta"><a class="btn primary" href="#result">See what moved →</a><a class="btn ghost" href="#glass">Judge it yourself</a></div>
+    <div class="cta"><a class="btn primary" href="#live">Watch it learn →</a><a class="btn ghost" href="#glass">Judge it yourself</a></div>
   </div>
   <p class="facet" id="facet" aria-live="polite">not measured yet</p>
 </header>
 
-<section class="pad" id="result">
+<section class="pad" id="live">
+  <div class="wrap">
+    <p class="kline reveal">Self-improvement, shown</p>
+    <h2 class="claim reveal">It learns from its own work. <b>Only the part it could <em>prove.</em></b></h2>
+    <div class="glass reveal">
+      <h3>The loop, live</h3>
+      <p class="hint">What the round is doing right now, read from its own log. Telemetry, not a result: the result is below, and says "sealing now" until it lands.</p>
+      <div class="out" id="liveBox" aria-live="polite">No round is running right now.</div>
+    </div>
+  </div>
+</section>
+
+<section class="pad alt" id="result">
   <div class="wrap">
     <p class="kline reveal" data-bind="k.result">not measured yet</p>
     <h2 class="claim reveal">The same model, before and after one round of its own checked work. <b>One try. No checker.</b></h2>
@@ -34,7 +46,7 @@
   </div>
 </section>
 
-<section class="pad alt" id="how">
+<section class="pad" id="how">
   <div class="wrap">
     <p class="kline reveal">One round, six moves</p>
     <h2 class="claim reveal">Only verified work trains it. <b>Only a person lets the change stand.</b></h2>
@@ -50,7 +62,7 @@
   </div>
 </section>
 
-<section class="pad" id="wall">
+<section class="pad alt" id="wall">
   <div class="wrap">
     <p class="kline reveal">The fail-wall</p>
     <h2 class="claim reveal">Every held-out problem, <b>before and after.</b></h2>
@@ -63,7 +75,7 @@
   </div>
 </section>
 
-<section class="pad alt" id="claims">
+<section class="pad" id="claims">
   <div class="wrap">
     <p class="kline reveal">Six claims, written down first</p>
     <h2 class="claim reveal">The pass marks were fixed <b>before the model was trained.</b></h2>
