@@ -1,7 +1,7 @@
 {
  "v": "the-distillation-live/1",
  "round": 1,
- "stage": "cold-distilled",
+ "stage": "judged",
  "harvest": {
   "done": 573,
   "total": 573,
@@ -68,13 +68,38 @@
    "total": 231
   },
   "distilled": {
-   "done": 200,
+   "done": 231,
    "total": 231
   }
  },
- "verdict": null,
- "done": false,
+ "verdict": [
+  {
+   "id": "K1",
+   "pass": true
+  },
+  {
+   "id": "K2",
+   "pass": true
+  },
+  {
+   "id": "K3",
+   "pass": true
+  },
+  {
+   "id": "K4",
+   "pass": true
+  },
+  {
+   "id": "K5",
+   "pass": true
+  },
+  {
+   "id": "K6",
+   "pass": true
+  }
+ ],
+ "done": true,
  "failed": false,
  "examples": 536,
- "at": "2026-11-26T07:42:45.544Z"
+ "at": "2026-11-26T07:49:30.070Z"
 }

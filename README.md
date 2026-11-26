@@ -7,11 +7,23 @@ The loop proposes a better model. A person decides whether it stands.
 
 | | |
 | --- | --- |
-| **sealing now** | round 1's cold result: it appears on the live page when it lands, pass or fail |
+| **24.7% → 48.9%** | round 1: right, cold, on 231 held-out problems, before and after training on 536 verified examples ([the verdict](data/rounds/1/verdict.json)) |
+| **6 of 6** | of round 1's claims passed. The rule says adopt. The weights wait for a person's grant |
 | **6** | claims and their pass marks, written down before any model was trained ([CLAIMS.md](CLAIMS.md)) |
 | **277 / 277** | planted bugs caught in the eight gated kernels ([the record](data/gates.json)) |
 | **100 / 100** | replies identical to plain one-at-a-time generation ([the record](data/parity.json)) |
 | **0** | changes to the model without a person's recorded yes |
+
+## Round 1, as measured
+
+- **The gain is not even.** Right, before → after: one-step problems 6 → 6 of 6; several-step problems 49 → 105 of
+  152; the hardest problems 2 → 2 of 73.
+- **Confident wrong answers fell overall, 160 → 117 of 231.** On the hardest problems they rose, 57 → 70 of 73: it
+  left fewer blank (14 → 1) and answered wrong instead.
+- **61 problems gained, 5 lost** (exact McNemar test, p = 2.6e-13). 9.3 hours of a laptop processor, of a cap of 12.
+- **Resumed once by hand.** The trainer saved its adapter and its log, then its process ended with an error and no
+  message. Nothing was trained twice and no record was edited. [The note](data/rounds/1/run-note.json).
+- **Round 2 has not run.** It cannot start until a person grants round 1's weights.
 
 ## Run it yourself
 

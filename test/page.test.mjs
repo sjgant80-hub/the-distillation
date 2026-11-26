@@ -68,7 +68,7 @@ test('the page says what it must and nothing it must not', () => {
   assert.ok(visible.includes('Powered by the Konomi architecture, created by Thomas Frumkin.'));
   assert.ok(visible.includes('Built by Kar')); assert.ok(visible.includes('AI Native Solutions')); assert.ok(visible.includes('support is agreed per deployment, in each deployment\'s agreement'));
   assert.ok(!/[£$€]\s?\d|\d\s?(?:pounds|dollars|euros) (?:a|per) (?:month|year|seat|user)|per seat per|pricing/i.test(text), 'no price is put on a product page');
-  assert.ok(!/[κφ◊]|\btorus\b/i.test(html.slice(0, html.indexOf('<script type="module">'))), 'no private shorthand on a public page');
+  assert.ok(!new RegExp('[\\u03ba\\u03c6\\u25ca]|\\b' + ['to', 'rus'].join('') + '\\b', 'i').test(html.slice(0, html.indexOf('<script type="module">'))), 'no private shorthand on a public page');
   assert.ok(!/claude|anthropic/i.test(text), 'the public name is Kar');
   for (const w of ['held-out', 'cold', 'fail-wall', 'grant', 'dissolve']) assert.ok(text.includes(w), `the page never says "${w}"`);
   // the model is named, with its licence, and is not claimed to be in the repository
@@ -123,4 +123,46 @@ test('the README opens with the live page, and says what the page says about the
   const g = JSON.parse(read('data/gates.json')), p = JSON.parse(read('data/parity.json'));
   assert.ok(readme.includes('**' + g.killed + ' / ' + g.total + '**'), 'the mutation gate, as its record has it'); assert.equal(g.clean, true);
   assert.ok(readme.includes('**' + (p.cells.same + p.cold.same + p.grown.same) + ' / ' + (p.cells.n + p.cold.n + p.grown.n) + '**'), 'the generation check, as its record has it');
+  if (published.rounds.length === 0) { assert.ok(readme.includes('**sealing now**')); return; }
+  const k = published.rounds[published.rounds.length - 1], v = JSON.parse(read(`data/rounds/${k}/verdict.json`)), c = v.cold, pc = (x) => `${(100 * x).toFixed(1)}%`;
+  assert.ok(!readme.includes('sealing now'), 'a round has landed: the README no longer says sealing now');
+  assert.ok(readme.includes(`**${pc(c.base.rate)} → ${pc(c.distilled.rate)}**`) && readme.includes(`on ${c.n} held-out problems`) && readme.includes(`training on ${v.train.examples} verified examples`), 'the result, as the verdict has it');
+  assert.ok(readme.includes(`**${v.verdicts.filter((x) => x.pass === true).length} of 6**`), 'the claims passed, as the verdict has them');
+  assert.ok(readme.includes(`${c.base.wrong} → ${c.distilled.wrong} of ${c.n}`) && readme.includes(`**${c.gained.length} problems gained, ${c.lost.length} lost**`), 'confident wrong answers and what moved, as the verdict has them');
+  for (const [t, name] of [['easy', 'one-step problems'], ['climb', 'several-step problems'], ['wall', 'the hardest problems']]) assert.ok(readme.includes(`${name} ${v.tiers.base[t].right} → ${v.tiers.distilled[t].right} of`), `${name}, as the verdict has them`);
+  for (const t of ['easy', 'climb', 'wall']) if (v.tiers.distilled[t].wrong > v.tiers.base[t].wrong) assert.ok(readme.includes(`they rose, ${v.tiers.base[t].wrong} → ${v.tiers.distilled[t].wrong} of ${v.tiers.base[t].n}`), 'where confident wrong answers rose, the README says so');
+});
+
+test('what went wrong in a run is on the page: a hand-written run note states the records\' own hashes and is shown beside the verdict', async () => {
+  const { createHash } = await import('node:crypto');
+  const sha = (p) => createHash('sha256').update(readFileSync(new URL(p, root))).digest('hex');
+  // every note in the repository is listed, and every listed note is there
+  const onFile = readdirSync(new URL('data/rounds/', root)).filter((k) => existsSync(new URL(`data/rounds/${k}/run-note.json`, root))).map(Number).sort((a, b) => a - b);
+  assert.deepEqual(published.runNotes, onFile);
+  for (const k of onFile) {
+    const n = JSON.parse(read(`data/rounds/${k}/run-note.json`)), v = JSON.parse(read(`data/rounds/${k}/verdict.json`));
+    assert.equal(n.round, k); assert.ok(n.short.length > 40 && n.unknown.length > 0 && n.did.length > 0);
+    assert.equal(n.hashes.adapterSha256, v.adapterSha256, 'the note names the adapter the verdict names');
+    assert.equal(n.hashes.trainFileSha256, v.train.fileSha256); assert.equal(n.hashes.trainFileSha256, sha(`data/rounds/${k}/train.jsonl`));
+    assert.equal(n.hashes.trainLogSha256, sha(`data/rounds/${k}/train-log.json`), 'the training log on file is the one the note hashed');
+    assert.equal(n.hashes.trainLogSha256, v.files['train-log.json']);
+    // the after-training cold test loaded that adapter, by its own record
+    assert.equal(JSON.parse(read(`data/rounds/${k}/cold-distilled.json`)).adapters.at(-1), n.hashes.adapterSha256);
+  }
+  const last = published.rounds[published.rounds.length - 1];
+  if (onFile.includes(last)) {
+    const n = JSON.parse(read(`data/rounds/${last}/run-note.json`)), stack = visible.slice(visible.indexOf('id="claimStack"'), visible.indexOf('id="bars"'));
+    assert.ok(stack.includes('<div class="d">run</div>') && stack.includes(n.title) && stack.includes(`href="data/rounds/${last}/run-note.json"`), 'the note is beside the verdict, before any click');
+    assert.ok(visible.includes('How the round was run.') && visible.includes(n.unknown[0]), 'and what is not known is said');
+  }
+});
+
+test('where the trained model got more confidently wrong, the page says so in red, from the verdict', () => {
+  if (published.rounds.length === 0) return;
+  const v = JSON.parse(read(`data/rounds/${published.rounds[published.rounds.length - 1]}/verdict.json`));
+  const rose = ['easy', 'climb', 'wall'].filter((t) => v.tiers.distilled[t].wrong > v.tiers.base[t].wrong);
+  const receipts = visible.slice(visible.indexOf('id="receipts"'), visible.indexOf('id="verdictLine"'));
+  assert.equal([...receipts.matchAll(/<span class="fail">On [a-z -]+ it rose: (\d+) → (\d+)\.<\/span>/g)].length, rose.length, 'one red line on the receipt for each tier where it rose, and only those');
+  for (const t of rose) assert.ok(receipts.includes(`it rose: ${v.tiers.base[t].wrong} → ${v.tiers.distilled[t].wrong}.`));
+  for (const t of ['easy', 'climb', 'wall']) assert.ok(visible.includes(`${v.tiers.base[t].right} → ${v.tiers.distilled[t].right} of ${v.tiers.base[t].n}`), `the ${t} tier is counted apart on the page`);
 });

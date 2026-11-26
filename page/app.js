@@ -16,6 +16,9 @@ const S = { settings: null, published: null, rounds: {}, shown: null, trace: nul
 const KIND = { gained: 'gained: failed before, right after', lost: 'lost: right before, failed after', kept: 'right both times', still: 'failed both times' };
 const FILL = { gained: '#49e8c8', lost: '#ff6b6b', kept: '#2f8f96', still: '#1c3a45' };
 const SAID = { right: 'right', wrong: 'a confident wrong answer', none: 'no answer' };
+const TIER = { easy: 'one-step problems', climb: 'several-step problems', wall: 'the hardest problems' };
+// the tiers where the trained model gave more confident wrong answers than the base did
+const worse = (v) => (v && v.tiers ? JUDGE.TIERS.filter((t) => v.tiers.distilled[t].wrong > v.tiers.base[t].wrong) : []);
 const ORGANS = { 'src/split.mjs': 'which problems are held out, by calculation', 'src/trace.mjs': 'what may be trained on: verified working only', 'src/cold.mjs': 'how a cold reply is read: right, wrong, or no answer', 'src/adopt.mjs': 'adopt or dissolve, and the test of a person\'s grant', 'src/rounds.mjs': 'what the loop may do next', 'src/claims.mjs': 'the six claims, ruled on from the evidence', 'src/judge.mjs': 'a round\'s verdict from its records; this page runs it', 'genome/cell.mjs': 'the estate\'s birth check: its judge is the training gate' };
 
 // every held-out problem with what each model said, cold, read here by the sealed checker (src/cold.mjs)
@@ -47,7 +50,7 @@ function renderResult() {
   const src = `<a class="src" href="${r.dir}/verdict.json">receipt: round ${v.round} verdict ↗</a>`;
   bind('k.result', `The result · round ${v.round}, sealed`);
   $('receipts').innerHTML = `<div class="stat reveal"><div class="n"><span class="was">${pct(c.base.rate)}</span><span class="arrow">→</span><span class="${c.lift > 0 ? 'now' : 'bad'}" data-count="${pct(c.distilled.rate)}">${pct(c.distilled.rate)}</span></div><div class="lab"><b>Right, cold, on ${c.n} held-out problems.</b> The same model, before and after training on ${v.train ? v.train.examples : 0} verified examples of its own working.</div>${src}</div>`
-    + `<div class="stat reveal"><div class="n"><span class="was">${c.base.wrong}</span><span class="arrow">→</span><span class="${c.distilled.wrong <= c.base.wrong ? 'now' : 'bad'}" data-count="${c.distilled.wrong}">${c.distilled.wrong}</span></div><div class="lab"><b>Confident wrong answers.</b> An answer given, and wrong. The rule requires this not to rise.</div>${src}</div>`
+    + `<div class="stat reveal"><div class="n"><span class="was">${c.base.wrong}</span><span class="arrow">→</span><span class="${c.distilled.wrong <= c.base.wrong ? 'now' : 'bad'}" data-count="${c.distilled.wrong}">${c.distilled.wrong}</span></div><div class="lab"><b>Confident wrong answers.</b> An answer given, and wrong. The rule requires this not to rise.${worse(v).map((t) => ` <span class="fail">On ${TIER[t]} it rose: ${v.tiers.base[t].wrong} → ${v.tiers.distilled[t].wrong}.</span>`).join('')}</div>${src}</div>`
     + `<div class="stat reveal"><div class="n"><span class="now" data-count="+${c.gained.length}">+${c.gained.length}</span> <span class="bad">−${c.lost.length}</span></div><div class="lab"><b>Problems gained and lost.</b> Failed before and right after, against the other way. p = ${prob(c.p)}.</div>${src}</div>`;
   const next = v.next || {};
   $('verdictLine').innerHTML = v.adopted
@@ -107,7 +110,8 @@ function fillOpen() {
 function renderClaims() {
   const r = newest(), v = r && r.verdict, bars = CLAIMS.bars(S.settings || {});
   const rows = v ? v.verdicts : Object.keys(CLAIMS.NAMES).map((id) => ({ id, name: CLAIMS.NAMES[id], pass: null, result: 'round 1 has not run' }));
-  $('claimStack').innerHTML = rows.map((x) => `<div class="srow ${x.pass === false ? 'red' : x.pass === null ? 'gold' : ''}"><div class="d">${x.id}</div><div class="nm"><b>${esc(x.name)}</b><span>${esc(x.result)}</span>${x.pass === true ? '<span class="tag cy">pass</span>' : x.pass === false ? '<span class="tag rd">fail · kept</span>' : SEALING}</div></div>`).join('') + (v && v.notes.length ? `<div class="srow red"><div class="d">note</div><div class="nm"><span>${v.notes.map(esc).join('; ')}</span></div></div>` : '');
+  $('claimStack').innerHTML = rows.map((x) => `<div class="srow ${x.pass === false ? 'red' : x.pass === null ? 'gold' : ''}"><div class="d">${x.id}</div><div class="nm"><b>${esc(x.name)}</b><span>${esc(x.result)}</span>${x.pass === true ? '<span class="tag cy">pass</span>' : x.pass === false ? '<span class="tag rd">fail · kept</span>' : SEALING}</div></div>`).join('') + (v && v.notes.length ? `<div class="srow red"><div class="d">note</div><div class="nm"><span>${v.notes.map(esc).join('; ')}</span></div></div>` : '')
+    + (r && r.note ? `<div class="srow gold"><div class="d">run</div><div class="nm"><b>${esc(r.note.title)}</b><span>${esc(r.note.short)} <a href="${r.dir}/run-note.json">The note ↗</a></span></div></div>` : '');
   $('bars').innerHTML = Object.keys(CLAIMS.NAMES).map((id) => `<p><b>${id} · ${esc(CLAIMS.NAMES[id])}.</b> ${esc(bars[id][0].toUpperCase() + bars[id].slice(1))}.</p>`).join('') + '<p>Registered in <a href="CLAIMS.md">CLAIMS.md</a> and frozen by <a href="SEAL.json">the seal</a> before round 1 ran.</p>';
 }
 
@@ -163,6 +167,9 @@ function renderWords() {
     + card('THE BOARD', 'Nothing unmeasured.', c ? `Round ${v.round}: ${v.verdicts.filter((x) => x.pass === true).length} of 6 claims passed${v.verdicts.some((x) => x.pass === false) ? `; ${v.verdicts.filter((x) => x.pass === false).map((x) => x.id).join(', ')} failed and stay on the page` : ''}.` : `A change that fails its bar is thrown away and published. Round 1: ${SEALING}`);
   bind('l.parity', p ? `Checked: ${ps} of ${pn} replies identical to plain generation.` : 'The generation check is not published yet.');
   bind('l.rounds', ks.length ? `${many(ks.length, 'sealed round has', 'sealed rounds have')} run.` : 'No sealed round has run yet.');
+  const T = v && v.tiers, note = r && r.note;
+  bind('l.tiers', T ? `Right, before → after: ${JUDGE.TIERS.filter((t) => T.base[t].n > 0).map((t) => `${TIER[t]} ${T.base[t].right} → ${T.distilled[t].right} of ${T.base[t].n}`).join('; ')}.${worse(v).map((t) => ` <span class="fail">On ${TIER[t]} it gave more confident wrong answers: ${T.base[t].wrong} → ${T.distilled[t].wrong}, and left fewer blank (${T.base[t].none} → ${T.distilled[t].none}).</span>`).join('')}` : 'Each kind of problem is counted apart when round 1 lands.');
+  bind('l.run', note ? `${esc(note.short)} ${note.unknown.map(esc).join(' ')} <a href="${r.dir}/run-note.json">The note.</a>` : c ? `Round ${v.round} ran start to finish in one sitting.` : 'Anything that goes wrong in a run is written here.');
   bind('l.wrong', c ? `After training it still gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} unseen problems.` : 'How often it is still confidently wrong is measured in round 1.');
   bind('l.compute', c ? `Round ${v.round} took ${v.hours.toFixed(1)} hours of a laptop processor; the seal caps a round at ${S.settings.spend.hoursPerRound}.` : `A round is hours of a laptop processor; the seal caps one at ${S.settings ? S.settings.spend.hoursPerRound : '—'}.`);
   bind('b.risk', c ? (v.adopted ? `In round ${v.round} the weights cleared the bar.` : `In round ${v.round} they did not, and were dropped.`) : '');
@@ -205,6 +212,8 @@ function renderLive(l) {
   if ((l.stage === 'cold-base' || l.stage === 'cold-distilled') && c) line = `${what}: asking held-out problems cold, ${l.stage === 'cold-base' ? 'before' : 'after'} training · <b>${c.done} of ${c.total}</b>.`;
   if (l.stage === 'judged') line = `${what}: judged. ${(l.verdict || []).map((x) => `<span class="${x.pass === true ? 'pass' : x.pass === false ? 'fail' : 'pend'}">${x.id}</span>`).join(' ')} · the numbers are published once every record has been checked again.`;
   if (l.failed) line += ' <span class="fail">The run stopped on an error; it carries on from its records.</span>';
+  const out = l.done && l.round !== 'dev' && S.rounds[l.round] ? S.rounds[l.round].verdict : null;
+  if (out && out.cold) line = `${what} has finished and is published: <b>the result is just below.</b> ${out.next && out.next.act === 'wait' ? `Round ${out.round + 1} cannot start until a person grants these weights.` : 'No round is running right now.'}`;
   if (t && t.loss.length > 1) { const top = Math.max(...t.loss, 0.001), pts = t.loss.map((y, i) => `${(i / (t.loss.length - 1) * 300).toFixed(1)},${(58 - 54 * Math.min(1, y / top)).toFixed(1)}`).join(' '); spark = `<svg class="spark" viewBox="0 0 300 60" preserveAspectRatio="none" role="img" aria-label="Training loss on its own verified working, falling from ${t.loss[0].toFixed(3)} to ${t.loss[t.loss.length - 1].toFixed(3)}."><polyline points="${pts}" fill="none" stroke="#49e8c8" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><span class="dim" style="font-size:11.5px">training loss on its own verified working, step by step</span>`; }
   $('liveBox').innerHTML = `<div class="chips">${chips}</div>${line}${spark}<br><span class="dim" style="font-size:11.5px">as of ${esc(String(l.at || '').replace('T', ' ').slice(0, 16))} UTC</span>`;
   if (S.crystal && !l.done && !l.failed) S.crystal.setEnergy(1.15);
@@ -268,7 +277,8 @@ async function load() {
     const dir = w === 'dev' ? 'data/dev' : `data/rounds/${w}`;
     const [verdict, held, cb, cd, build] = await Promise.all([getJSON(`${dir}/verdict.json`), getJSON(`${dir}/held.json`), getJSON(`${dir}/cold-base.json`), getJSON(`${dir}/cold-distilled.json`), getJSON(`${dir}/build.json`)]);
     const grant = w !== 'dev' && published.grants.includes(Number(w)) ? await getJSON(`data/grants/round-${w}.json`) : null;
-    S.rounds[w] = { which: w, dir, verdict, held, cb, cd, build, grant, rows: paired(held, cb, cd) };
+    const note = w !== 'dev' && (published.runNotes || []).includes(Number(w)) ? await getJSON(`${dir}/run-note.json`) : null;   // asked for only when it is on file
+    S.rounds[w] = { which: w, dir, verdict, held, cb, cd, build, grant, note, rows: paired(held, cb, cd) };
   }
   const sealed = list.filter((w) => w !== 'dev');
   S.shown = sealed.length ? sealed[sealed.length - 1] : list.includes('dev') ? 'dev' : null;

@@ -1,0 +1,31 @@
+{
+ "v": "the-distillation-run-note/1",
+ "round": 1,
+ "written": "2026-11-26",
+ "by": "Kar",
+ "kind": "a note written by hand about how this round was run. It is not a measurement, and it changes no record.",
+ "title": "Resumed once by hand",
+ "short": "The trainer saved its adapter and its log, then its process ended with an error and no message. The round was started again from those files. Nothing was trained twice and no record was edited.",
+ "what": [
+  "The trainer ran all 201 steps, saved the adapter and wrote its training log. Then its process ended with an error status and printed no message.",
+  "The round runner stops when a step ends that way. So it stopped before copying the training log into the round's records, and before the cold tests."
+ ],
+ "did": [
+  "The saved adapter and the training file were hashed and set against the training log. Both matched.",
+  "The training log was copied into the round's records by hand, byte for byte, which is what the runner's next line does.",
+  "The runner was started again. It built the same training file, skipped training because the adapter and log matched, then ran both cold tests and the verdict."
+ ],
+ "holds": [
+  "No file was edited and nothing was trained a second time.",
+  "The after-training cold test records the hash of the adapter it loaded. The verdict checks that it is the one the training log names."
+ ],
+ "unknown": [
+  "Why the process ended that way is not known. No crash record was found on the machine.",
+  "Training took 5.8 hours, longer than planned. The laptop was slow overnight and was also doing other work. Those hours count against the round's cap as they are."
+ ],
+ "hashes": {
+  "adapterSha256": "370072e33016ea41edff7c3e914196ac955a954bc849ccac993e152508822e9b",
+  "trainFileSha256": "aaa52c2b53849dc2c546574cbc75f4adb58fd3e4388a23b26ea564550a198e6a",
+  "trainLogSha256": "d8dbf35720fd3fda4016978ef51f145e7beda80a47444087855b77742d4d94b0"
+ }
+}

@@ -1,94 +1,73 @@
 {
  "v": "the-distillation-trace/1",
- "from": "the development round",
+ "from": "round 1",
  "harvested": {
-  "id": "tank:20261301-0",
+  "id": "power:20261401-1",
   "tier": "climb",
-  "statement": "A tank is 13 cm long, 12 cm wide and 26 cm deep. Volume = length × width × depth. How many cubic centimetres?",
+  "statement": "A current of 12 A flows through a 41 Ω resistor. Power = current × current × resistance. How many watts?",
   "task": {
-   "id": "tank:20261301-0",
-   "sheet": 0,
-   "family": "tank",
+   "id": "power:20261401-1",
+   "sheet": 1,
+   "family": "power",
    "tier": "climb",
-   "statement": "A tank is 13 cm long, 12 cm wide and 26 cm deep. Volume = length × width × depth. How many cubic centimetres?",
-   "ask": "13 × 12 × 26",
+   "statement": "A current of 12 A flows through a 41 Ω resistor. Power = current × current × resistance. How many watts?",
+   "ask": "12 × 12 × 41",
    "check": {
     "type": "value",
-    "value": "4056"
+    "value": "5904"
    }
   },
-  "calls": 8,
+  "calls": 5,
   "events": [
    {
     "kind": "bond",
-    "cell": "13 × 12",
-    "said": "13 × 12 = 156",
-    "value": "156",
+    "cell": "12 × 12",
+    "said": "12 × 12 = 144",
+    "value": "144",
     "into": null
    },
    {
     "kind": "split",
-    "cell": "156 × 26",
-    "said": "156 × 26 = 4066",
+    "cell": "144 × 41",
+    "said": "144 × 41 = 5894",
     "value": null,
-    "into": "156 × 26 = 156 × 20 + 156 × 6"
+    "into": "144 × 41 = 144 × 40 + 144 × 1"
    },
    {
     "kind": "bond",
-    "cell": "156 × 20",
-    "said": "156 × 20 = 3120",
-    "value": "3120",
+    "cell": "144 × 40",
+    "said": "144 × 40 = 5760",
+    "value": "5760",
     "into": null
    },
    {
     "kind": "bond",
-    "cell": "156 × 6",
-    "said": "156 × 6 = 936",
-    "value": "936",
-    "into": null
-   },
-   {
-    "kind": "split",
-    "cell": "3120 + 936",
-    "said": "3120 + 936 = 4066",
-    "value": null,
-    "into": "3120 + 936 = 3120 + 900 + 30 + 6"
-   },
-   {
-    "kind": "bond",
-    "cell": "3120 + 900",
-    "said": "3120 + 900 = 4020",
-    "value": "4020",
+    "cell": "144 × 1",
+    "said": "144 × 1 = 144",
+    "value": "144",
     "into": null
    },
    {
     "kind": "bond",
-    "cell": "30 + 6",
-    "said": "30 + 6 = 36",
-    "value": "36",
-    "into": null
-   },
-   {
-    "kind": "bond",
-    "cell": "4020 + 36",
-    "said": "4020 + 36 = 4056",
-    "value": "4056",
+    "cell": "5760 + 144",
+    "said": "5760 + 144 = 5904",
+    "value": "5904",
     "into": null
    }
   ],
-  "reply": "13 × 12 = 156\n156 × 20 = 3120\n156 × 6 = 936\n3120 + 900 = 4020\n30 + 6 = 36\n4020 + 36 = 4056\nANSWER: 4056",
-  "lines": 6
+  "reply": "12 × 12 = 144\n144 × 40 = 5760\n144 × 1 = 144\n5760 + 144 = 5904\nANSWER: 5904",
+  "lines": 4
  },
  "held": {
-  "id": "energy:20261302-0",
+  "id": "squares:20261501-0",
   "tier": "climb",
-  "statement": "A 16 kg cart moves at 29 m/s. Kinetic energy = 0.5 × mass × speed × speed. How many joules?",
+  "statement": "A box is 28 cm long, 28 cm wide and 27 cm high. Diagonal squared = length × length + width × width + height × height. What is the diagonal squared?",
   "base": {
-   "text": "29 × 16 = 464\n0.5 × 16 = 8\n464 + 8 = 472\nANSWER: 472",
+   "text": "28² = 784\n28 × 28 = 784\n27² = 729\n784 + 784 + 729 = 2257\nANSWER: 2257",
    "outcome": "wrong"
   },
   "distilled": {
-   "text": "0.5 × 16 = 8\n29 × 29 = 841\n8 × 841 = 6728\nANSWER: 6728",
+   "text": "28 × 28 = 784\n27 × 27 = 729\n784 + 784 = 1568\n1568 + 729 = 2297\nANSWER: 2297",
    "outcome": "right"
   }
  }
