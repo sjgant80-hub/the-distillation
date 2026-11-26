@@ -1,0 +1,78 @@
+{
+ "v": "the-distillation-walk/1",
+ "note": "A simulated walk, not a customer. On 26 November 2026 a small AI on our own laptop (qwen2.5:7b) read this page cold four times, as four buyers, and listed what was unclear. Kar checked each point against the page. What was real is fixed, and listed here.",
+ "personas": [
+  {
+   "who": "The money person",
+   "verdict": "Could not follow the page's own words on a first read. The numbers were clear once the words were explained.",
+   "gaps": [
+    {
+     "gap": "“Checked work”, “cold”, “held-out” and “fail-wall” were used before they were explained",
+     "fix": "a plain-words block now opens the page, with a list of the words it uses"
+    },
+    {
+     "gap": "It was not clear what “the rule” is",
+     "fix": "the verdict line now says the rule in one sentence"
+    },
+    {
+     "gap": "“The cost” of a round was vague",
+     "fix": "the card now gives the hours for each stage and names the laptop's processor"
+    },
+    {
+     "gap": "The note on the weights check ended in a bare “How.”",
+     "fix": "the link now reads “How it was checked”"
+    }
+   ]
+  },
+  {
+   "who": "The technology lead",
+   "verdict": "Wanted every claim tied to what was counted, and the limits spelled out.",
+   "gaps": [
+    {
+     "gap": "The six claims read as jargon",
+     "fix": "each claim now has one plain line built from its own counts; the sealed wording is one click away"
+    },
+    {
+     "gap": "“The hardest problems” was not defined",
+     "fix": "the limits now say what kind of problem they are"
+    },
+    {
+     "gap": "What a cap on hours does was not said",
+     "fix": "the limits now say that if a round runs over, no further round may start"
+    }
+   ]
+  },
+  {
+   "who": "The operations lead",
+   "verdict": "Asked what happens when something goes wrong.",
+   "gaps": [
+    {
+     "gap": "The note on the trainer's error did not say what it means for the result",
+     "fix": "the note now says the result stands, and that the cause is not known and it may happen again"
+    },
+    {
+     "gap": "“Harvested” and “the model's hands” were unclear",
+     "fix": "both are in the list of words"
+    }
+   ]
+  },
+  {
+   "who": "The owner of a small firm",
+   "verdict": "Could not tell what the page was for, or where to start.",
+   "gaps": [
+    {
+     "gap": "No plain statement of what this is",
+     "fix": "“In plain words” now says it in three short cards"
+    },
+    {
+     "gap": "No first step",
+     "fix": "a “Start here” card gives three things to try"
+    },
+    {
+     "gap": "Wanted to know the laptop",
+     "fix": "the processor is named; the rest of the machine is not listed"
+    }
+   ]
+  }
+ ]
+}

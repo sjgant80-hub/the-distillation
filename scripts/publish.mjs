@@ -20,7 +20,7 @@ const at = (p) => new URL(`../${p}`, import.meta.url), has = (p) => existsSync(a
 export async function derived() {
   const { lines, rounds } = await checked();
   const sealed = rounds.filter((r) => r !== 'dev').map(Number);
-  const published = { v: 'the-distillation-published/1', dev: rounds.includes('dev'), rounds: sealed, grants: sealed.filter((k) => has(`data/grants/round-${k}.json`)), runNotes: sealed.filter((k) => has(`data/rounds/${k}/run-note.json`)), walk: has('data/walk.json') };
+  const published = { v: 'the-distillation-published/1', dev: rounds.includes('dev'), rounds: sealed, grants: sealed.filter((k) => has(`data/grants/round-${k}.json`)), runNotes: sealed.filter((k) => has(`data/rounds/${k}/run-note.json`)), walk: has('data/walk.json'), machine: has('data/machine.json') };
   let trace = null;
   const which = sealed.length ? String(sealed[sealed.length - 1]) : rounds.includes('dev') ? 'dev' : null;
   if (which !== null) {

@@ -5,7 +5,8 @@
  "by": "Kar",
  "kind": "a note written by hand about how this round was run. It is not a measurement, and it changes no record.",
  "title": "Resumed once by hand",
- "short": "The trainer saved its adapter and its log, then its process ended with an error and no message. The round was started again from those files. Nothing was trained twice and no record was edited.",
+ "short": "The trainer saved what it had learned, and its log. Then its process ended with an error and no message. The round was started again from those files. Nothing was trained twice and no record was edited.",
+ "means": "What it means: the result stands, because it rests on records that were checked by fingerprint. The cause of the error is not known, so it may happen again.",
  "what": [
   "The trainer ran all 201 steps, saved the adapter and wrote its training log. Then its process ended with an error status and printed no message.",
   "The round runner stops when a step ends that way. So it stopped before copying the training log into the round's records, and before the cold tests."

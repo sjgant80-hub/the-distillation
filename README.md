@@ -21,8 +21,8 @@ The loop proposes a better model. A person decides whether it stands.
 - **Confident wrong answers fell overall, 160 → 117 of 231.** On the hardest problems they rose, 57 → 70 of 73: it
   left fewer blank (14 → 1) and answered wrong instead.
 - **61 problems gained, 5 lost** (exact McNemar test, p = 2.6e-13). 9.3 hours of a laptop processor, of a cap of 12.
-- **Resumed once by hand.** The trainer saved its adapter and its log, then its process ended with an error and no
-  message. Nothing was trained twice and no record was edited. [The note](data/rounds/1/run-note.json).
+- **Resumed once by hand.** The trainer saved what it had learned, and its log. Then its process ended with an error
+  and no message. Nothing was trained twice and no record was edited. [The note](data/rounds/1/run-note.json).
 - **Round 2 has not run.** It cannot start until a person grants round 1's weights.
 
 ## Run it yourself

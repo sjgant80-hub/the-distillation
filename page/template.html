@@ -25,13 +25,37 @@
   <p class="facet" id="facet" aria-live="polite">not measured yet</p>
 </header>
 
+<section class="pad alt" id="plain">
+  <div class="wrap">
+    <p class="kline reveal">In plain words</p>
+    <h2 class="claim reveal">A small AI studies its own work. <b>Only the part a calculator checked.</b></h2>
+    <div class="acts">
+      <div class="act reveal"><span class="num">WHAT IT IS</span><h3>It learns from itself.</h3><p>A small AI does sums, one step at a time. A calculator checks each step. It then studies only the steps that were right.</p></div>
+      <div class="act reveal"><span class="num">WHAT IS PROVED</span><h3>A test it never saw.</h3><p>Then it sits a test of new problems: one try each, no calculator. The score is just below.</p></div>
+      <div class="act reveal"><span class="num">START HERE</span><h3>Three things to try.</h3><p>1 · Read the three big numbers. 2 · Press a square to read one problem, before and after. 3 · Press “Judge the round in this tab”.</p></div>
+    </div>
+    <details class="honest reveal"><summary>The words this page uses</summary><div class="in">
+      <p><b>Cold.</b> One try, with no calculator to check it.</p>
+      <p><b>Held-out.</b> Problems kept back for the test. The AI never studied them.</p>
+      <p><b>Base and distilled.</b> The AI before it studied, and the AI after.</p>
+      <p><b>Weights.</b> The numbers inside the AI. They are what changes when it learns.</p>
+      <p><b>Harvest.</b> The first step: the AI works through problems while the calculator checks each step.</p>
+      <p><b>Fail-wall.</b> The problems it gets wrong. The wall moves when it starts to get some of them right.</p>
+      <p><b>Adopt or dissolve.</b> Keep the new version, or drop it. A rule written in code decides.</p>
+      <p><b>Grant.</b> A person's recorded yes, in their own words. Without it, nothing can be built on a kept version.</p>
+      <p><b>The seal.</b> A frozen list of every file that could change a result. It was made before the test.</p>
+      <p><b>The model's hands.</b> The programs that run the AI. They decide nothing. They only write records.</p>
+    </div></details>
+  </div>
+</section>
+
 <section class="pad" id="live">
   <div class="wrap">
     <p class="kline reveal">Self-improvement, shown</p>
     <h2 class="claim reveal">It learns from its own work. <b>Only the part it could <em>prove.</em></b></h2>
     <div class="glass reveal">
       <h3>The loop, live</h3>
-      <p class="hint">What the round is doing right now, read from its own log. Telemetry, not a result: the result is below, and says "sealing now" until it lands.</p>
+      <p class="hint">Read from the round's own log as it runs. It is not the result. The result is below.</p>
       <div class="out" id="liveBox" aria-live="polite">No round is running right now.</div>
     </div>
   </div>
@@ -53,8 +77,8 @@
     <div class="acts">
       <div class="act reveal"><span class="num">01 — HARVEST</span><h3>It works, checked.</h3><p>One step at a time. Exact arithmetic rules on each. A wrong step is never kept.</p></div>
       <div class="act reveal"><span class="num">02 — BUILD</span><h3>Only what verified.</h3><p>Finished, verified working becomes an example. The rest is thrown away.</p></div>
-      <div class="act reveal"><span class="num">03 — TRAIN</span><h3>On that, and nothing else.</h3><p>A small adapter, trained on the verified file. Its hash is on record.</p></div>
-      <div class="act reveal"><span class="num">04 — TEST COLD</span><h3>Problems it never saw.</h3><p>Before and after. One try, no checker, on a block never harvested or trained on.</p></div>
+      <div class="act reveal"><span class="num">03 — TRAIN</span><h3>On that, and nothing else.</h3><p>A small add-on, trained on the verified file. Its fingerprint is on record.</p></div>
+      <div class="act reveal"><span class="num">04 — TEST COLD</span><h3>Problems it never saw.</h3><p>Before and after. One try, no checker, on problems it never studied.</p></div>
       <div class="act reveal"><span class="num">05 — DECIDE</span><h3>Adopt or dissolve.</h3><p>Better, and no more confidently wrong, or the weights are dropped. Published either way.</p></div>
       <div class="act reveal"><span class="num">06 — GRANT</span><h3>A person's yes.</h3><p>Adopted weights wait for a recorded yes. The loop cannot write its own.</p></div>
     </div>
@@ -65,7 +89,7 @@
 <section class="pad alt" id="wall">
   <div class="wrap">
     <p class="kline reveal">The fail-wall</p>
-    <h2 class="claim reveal">Every held-out problem, <b>before and after.</b></h2>
+    <h2 class="claim reveal">Every test problem, <b>before and after.</b></h2>
     <div class="glass reveal">
       <div class="wall" id="wallBox" role="group" aria-label="One square for every held-out problem">not measured yet</div>
       <p class="key"><span><i style="background:var(--cyan)"></i>gained</span><span><i style="background:#2f8f96"></i>right both times</span><span><i style="background:#1c3a45"></i>failed both times</span><span><i style="background:var(--red)"></i>lost</span></p>
@@ -80,7 +104,7 @@
     <p class="kline reveal">Six claims, written down first</p>
     <h2 class="claim reveal">The pass marks were fixed <b>before the model was trained.</b></h2>
     <div class="stack reveal" id="claimStack">not measured yet</div>
-    <details class="honest reveal"><summary>The bars, word for word</summary><div class="in" id="bars">not measured yet</div></details>
+    <details class="honest reveal"><summary>Each result and its pass mark, word for word</summary><div class="in" id="bars">not measured yet</div></details>
   </div>
 </section>
 
@@ -134,7 +158,7 @@
 <section class="pad alt" id="built">
   <div class="wrap">
     <p class="kline reveal">Under the hood</p>
-    <h2 class="claim reveal">Small gated kernels decide everything. <b>The model's hands decide nothing.</b></h2>
+    <h2 class="claim reveal">Small tested programs decide everything. <b>The model's hands decide nothing.</b></h2>
     <div class="stack reveal" id="kernelStack">not measured yet</div>
     <div class="wins" id="builtWins">not measured yet</div>
   </div>
@@ -160,7 +184,7 @@
 <section class="pad proof deep" id="limits">
   <div class="wrap">
     <h2 class="hl reveal"><span class="a">Loud numbers.</span><br><span class="b">Honest limits.</span></h2>
-    <div class="links reveal"><a class="plink" href="CLAIMS.md">the claims ↗</a><a class="plink" href="SEAL.md">the seal ↗</a><a class="plink" href="data/settings.json">sealed settings ↗</a><a class="plink" href="data/gates.json">mutation gate ↗</a><a class="plink" href="data/parity.json">generation check ↗</a><a class="plink" href="data/weights.json">weights check ↗</a><a class="plink" href="https://github.com/sjgant80-hub/the-distillation">source ↗</a></div>
+    <div class="links reveal"><a class="plink" href="CLAIMS.md">the claims ↗</a><a class="plink" href="SEAL.md">the seal ↗</a><a class="plink" href="data/settings.json">sealed settings ↗</a><a class="plink" href="data/gates.json">the test of the tests ↗</a><a class="plink" href="data/parity.json">generation check ↗</a><a class="plink" href="data/weights.json">weights check ↗</a><a class="plink" href="https://github.com/sjgant80-hub/the-distillation">source ↗</a></div>
     <details class="honest reveal"><summary>What this does — and doesn't — claim</summary><div class="in">
       <p><b>One measured round is one measured round.</b> <span data-bind="l.rounds">not measured yet</span> This model, this kind of problem. Nothing about others.</p>
       <p><b>The gain is not even.</b> <span data-bind="l.tiers">not measured yet</span></p>
@@ -168,12 +192,12 @@
       <p><b>How the round was run.</b> <span data-bind="l.run">not measured yet</span></p>
       <p><b>The held-out problems are the same kinds of problem.</b> New calculations from the same generator. The lift shows the skill carries to those, not elsewhere.</p>
       <p><b>These are not The Climb's or The Crystal's numbers.</b> Those run a 4-bit build in a browser tab with 128 tokens for one try. Here it is 32-bit on a laptop processor with 256, the same for both models.</p>
-      <p><b>The weights failed the plain hash check.</b> The file's hash is not the maker's listed one. Every tensor was compared with a separate 8-bit copy instead, and all agree. <a href="SEAL.md">How.</a></p>
+      <p><b>The weights failed the plain hash check.</b> The file's hash is not the maker's listed one. Every tensor was compared with a separate 8-bit copy instead, and all agree. <a href="SEAL.md">How it was checked ↗</a></p>
       <p><b>The trained weights are not published.</b> Each adapter is recorded by its hash. Publishing weights derived from the model is a licence decision not yet taken.</p>
       <p><b>A re-run may differ by a reply or two.</b> Another processor can round a near-tie the other way. <span data-bind="l.parity">not measured yet</span></p>
       <p><b>One test per round.</b> An exact McNemar test at 0.05. Over several rounds the chance that one passes by luck adds up.</p>
-      <p><b>Compute is the wall.</b> <span data-bind="l.compute">not measured yet</span></p></div></details>
-    <details class="honest reveal"><summary>The development round (not a claim)</summary><div class="in" id="devBox">not measured yet</div></details>
+      <p><b>It is slow on a laptop.</b> <span data-bind="l.compute">not measured yet</span></p></div></details>
+    <details class="honest reveal"><summary>The practice round (not a claim)</summary><div class="in" id="devBox">not measured yet</div></details>
   </div>
 </section>
 

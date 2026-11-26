@@ -8,5 +8,6 @@
  "runNotes": [
   1
  ],
- "walk": false
+ "walk": true,
+ "machine": true
 }
