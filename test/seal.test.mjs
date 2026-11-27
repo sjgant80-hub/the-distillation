@@ -58,14 +58,37 @@ test('the claims file states each bar word for word as the code rules on it', ()
   }
 });
 
-test('once the seal is made, every sealed file still has the bytes it froze, and every sealed round was made under it', async () => {
-  const { sealed } = await import('../scripts/seal.mjs');
+test('once the seal is made, every sealed file still has the bytes it froze, and every sealed round was made under the seal in force for it', async () => {
+  const { sealed, fixed, differs, MIN_REASON } = await import('../scripts/seal.mjs');
+  const { seals, sealOf } = await import('../scripts/judge.mjs');
   for (const f of sealed()) assert.ok(existsSync(at(f)), `${f} is to be sealed and is not there`);
   if (!existsSync(at('SEAL.json'))) { assert.ok(!existsSync(at('data/rounds/1/harvest.json')), 'a sealed round cannot begin before the seal exists'); return; }
   const seal = rd('SEAL.json');
-  assert.equal(seal.v, 'the-distillation-seal/1');
+  assert.ok(['the-distillation-seal/1', 'the-distillation-seal/2'].includes(seal.v));
   for (const [f, h] of Object.entries(seal.files)) { assert.equal(sha(readFileSync(at(f))), h, `${f} changed after the seal`); assert.ok(!readFileSync(at(f)).includes(13), `${f} holds a carriage return`); }
   assert.deepEqual(Object.keys(seal.files).sort(), sealed().sort());
-  const own = sha(readFileSync(at('SEAL.json')));
-  for (let k = 1; k <= settings.rounds.seeds.length; k++) for (const f of ['harvest.json', 'verdict.json']) if (existsSync(at(`data/rounds/${k}/${f}`))) assert.equal(rd(`data/rounds/${k}/${f}`).sealSha256, own, `round ${k}'s ${f} was not made under this seal`);
+  // the chain: the first seal begins at round 1; each later one names the seal before it by its bytes, begins at a
+  // later round, gives a reason for every file whose bytes differ (and for no other), and leaves what is asked,
+  // the bars, the seeds, the engine and the first seal's kernels exactly as they were
+  const chain = seals();
+  assert.equal(chain[chain.length - 1].file, 'SEAL.json');
+  assert.deepEqual(chain.slice(0, -1).map((s) => s.file), chain.slice(0, -1).map((_, i) => `seals/${i + 1}.json`), 'the earlier seals are kept in order, none missing');
+  assert.deepEqual([chain[0].seal.v, chain[0].from], ['the-distillation-seal/1', 1]);
+  for (let i = 1; i < chain.length; i++) {
+    const a = chain[i - 1], b = chain[i], moved = differs(a.seal.files, b.seal.files);
+    assert.equal(b.seal.v, 'the-distillation-seal/2');
+    assert.deepEqual(b.seal.follows, { file: a.file === 'SEAL.json' ? `seals/${i}.json` : a.file, sha256: a.sha256 }, `seal ${i + 1} does not name the seal before it`);
+    assert.ok(Number.isInteger(b.seal.fromRound) && b.from > a.from, `seal ${i + 1} does not begin at a later round`);
+    assert.ok(moved.length > 0);
+    assert.deepEqual(Object.keys(b.seal.changed).sort(), moved, `seal ${i + 1}: the files with a reason are not exactly the files that changed`);
+    for (const f of moved) { assert.ok(b.seal.changed[f].length >= MIN_REASON, `${f}: no real reason`); assert.ok(!fixed(f, chain[0].seal.files), `${f} may never change in a later seal`); }
+    assert.ok(typeof b.seal.why === 'string' && b.seal.why.length >= MIN_REASON);
+    // a round the earlier seal covered was whole before the later seal began: it has its verdict
+    for (let k = a.from; k < b.from; k++) assert.ok(existsSync(at(`data/rounds/${k}/verdict.json`)) && rd(`data/rounds/${k}/verdict.json`).cold, `round ${k} had no outcome when the seal after it was made`);
+  }
+  for (const s of chain) assert.equal(sha(readFileSync(at(s.file))), s.sha256);
+  // every round on file records the seal that was in force for it, in its harvest and in its verdict
+  for (let k = 1; k <= settings.rounds.seeds.length; k++) for (const f of ['harvest.json', 'verdict.json']) if (existsSync(at(`data/rounds/${k}/${f}`))) assert.equal(rd(`data/rounds/${k}/${f}`).sealSha256, sealOf(k), `round ${k}'s ${f} was not made under the seal in force for it`);
+  assert.equal(sealOf(chain[chain.length - 1].from), chain[chain.length - 1].sha256, 'the newest seal is in force from the round it names');
+  if (chain.length > 1) assert.equal(sealOf(chain[chain.length - 1].from - 1), chain[chain.length - 2].sha256, 'the round before it stays under the seal before it');
 });

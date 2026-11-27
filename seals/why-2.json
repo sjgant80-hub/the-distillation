@@ -1,0 +1,9 @@
+{
+ "why": "Round 1's trainer saved its adapter and its log whole, and then its process ended with an error and no message. The runner stopped, and the round was carried on by hand (data/rounds/1/run-note.json). This seal mends how a round is run and written down, so the next round needs no hand. It was made on 27 November 2026, after round 1's verdict and the owner's grant, and before the model was shown one problem of round 2. It changes nothing that is asked, measured or judged: the claims, the bars, the seeds, the engine and every kernel the first seal froze are the same bytes. The cause of round 1's bad exit is still not known: a 16-example run of the same trainer on the same machine ended with exit 0.",
+ "files": {
+  "src/steps.mjs": "New. The rule for a step whose process ended badly: its exit is always written down, and the round carries on only from a record that was checked whole after the process ended. Anything else stops the round. Mutation-gated: 17 of 17 planted bugs caught.",
+  "scripts/round.mjs": "Writes every step's exit, signal, seconds and last error lines into the round's run record (run.json). Asks src/steps.mjs whether the round goes on. Does not train again when the trainer's own log already names this training file and this adapter, each by its SHA-256.",
+  "scripts/judge.mjs": "Reads the seal a round was made under from the chain of seals: the newest seal that begins at or before that round. Round 1 is still judged under the first seal, and round 2 under this one. The kernel it hands the records to is unchanged.",
+  "py/train.py": "One added line, faulthandler.enable(): if the process is brought down from below Python, it prints where it was. What is trained, in what order, with what settings, and how it is saved are unchanged."
+ }
+}

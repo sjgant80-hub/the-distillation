@@ -128,6 +128,11 @@ test('the README opens with the live page, and says what the page says about the
   assert.ok(!readme.includes('sealing now'), 'a round has landed: the README no longer says sealing now');
   assert.ok(readme.includes(`**${pc(c.base.rate)} → ${pc(c.distilled.rate)}**`) && readme.includes(`on ${c.n} held-out problems`) && readme.includes(`training on ${v.train.examples} verified examples`), 'the result, as the verdict has it');
   assert.ok(readme.includes(`**${v.verdicts.filter((x) => x.pass === true).length} of 6**`), 'the claims passed, as the verdict has them');
+  // whether a person has granted the newest round's weights, as the grants on file have it
+  const granted = published.grants.includes(k);
+  if (v.adopted === true) { assert.equal(readme.includes("The weights wait for a person's grant"), !granted, 'the README says the weights wait only while no grant is on file'); assert.equal(readme.includes(`A person granted the weights on`) && readme.includes(`(data/grants/round-${k}.json)`), granted, 'the README says the weights are granted only when the grant is on file'); }
+  // the files the gate covers, counted from its record
+  assert.ok(readme.includes(`in the ${['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'][Object.keys(g.files).length]} gated files`), 'the number of gated files, as the record has it');
   assert.ok(readme.includes(`${c.base.wrong} → ${c.distilled.wrong} of ${c.n}`) && readme.includes(`**${c.gained.length} problems gained, ${c.lost.length} lost**`), 'confident wrong answers and what moved, as the verdict has them');
   for (const [t, name] of [['easy', 'one-step problems'], ['climb', 'several-step problems'], ['wall', 'the hardest problems']]) assert.ok(readme.includes(`${name} ${v.tiers.base[t].right} → ${v.tiers.distilled[t].right} of`), `${name}, as the verdict has them`);
   for (const t of ['easy', 'climb', 'wall']) if (v.tiers.distilled[t].wrong > v.tiers.base[t].wrong) assert.ok(readme.includes(`they rose, ${v.tiers.base[t].wrong} → ${v.tiers.distilled[t].wrong} of ${v.tiers.base[t].n}`), 'where confident wrong answers rose, the README says so');

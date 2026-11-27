@@ -1,6 +1,18 @@
 {
- "v": "the-distillation-seal/1",
- "note": "every file that can change a result, frozen before a sealed round was run; a round counts only when its harvest and its verdict record the SHA-256 of this file",
+ "v": "the-distillation-seal/2",
+ "note": "a later seal, made between rounds: every file that can change a result, frozen again. The seal before it is kept byte for byte and named here by its SHA-256; every file whose bytes changed has its reason below; what is asked, the bars, the seeds, the engine and the kernels the first seal froze have not changed",
+ "fromRound": 2,
+ "follows": {
+  "file": "seals/1.json",
+  "sha256": "8fd3edc4e1d9ebba4a142eb2ea61427480674b1621d911ed3159d49fe757a620"
+ },
+ "why": "Round 1's trainer saved its adapter and its log whole, and then its process ended with an error and no message. The runner stopped, and the round was carried on by hand (data/rounds/1/run-note.json). This seal mends how a round is run and written down, so the next round needs no hand. It was made on 27 November 2026, after round 1's verdict and the owner's grant, and before the model was shown one problem of round 2. It changes nothing that is asked, measured or judged: the claims, the bars, the seeds, the engine and every kernel the first seal froze are the same bytes. The cause of round 1's bad exit is still not known: a 16-example run of the same trainer on the same machine ended with exit 0.",
+ "changed": {
+  "py/train.py": "One added line, faulthandler.enable(): if the process is brought down from below Python, it prints where it was. What is trained, in what order, with what settings, and how it is saved are unchanged.",
+  "scripts/judge.mjs": "Reads the seal a round was made under from the chain of seals: the newest seal that begins at or before that round. Round 1 is still judged under the first seal, and round 2 under this one. The kernel it hands the records to is unchanged.",
+  "scripts/round.mjs": "Writes every step's exit, signal, seconds and last error lines into the round's run record (run.json). Asks src/steps.mjs whether the round goes on. Does not train again when the trainer's own log already names this training file and this adapter, each by its SHA-256.",
+  "src/steps.mjs": "New. The rule for a step whose process ended badly: its exit is always written down, and the round carries on only from a record that was checked whole after the process ended. Anything else stops the round. Mutation-gated: 17 of 17 planted bugs caught."
+ },
  "files": {
   "src/adopt.mjs": "4d5db0cd90b5d864867096ecc049b235ff3e4bf9d10335f721b6b51fe7e136cd",
   "src/claims.mjs": "b601a779f9d875304a8ce773d9ac92abff84a6e8268d124c618dc80254600c4c",
@@ -8,6 +20,7 @@
   "src/judge.mjs": "3925d6ead47f315ac1a0b85beed9fbc29529ef6732439f6a1d3a7f11241e4037",
   "src/rounds.mjs": "ce0d837bfa500557b536598f6f43ce103ea7a47e2b9d70b8664bbc097ed693fd",
   "src/split.mjs": "7ecfec89deb81f841f41d8ae867798181708981c7f5351f263e97b3de99e2825",
+  "src/steps.mjs": "128ba610ba5a25986d68f3f222d14406c6e16bc9ded26fcbfcb85653882fc089",
   "src/trace.mjs": "d6e9d65c5e3d2850a0f6cc4b5f84d65d2a4e6de18bd696d8375610aff4d4e0b3",
   "vendor/crystal/src/bond.mjs": "e79c9cb111eb8b72b01698e2560ad5b210f8200ff66d9765bf24e82a5c97374a",
   "vendor/crystal/src/claims.mjs": "fe4109f68982af9f36ef2953e3e0af4d643ec1caf72bc541b7543c8f1d87e3e3",
@@ -29,12 +42,12 @@
   "vendor/crystal/vendor/climb/vendor/stats.mjs": "c8b36932ceeacc8a2c48ebf98c00a103c29708cd340b8e9edf81f218016cbe5c",
   "py/llm.py": "4ab94c659b7e3954b54770be25c02caea1ca2b15d9b433c7ab5214e07993da85",
   "py/serve.py": "e282a554f1c8eca086db1650239692f02c9b23433624e65752e82769f3ed497b",
-  "py/train.py": "8c71e103f9326c0b0b2f40b5dea550b351c0237d4b3feab03a7aca1bc83e1a71",
+  "py/train.py": "2215d3a29959555d44a58585be9259dd6ea40d7b7afc4b70f00106b602449f9b",
   "py/cold.py": "e835103f8bec0a77f2b585145b77b229685e53eaf666088fbb5db457f8770600",
   "scripts/harvest.mjs": "4a47ef43342370493b55e1982cac9a6412d64fe4b548b0e3e54602ab151845c8",
   "scripts/build.mjs": "a112400def51a50f2d22519175695fb08a70ba4a003058da0449141eb4206720",
-  "scripts/judge.mjs": "9708cef78fe984ea88fc0ba0edbc738501f055300cee8987e36a7ca7aadd3ccf",
-  "scripts/round.mjs": "eaff91aa60696e87fc2147f3880329d80337928ac96cf0a35e0d508b56cd040b",
+  "scripts/judge.mjs": "f358d0cd2c06e38f9791689123a885fd9ae16bfad858dbb0dc88098957911916",
+  "scripts/round.mjs": "89b57db03ca8d9e6aaa626b78c4a3bba1cf97c7346ac5478003a0f7fe4ee5d5c",
   "data/settings.json": "14f0996c79b2423c541a97c25f2ada929a430b57d0403894a2d43837e1db2cae",
   "CLAIMS.md": "2b91642c734e9dd27e02f2929a78894f4b195b72ff941b2da882f4b932c071c6"
  }

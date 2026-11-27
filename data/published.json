@@ -11,5 +11,16 @@
   1
  ],
  "walk": true,
- "machine": true
+ "machine": true,
+ "seals": [
+  {
+   "file": "seals/1.json",
+   "from": 1
+  },
+  {
+   "file": "SEAL.json",
+   "from": 2
+  }
+ ],
+ "runs": []
 }

@@ -2,7 +2,7 @@
 // (and is mutation-gated). This script only reads and writes. It adds two things to the kernel's verdict: the SHA-256
 // of each of the round's files as they are on disk, and the date the verdict was first reached.
 //   node scripts/judge.mjs <dev | round number>
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import SPLIT from '../src/split.mjs';
 import JUDGE from '../src/judge.mjs';
@@ -11,6 +11,19 @@ const at = (p) => new URL(`../${p}`, import.meta.url), has = (p) => existsSync(a
 const sha = (b) => createHash('sha256').update(b).digest('hex');
 export const where = (which) => (which === 'dev' ? 'data/dev' : `data/rounds/${Number(which)}`);
 export const FILES = ['harvest.json', 'train.jsonl', 'asks.json', 'held.json', 'train-log.json', 'cold-base.json', 'cold-distilled.json'];
+
+// The seal a round is made under. The first seal begins at round 1. A later seal says the round it begins from
+// (fromRound) and is made only between rounds; the seals before it are kept, byte for byte, in seals/. A round's seal
+// is the newest one that begins at or before that round. sealOf(0), the development round's, is the newest seal: the
+// kernel takes no seal for that round.
+export function seals() {
+  const kept = has('seals/') ? readdirSync(at('seals/')).filter((f) => /^\d+\.json$/.test(f)).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).map((f) => `seals/${f}`) : [];
+  return [...kept, ...(has('SEAL.json') ? ['SEAL.json'] : [])].map((f) => { const b = readFileSync(at(f)), j = JSON.parse(b.toString('utf8')); return { file: f, sha256: sha(b), from: Number.isInteger(j.fromRound) ? j.fromRound : 1, seal: j }; });
+}
+export function sealOf(k) {
+  const all = seals(), mine = k === 0 ? all.slice(-1) : all.filter((s) => s.from <= k).slice(-1);
+  return mine.length ? mine[0].sha256 : null;
+}
 
 // what earlier rounds published and what a person granted, up to (not including) round k
 export function before(k) {
@@ -31,7 +44,7 @@ export function judged(which, plan) {
   const { history, grants } = before(k);
   if (k > 0 && has(`data/grants/round-${k}.json`)) grants[k] = json(`data/grants/round-${k}.json`);
   const verdict = JUDGE.judge({
-    which: k === 0 ? 'dev' : k, settings, set, seal: has('SEAL.json') ? sha(readFileSync(at('SEAL.json'))) : null, history, grants,
+    which: k === 0 ? 'dev' : k, settings, set, seal: sealOf(k), history, grants,
     harvest: opt('harvest.json'), log: opt('train-log.json'), coldBase: opt('cold-base.json'), coldDistilled: opt('cold-distilled.json'),
     train: has(`${dir}/train.jsonl`) ? readFileSync(at(`${dir}/train.jsonl`), 'utf8') : null,
   });

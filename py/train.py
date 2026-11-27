@@ -10,7 +10,8 @@
 #   · examples of like length are batched together, so little of a batch is padding. Which examples meet in a batch
 #     is still drawn from the seed: the examples are shuffled, cut into blocks, and only then sorted inside a block.
 #   python py/train.py <model dir> <train.jsonl> <out dir> <settings.json> [adopted adapter dir ...]
-import hashlib, json, math, os, sys, time
+import faulthandler, hashlib, json, math, os, sys, time
+faulthandler.enable()                                  # if the process is brought down from below Python, say where it was
 import torch
 from peft import LoraConfig, get_peft_model
 from transformers import DynamicCache

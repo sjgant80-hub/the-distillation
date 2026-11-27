@@ -8,9 +8,9 @@ The loop proposes a better model. A person decides whether it stands.
 | | |
 | --- | --- |
 | **24.7% → 48.9%** | round 1: right, cold, on 231 held-out problems, before and after training on 536 verified examples ([the verdict](data/rounds/1/verdict.json)) |
-| **6 of 6** | of round 1's claims passed. The rule says adopt. The weights wait for a person's grant |
+| **6 of 6** | of round 1's claims passed. The rule says adopt. A person granted the weights on 27 November 2026 ([the grant](data/grants/round-1.json)) |
 | **6** | claims and their pass marks, written down before any model was trained ([CLAIMS.md](CLAIMS.md)) |
-| **277 / 277** | planted bugs caught in the eight gated kernels ([the record](data/gates.json)) |
+| **294 / 294** | planted bugs caught in the nine gated files ([the record](data/gates.json)) |
 | **100 / 100** | replies identical to plain one-at-a-time generation ([the record](data/parity.json)) |
 | **0** | changes to the model without a person's recorded yes |
 
@@ -23,7 +23,8 @@ The loop proposes a better model. A person decides whether it stands.
 - **61 problems gained, 5 lost** (exact McNemar test, p = 2.6e-13). 9.3 hours of a laptop processor, of a cap of 12.
 - **Resumed once by hand.** The trainer saved what it had learned, and its log. Then its process ended with an error
   and no message. Nothing was trained twice and no record was edited. [The note](data/rounds/1/run-note.json).
-- **Round 2 has not run.** It cannot start until a person grants round 1's weights.
+- **Round 2 has not run yet.** Round 1's weights are granted. A second seal was made first: it mends how a round is
+  run and written down, and changes nothing that is asked or judged ([SEAL.md](SEAL.md)).
 
 ## Run it yourself
 
@@ -58,12 +59,13 @@ differ from the published ones by a near-tie here and there; the verdict is alwa
 
 | Where | What |
 | --- | --- |
-| `src/` | seven kernels that decide everything: `split`, `trace`, `cold`, `adopt`, `rounds`, `claims`, `judge` |
+| `src/` | eight kernels that decide everything: `split`, `trace`, `cold`, `adopt`, `rounds`, `steps`, `claims`, `judge` |
 | `vendor/crystal/` | The Crystal's engine and The Climb's checker, as their seals froze them |
 | `vendor/house/` | the house kit: the crystal hero, the token sheet, the ship gate |
 | `py/` | the model's hands: generate, serve, train, test cold. They decide nothing; they write records |
 | `scripts/` | `round` runs a round, `judge` writes its verdict, `check` decides every round again, `live` shows a round as it runs, `grant` records a person's yes, `seal` freezes what can change a result |
 | `data/` | the sealed settings and every round's records |
+| `seals/` | every earlier seal, kept byte for byte, and the written reasons for the seal after it |
 
 </details>
 

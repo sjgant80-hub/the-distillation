@@ -1,7 +1,9 @@
 // publish.mjs — what the page reads. First every round on file is decided again from its own files (scripts/check.mjs);
 // only if that holds does it write:
 //   data/published.json   which rounds are on file, which carry a person's grant, which carry a hand-written note on
-//                         how they were run (data/rounds/<k>/run-note.json), and whether the buyer walk is on file
+//                         how they were run (data/rounds/<k>/run-note.json) or the runner's own record of how each
+//                         step ended (run.json), the seals in order with the round each begins from, and whether
+//                         the buyer walk is on file
 //   data/trace.json       one real harvested problem (every reply the model gave, what bonded, what was dissolved, and
 //                         the training example built from it) and one real held-out problem (what each model said,
 //                         cold), taken from the newest round on file, for the page's "how it works"
@@ -13,14 +15,14 @@ import SPLIT from '../src/split.mjs';
 import TRACE from '../src/trace.mjs';
 import COLD from '../src/cold.mjs';
 import { checked } from './check.mjs';
-import { where } from './judge.mjs';
+import { where, seals } from './judge.mjs';
 
 const at = (p) => new URL(`../${p}`, import.meta.url), has = (p) => existsSync(at(p)), json = (p) => JSON.parse(readFileSync(at(p), 'utf8'));
 
 export async function derived() {
   const { lines, rounds } = await checked();
   const sealed = rounds.filter((r) => r !== 'dev').map(Number);
-  const published = { v: 'the-distillation-published/1', dev: rounds.includes('dev'), rounds: sealed, grants: sealed.filter((k) => has(`data/grants/round-${k}.json`)), runNotes: sealed.filter((k) => has(`data/rounds/${k}/run-note.json`)), walk: has('data/walk.json'), machine: has('data/machine.json') };
+  const published = { v: 'the-distillation-published/1', dev: rounds.includes('dev'), rounds: sealed, grants: sealed.filter((k) => has(`data/grants/round-${k}.json`)), runNotes: sealed.filter((k) => has(`data/rounds/${k}/run-note.json`)), walk: has('data/walk.json'), machine: has('data/machine.json'), seals: seals().map((s) => ({ file: s.file, from: s.from })), runs: sealed.filter((k) => has(`data/rounds/${k}/run.json`)) };
   let trace = null;
   const which = sealed.length ? String(sealed[sealed.length - 1]) : rounds.includes('dev') ? 'dev' : null;
   if (which !== null) {

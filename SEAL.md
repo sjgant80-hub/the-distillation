@@ -2,7 +2,8 @@
 
 `SEAL.json` holds a SHA-256 of every file that can change a result. It is made (`node scripts/seal.mjs`) before a
 sealed round is run. `test/seal.test.mjs` fails on every push if any sealed byte has changed since, and a sealed round
-counts only when its harvest and its verdict record the SHA-256 of `SEAL.json` itself.
+counts only when its harvest and its verdict record the SHA-256 of the seal that was in force for it. There are now
+two seals: [the second](#the-second-seal-27-november-2026) mends how a round is run, and changes nothing that is asked or judged.
 
 ## What is sealed
 
@@ -93,3 +94,36 @@ is this repository's, and writes the same hash into the verdict, with the SHA-25
 `scripts/check.mjs` then decides the round again from those files on every push: every harvested crystal grown again
 from its recorded replies, the training file and the questions built again to the same bytes, the verdict judged
 again to the same verdict.
+
+## The second seal (27 November 2026)
+
+**Why there is one.** In round 1 the trainer saved its adapter and its log whole, and then its process ended with an
+error and no message. The runner stopped. The round was carried on by hand, and the hand's work is published
+([data/rounds/1/run-note.json](data/rounds/1/run-note.json)). A sealed file may not change quietly, so the mend is a
+new seal, made between rounds: after round 1's verdict and the owner's grant, before round 2 was shown one problem.
+
+**What changed: four files, each with its reason in [SEAL.json](SEAL.json).**
+
+- `src/steps.mjs` (new): the rule for a step whose process ended badly. Its exit is always written down. The round
+  carries on only from a record that was checked whole after the process ended. Anything else stops the round.
+  Mutation-gated, 17 of 17.
+- `scripts/round.mjs`: writes every step's exit, signal, seconds and last error lines into the round's `run.json`,
+  asks `src/steps.mjs` whether to go on, and does not train again when the trainer's own log already names this
+  training file and this adapter by SHA-256.
+- `scripts/judge.mjs`: reads the seal a round was made under from the chain of seals. Round 1 is still judged under
+  the first seal; round 2 onward under this one.
+- `py/train.py`: one added line (`faulthandler.enable()`), so a process brought down from below Python says where it
+  was. What is trained, and how, is unchanged.
+
+**What did not change, and cannot.** The claims, the settings (bars, seeds, the most rounds, the spend wall), the
+vendored engine and every kernel the first seal froze are the same bytes in both seals. `scripts/seal.mjs --next`
+refuses a later seal that touches any of them, and `test/seal.test.mjs` checks on every push that the files with a
+written reason are exactly the files whose bytes differ.
+
+**The chain.** The first seal is kept byte for byte as [seals/1.json](seals/1.json) (SHA-256 `8fd3edc4e1d9…`, the
+hash round 1's harvest and verdict record). `SEAL.json` names it, and says it begins at round 2. A round's seal is the
+newest one that begins at or before that round.
+
+**What is still not known.** Why round 1's trainer ended badly. A 16-example run of the same trainer on the same
+machine ended with exit 0, so the fault is not in every exit. If it happens again, `run.json` will hold the exit
+number and what the process said last.

@@ -12,14 +12,16 @@ const prob = (p) => (p < 0.001 ? p.toExponential(1) : p.toFixed(3));
 const hrs = (s) => (s >= 5400 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`);
 const many = (n, one, more) => `${n} ${n === 1 ? one : more}`;
 const SEALING = '<span class="tag gd">sealing now</span>';
-const S = { settings: null, published: null, rounds: {}, shown: null, trace: null, gates: null, parity: null, weights: null, walk: null, machine: null, sealSha: null, crystal: null, faces: [] };
+const S = { settings: null, published: null, rounds: {}, shown: null, trace: null, gates: null, parity: null, weights: null, walk: null, machine: null, sealSha: null, seals: [], crystal: null, faces: [] };
+// the seal a round was made under: the newest seal that begins at or before it (the practice round takes none)
+const sealFor = (k) => { const mine = k === 0 ? S.seals.slice(-1) : S.seals.filter((s) => s.from <= k).slice(-1); return mine.length ? mine[0].sha : null; };
 const KIND = { gained: 'gained: failed before, right after', lost: 'lost: right before, failed after', kept: 'right both times', still: 'failed both times' };
 const FILL = { gained: '#49e8c8', lost: '#ff6b6b', kept: '#2f8f96', still: '#1c3a45' };
 const SAID = { right: 'right', wrong: 'a confident wrong answer', none: 'no answer' };
 const TIER = { easy: 'one-step problems', climb: 'several-step problems', wall: 'the hardest problems' };
 // the tiers where the trained model gave more confident wrong answers than the base did
 const worse = (v) => (v && v.tiers ? JUDGE.TIERS.filter((t) => v.tiers.distilled[t].wrong > v.tiers.base[t].wrong) : []);
-const ORGANS = { 'src/split.mjs': 'which problems are held out, by calculation', 'src/trace.mjs': 'what may be trained on: verified working only', 'src/cold.mjs': 'how a cold reply is read: right, wrong, or no answer', 'src/adopt.mjs': 'adopt or dissolve, and the test of a person\'s grant', 'src/rounds.mjs': 'what the loop may do next', 'src/claims.mjs': 'the six claims, ruled on from the evidence', 'src/judge.mjs': 'a round\'s verdict from its records; this page runs it', 'genome/cell.mjs': 'the estate\'s birth check: its judge is the training gate' };
+const ORGANS = { 'src/split.mjs': 'which problems are held out, by calculation', 'src/trace.mjs': 'what may be trained on: verified working only', 'src/cold.mjs': 'how a cold reply is read: right, wrong, or no answer', 'src/adopt.mjs': 'adopt or dissolve, and the test of a person\'s grant', 'src/rounds.mjs': 'what the loop may do next', 'src/steps.mjs': 'what happens when a step ends badly', 'src/claims.mjs': 'the six claims, ruled on from the evidence', 'src/judge.mjs': 'a round\'s verdict from its records; this page runs it', 'genome/cell.mjs': 'the estate\'s birth check: its judge is the training gate' };
 
 // every held-out problem with what each model said, cold, read here by the sealed checker (src/cold.mjs)
 function paired(held, cb, cd) {
@@ -35,6 +37,11 @@ function paired(held, cb, cd) {
 const sealedList = () => Object.keys(S.rounds).filter((w) => w !== 'dev').map(Number).sort((a, b) => a - b);
 const newest = () => { const ks = sealedList(); return ks.length ? S.rounds[ks[ks.length - 1]] : null; };
 const R = () => (S.shown === null ? null : S.rounds[S.shown]);   // the round the glass shows: the newest sealed one, else the development round
+
+// the steps of a round that ended badly, from the runner's own record (src/steps.mjs reads it), in a plain line
+const ended = (r) => (r && r.run ? STEPS.bad(r.run) : []);
+const STEP = { harvest: 'working', build: 'building the study file', train: 'studying', 'cold-base': 'the test before', 'cold-distilled': 'the test after', judge: 'judging' };
+const endedLine = (r) => ended(r).map((b) => `The step “${esc(STEP[b.step] || b.step)}” ended with ${b.exit === null ? `no exit number${b.signal ? ` (signal ${esc(b.signal)})` : ''}` : `exit ${b.exit}`}: ${b.carriedOn ? 'its saved work was checked whole, so the round carried on' : 'the round stopped there'}.`).join(' ');
 
 // ── the result: three receipts, or "sealing now" ──
 function renderResult() {
@@ -54,7 +61,7 @@ function renderResult() {
     + `<div class="stat reveal"><div class="n"><span class="now" data-count="+${c.gained.length}">+${c.gained.length}</span> <span class="bad">−${c.lost.length}</span></div><div class="lab"><b>Problems gained and lost.</b> Failed before and right after, against the other way. p = ${prob(c.p)}.</div>${src}</div>`;
   const next = v.next || {};
   $('verdictLine').innerHTML = v.adopted
-    ? `<b class="pass">The rule: adopt.</b> It did better on unseen problems and was no more often sure of a wrong answer, so it is kept. ${next.act === 'wait' ? `It now waits for a person's recorded yes.` : next.act === 'run' ? `A person has granted them. Round ${next.round} may run.` : `The loop has stopped: ${esc(next.why || '')}.`}`
+    ? `<b class="pass">The rule: adopt.</b> It did better on unseen problems and was no more often sure of a wrong answer, so it is kept. ${next.act === 'wait' ? `It now waits for a person's recorded yes.` : next.act === 'run' ? `A person has said yes. Round ${next.round} may run.` : `The loop has stopped: ${esc(next.why || '')}.`}`
     : '<b class="fail">The rule: dissolve.</b> It did not clear both pass marks, so the new version is dropped. The AI stays as it was. The gains have flattened: the house is full.';
   $('facet').innerHTML = `Round ${v.round} · sealed · <b>${pct(c.base.rate)} → ${pct(c.distilled.rate)}</b> right, cold · point at a face`;
 }
@@ -123,9 +130,10 @@ function renderClaims() {
   const r = newest(), v = r && r.verdict, bars = CLAIMS.bars(S.settings || {});
   const rows = v ? v.verdicts : Object.keys(CLAIMS.NAMES).map((id) => ({ id, name: CLAIMS.NAMES[id], pass: null, result: 'round 1 has not run' }));
   $('claimStack').innerHTML = rows.map((x) => `<div class="srow ${x.pass === false ? 'red' : x.pass === null ? 'gold' : ''}"><div class="d">${x.id}</div><div class="nm"><b>${esc(v ? PLAIN[x.id] || x.name : x.name)}</b><span>${esc(v ? plainly(x, v) : x.result)}</span>${x.pass === true ? '<span class="tag cy">pass</span>' : x.pass === false ? '<span class="tag rd">fail · kept</span>' : SEALING}</div></div>`).join('') + (v && v.notes.length ? `<div class="srow red"><div class="d">note</div><div class="nm"><span>${v.notes.map(esc).join('; ')}</span></div></div>` : '')
-    + (r && r.note ? `<div class="srow gold"><div class="d">run</div><div class="nm"><b>${esc(r.note.title)}</b><span>${esc(r.note.short)} <a href="${r.dir}/run-note.json">The note ↗</a></span></div></div>` : '');
+    + (r && r.note ? `<div class="srow gold"><div class="d">run</div><div class="nm"><b>${esc(r.note.title)}</b><span>${esc(r.note.short)} <a href="${r.dir}/run-note.json">The note ↗</a></span></div></div>` : '')
+    + (r && ended(r).length ? `<div class="srow gold"><div class="d">run</div><div class="nm"><b>A step ended badly</b><span>${endedLine(r)} <a href="${r.dir}/run.json">The record ↗</a></span></div></div>` : '');
   const res = (id) => { const x = v && v.verdicts.find((y) => y.id === id); return x ? ` <span class="dim">Result: ${esc(x.result)}.</span>` : ''; };
-  $('bars').innerHTML = Object.keys(CLAIMS.NAMES).map((id) => `<p><b>${id} · ${esc(CLAIMS.NAMES[id])}.</b> ${esc(bars[id][0].toUpperCase() + bars[id].slice(1))}.${res(id)}</p>`).join('') + '<p>Registered in <a href="CLAIMS.md">CLAIMS.md</a> and frozen by <a href="SEAL.json">the seal</a> before round 1 ran.</p>';
+  $('bars').innerHTML = Object.keys(CLAIMS.NAMES).map((id) => `<p><b>${id} · ${esc(CLAIMS.NAMES[id])}.</b> ${esc(bars[id][0].toUpperCase() + bars[id].slice(1))}.${res(id)}</p>`).join('') + `<p>Registered in <a href="CLAIMS.md">CLAIMS.md</a> and frozen by <a href="${S.seals.length > 1 ? S.seals[0].file : 'SEAL.json'}">the ${S.seals.length > 1 ? 'first seal' : 'seal'}</a> before round 1 ran${S.seals.length > 1 ? '. No later seal has changed them: <a href="SEAL.md">what a later seal changed, and why</a>' : ''}.</p>`;
 }
 
 // ── the loop ──
@@ -163,7 +171,7 @@ function renderBuilt() {
   $('builtWins').innerHTML = win(g ? `${g.killed}<span class="of">/${g.total}</span>` : '—', 'planted bugs caught by the tests, nothing exempted', 'data/gates.json')
     + win(p ? `${ps}<span class="of">/${pn}</span>` : '—', 'replies identical to plain generation', 'data/parity.json')
     + win(w ? `${w.tensorsCompared}<span class="of">/${w.tensorsInTheOtherCopy}</span>` : '—', 'weight tensors matched to a separate copy', 'data/weights.json')
-    + win(S.sealSha ? `<span style="font-size:.62em">${S.sealSha.slice(0, 10)}…</span>` : '—', S.sealSha ? `the seal: every result-changing file, frozen${last && last.verdict ? (last.verdict.sealSha256 === S.sealSha ? '; the newest round records this seal' : '; <span class="fail">the newest round records another seal</span>') : ''}` : 'the seal has not been made yet', S.sealSha ? 'SEAL.json' : '');
+    + win(S.sealSha ? `<span style="font-size:.62em">${S.sealSha.slice(0, 10)}…</span>` : '—', S.sealSha ? `the seal${S.seals.length > 1 ? `, ${S.seals.length} in a chain` : ''}: every result-changing file, frozen${last && last.verdict ? (last.verdict.sealSha256 === sealFor(last.verdict.round) ? `; round ${last.verdict.round} records ${S.seals.length > 1 ? 'the seal it ran under' : 'this seal'}` : '; <span class="fail">the newest round records another seal</span>') : ''}` : 'the seal has not been made yet', S.sealSha ? (S.seals.length > 1 ? 'SEAL.md' : 'SEAL.json') : '');
 }
 
 // ── for your business, the honest lines, the buyer walk, the development round ──
@@ -182,7 +190,7 @@ function renderWords() {
   bind('l.rounds', ks.length ? `${many(ks.length, 'sealed round has', 'sealed rounds have')} run.` : 'No sealed round has run yet.');
   const T = v && v.tiers, note = r && r.note;
   bind('l.tiers', T ? `Right, before → after: ${JUDGE.TIERS.filter((t) => T.base[t].n > 0).map((t) => `${TIER[t]} ${T.base[t].right} → ${T.distilled[t].right} of ${T.base[t].n}`).join('; ')}.${worse(v).map((t) => ` <span class="fail">On ${TIER[t]} it gave more confident wrong answers: ${T.base[t].wrong} → ${T.distilled[t].wrong}, and left fewer blank (${T.base[t].none} → ${T.distilled[t].none}).</span>`).join('')} The hardest problems are ones like finding the two primes that multiply to a number, or a sum over a three-by-three grid.` : 'Each kind of problem is counted apart when round 1 lands.');
-  bind('l.run', note ? `${esc(note.short)} ${esc(note.means || '')} ${note.unknown.map(esc).join(' ')} <a href="${r.dir}/run-note.json">The note.</a>` : c ? `Round ${v.round} ran start to finish in one sitting.` : 'Anything that goes wrong in a run is written here.');
+  bind('l.run', note ? `${esc(note.short)} ${esc(note.means || '')} ${note.unknown.map(esc).join(' ')} <a href="${r.dir}/run-note.json">The note.</a>` : r && r.run ? `Round ${v.round} ran in ${many(r.run.sittings.length, 'sitting', 'sittings')}. ${ended(r).length ? endedLine(r) : 'Every step ended well.'} <a href="${r.dir}/run.json">The record.</a>` : c ? `Round ${v.round} ran start to finish in one sitting.` : 'Anything that goes wrong in a run is written here.');
   bind('l.wrong', c ? `After training it still gave a confident wrong answer on ${c.distilled.wrong} of ${c.n} unseen problems.` : 'How often it is still confidently wrong is measured in round 1.');
   bind('l.compute', c ? `Round ${v.round} took ${v.hours.toFixed(1)} hours of a laptop processor. The seal caps a round at ${S.settings.spend.hoursPerRound} hours and all rounds at ${S.settings.spend.hoursInAll}. If a round runs over, no further round may start.` : `A round is hours of a laptop processor; the seal caps one at ${S.settings ? S.settings.spend.hoursPerRound : '—'}.`);
   bind('b.risk', c ? (v.adopted ? `In round ${v.round} the weights cleared the bar.` : `In round ${v.round} they did not, and were dropped.`) : '');
@@ -258,7 +266,7 @@ async function rejudge() {
     const history = [], grants = {};
     for (let q = 1; q < k; q++) if (S.rounds[q]) { if (S.rounds[q].verdict && S.rounds[q].verdict.cold) history.push(JUDGE.row(S.rounds[q].verdict)); if (S.rounds[q].grant) grants[q] = S.rounds[q].grant; }
     if (k > 0 && r.grant) grants[k] = r.grant;
-    const v = JUDGE.judge({ which: k === 0 ? 'dev' : k, settings: S.settings, set, seal: S.sealSha, history, grants, harvest, log, coldBase: r.cb, coldDistilled: r.cd, train });
+    const v = JUDGE.judge({ which: k === 0 ? 'dev' : k, settings: S.settings, set, seal: sealFor(k), history, grants, harvest, log, coldBase: r.cb, coldDistilled: r.cd, train });
     const { files, at, ...was } = r.verdict;
     const identical = JSON.stringify(was) === JSON.stringify(v) && same === harvest.records.length;
     out.innerHTML = `${identical ? '<span class="pass">Judged again here: the same verdict.</span>' : '<span class="fail">Judged again here: NOT the published verdict.</span>'} ${same} of ${harvest.records.length} harvested problems grew again identically · ${v.train ? `${v.train.verified} of ${v.train.examples} training examples verified again` : 'no training file taken'} · ${v.cold ? `${2 * v.cold.n} cold replies read again` : 'no cold test taken'} · ${v.verdicts.map((x) => `${x.id} ${x.pass === true ? 'pass' : x.pass === false ? 'FAIL' : 'pending'}`).join(', ')}${S.shown === 'dev' ? ' · (the development round: not a claim)' : ''}`;
@@ -286,13 +294,16 @@ async function load() {
   const walk = published && published.walk ? await getJSON('data/walk.json') : null;   // asked for only when it is on file
   S.machine = published && published.machine ? await getJSON('data/machine.json') : null;
   Object.assign(S, { settings, published, gates, parity, weights, trace, walk, sealSha: sealText === null ? null : SHA.sha256(sealText) });
+  // the seals in order, each hashed here from its own bytes; the last is SEAL.json
+  for (const s of (published && published.seals) || (sealText === null ? [] : [{ file: 'SEAL.json', from: 1 }])) { const t = s.file === 'SEAL.json' ? sealText : await getText(s.file); if (t !== null) S.seals.push({ file: s.file, from: s.from, sha: SHA.sha256(t) }); }
   const list = [...(published && published.dev ? ['dev'] : []), ...((published && published.rounds) || []).map(String)];
   for (const w of list) {
     const dir = w === 'dev' ? 'data/dev' : `data/rounds/${w}`;
     const [verdict, held, cb, cd, build] = await Promise.all([getJSON(`${dir}/verdict.json`), getJSON(`${dir}/held.json`), getJSON(`${dir}/cold-base.json`), getJSON(`${dir}/cold-distilled.json`), getJSON(`${dir}/build.json`)]);
     const grant = w !== 'dev' && published.grants.includes(Number(w)) ? await getJSON(`data/grants/round-${w}.json`) : null;
     const note = w !== 'dev' && (published.runNotes || []).includes(Number(w)) ? await getJSON(`${dir}/run-note.json`) : null;   // asked for only when it is on file
-    S.rounds[w] = { which: w, dir, verdict, held, cb, cd, build, grant, note, rows: paired(held, cb, cd) };
+    const run = w !== 'dev' && (published.runs || []).includes(Number(w)) ? await getJSON(`${dir}/run.json`) : null;      // the runner's own record, when there is one
+    S.rounds[w] = { which: w, dir, verdict, held, cb, cd, build, grant, note, run, rows: paired(held, cb, cd) };
   }
   const sealed = list.filter((w) => w !== 'dev');
   S.shown = sealed.length ? sealed[sealed.length - 1] : list.includes('dev') ? 'dev' : null;

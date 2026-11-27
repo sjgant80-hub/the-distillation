@@ -16,7 +16,7 @@ export const KERNELS = [
   ['SHA', 'vendor/crystal/vendor/climb/src/sha256.mjs'], ['STATS', 'vendor/crystal/vendor/climb/vendor/stats.mjs'], ['MEMORY', 'vendor/crystal/vendor/climb/vendor/memory.mjs'], ['EXACT', 'vendor/crystal/vendor/climb/src/exact.mjs'], ['CHECK', 'vendor/crystal/vendor/climb/src/checker.mjs'],
   ['PLAN', 'vendor/crystal/vendor/climb/src/plan.mjs'], ['LEFT', 'vendor/crystal/vendor/climb/src/left.mjs'], ['KEEP', 'vendor/crystal/vendor/climb/src/keep.mjs'], ['LOOP', 'vendor/crystal/vendor/climb/src/loop.mjs'], ['TASKS', 'vendor/crystal/vendor/climb/src/tasks.mjs'],
   ['BOND', 'vendor/crystal/src/bond.mjs'], ['GROW', 'vendor/crystal/src/grow.mjs'],
-  ['SPLIT', 'src/split.mjs'], ['TRACE', 'src/trace.mjs'], ['COLD', 'src/cold.mjs'], ['ADOPT', 'src/adopt.mjs'], ['ROUNDS', 'src/rounds.mjs'], ['CLAIMS', 'src/claims.mjs'], ['JUDGE', 'src/judge.mjs'],
+  ['SPLIT', 'src/split.mjs'], ['TRACE', 'src/trace.mjs'], ['COLD', 'src/cold.mjs'], ['ADOPT', 'src/adopt.mjs'], ['ROUNDS', 'src/rounds.mjs'], ['STEPS', 'src/steps.mjs'], ['CLAIMS', 'src/claims.mjs'], ['JUDGE', 'src/judge.mjs'],
 ];
 // what bake() writes into the page: these ids, and every data-bind. What a visitor does on the page is their own.
 export const BAKED = ['facet', 'receipts', 'verdictLine', 'traceStack', 'wallBox', 'claimStack', 'bars', 'gauge', 'loopState', 'loopWins', 'grantBox', 'kernelStack', 'builtWins', 'roleCards', 'walk', 'devBox'];

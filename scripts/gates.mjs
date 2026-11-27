@@ -11,6 +11,7 @@ export const GATED = [
   ['src/cold.mjs', ['test/cold.test.mjs']],
   ['src/adopt.mjs', ['test/adopt.test.mjs']],
   ['src/rounds.mjs', ['test/rounds.test.mjs']],
+  ['src/steps.mjs', ['test/steps.test.mjs']],
   ['src/claims.mjs', ['test/claims.test.mjs']],
   ['src/judge.mjs', ['test/judge.test.mjs']],
   ['genome/cell.mjs', ['test/genome.test.mjs']],
