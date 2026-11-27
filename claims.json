@@ -1,7 +1,0 @@
-{
-  "build": "the-distillation",
-  "passed": 6,
-  "total": 6,
-  "source": "derived from this repo's own sealed, committed index.html — the page's own baked facet \"6 of 6 claims passed\"",
-  "note": "Published so kar-buildcurve can read the claims signal (weight 0.25). The number is the repo’s own, not re-asserted here."
-}
