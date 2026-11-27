@@ -4,7 +4,9 @@
  "rounds": [
   1
  ],
- "grants": [],
+ "grants": [
+  1
+ ],
  "runNotes": [
   1
  ],

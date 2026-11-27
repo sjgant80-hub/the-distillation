@@ -224,9 +224,9 @@
  },
  "notes": [],
  "next": {
-  "act": "wait",
-  "round": 1,
-  "why": "round 1 was adopted by the rule; its weights wait for a person's grant"
+  "act": "run",
+  "round": 2,
+  "why": "round 1 was adopted and granted"
  },
  "spend": {
   "rounds": [
@@ -251,7 +251,7 @@
    "gained": 61,
    "lost": 5,
    "adopted": true,
-   "granted": false
+   "granted": true
   }
  ],
  "files": {
@@ -263,5 +263,5 @@
   "cold-base.json": "c259725eea35379941ea5d48043a6ff8bd35b50132a37430b43e270f697d2562",
   "cold-distilled.json": "c3c2344b7d662ed0d908877b67587f105f91d8ff7fd64c773170e801c4b92669"
  },
- "at": "2026-11-26T07:48:14.091Z"
+ "at": "2026-11-27T19:07:22.932Z"
 }
