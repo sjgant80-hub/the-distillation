@@ -1,0 +1,242 @@
+{
+ "v": "the-distillation-verdict/1",
+ "set": "2",
+ "round": 2,
+ "sealSha256": "9dc1a9b92d554fc346a9a01bb8070d5673eca35b902ab0fdc25fce959a954251",
+ "verdicts": [
+  {
+   "id": "K1",
+   "name": "Lift",
+   "bar": "on the held-out block, cold, one try each: the distilled model is right on at least 5 points in a hundred more than the base, it solves more of the problems the base failed than it loses of the ones the base solved, and the difference is significant (exact two-sided McNemar test, p < 0.05)",
+   "pass": false,
+   "result": "base 50.7% (116 of 229), distilled 50.7% (116 of 229): 0.0 points; p = 1.000"
+  },
+  {
+   "id": "K2",
+   "name": "Still honest",
+   "bar": "on the same block the distilled model gives no more confident wrong answers than the base",
+   "pass": true,
+   "result": "confident wrong answers: base 113 of 229, distilled 113 of 229; no answer: base 0, distilled 0"
+  },
+  {
+   "id": "K3",
+   "name": "The fail-wall moved",
+   "bar": "more held-out problems go from failed (base) to solved (distilled) than the other way",
+   "pass": false,
+   "result": "12 held-out problems the base failed are solved by the distilled model; 12 the base solved are lost"
+  },
+  {
+   "id": "K4",
+   "name": "Verify-or-dissolve at the weights",
+   "bar": "the outcome published for the round is the one the rule gives (adopted only if K1 and K2 both pass, dissolved otherwise), and the round stands only on weights adopted by the rule and granted by a person",
+   "pass": true,
+   "result": "the rule gives: DISSOLVE (the cold lift did not clear its bar); published: dissolved; it stands on the weights of 1 earlier round, each adopted and granted"
+  },
+  {
+   "id": "K5",
+   "name": "Clean training data",
+   "bar": "every training example is a complete crystal's verified working, checked again by exact arithmetic; none is unverified; the trainer read that file, byte for byte",
+   "pass": true,
+   "result": "539 of 539 training examples verified by exact arithmetic, 0 unverified; the trainer read that file, byte for byte"
+  },
+  {
+   "id": "K6",
+   "name": "Held-out integrity",
+   "bar": "no held-out problem is in the training set, and no held-out problem was harvested",
+   "pass": true,
+   "result": "0 of 229 held-out problems are in the training set; 0 were harvested"
+  }
+ ],
+ "adopted": false,
+ "why": "the cold lift did not clear its bar",
+ "adapterSha256": "f20c4c163141b0210abfee5613def2332bec4e00b7a7bfe8b8326168d75a71d9",
+ "standsOn": [
+  "370072e33016ea41edff7c3e914196ac955a954bc849ccac993e152508822e9b"
+ ],
+ "hours": 5.8533333333333335,
+ "seconds": {
+  "harvest": 5657,
+  "train": 10919,
+  "coldBase": 2467,
+  "coldDistilled": 2029
+ },
+ "harvest": {
+  "problems": 566,
+  "complete": 554,
+  "calls": 4835
+ },
+ "cold": {
+  "n": 229,
+  "unmatched": 0,
+  "base": {
+   "n": 229,
+   "right": 116,
+   "wrong": 113,
+   "none": 0,
+   "rate": 0.5065502183406113,
+   "silent": 0.49344978165938863
+  },
+  "distilled": {
+   "n": 229,
+   "right": 116,
+   "wrong": 113,
+   "none": 0,
+   "rate": 0.5065502183406113,
+   "silent": 0.49344978165938863
+  },
+  "lift": 0,
+  "gained": [
+   "energy:20261502-2",
+   "tank:20261502-6",
+   "power:20261502-11",
+   "series:20261502-11",
+   "momentum:20261502-17",
+   "tank:20261502-18",
+   "momentum:20261502-19",
+   "power:20261502-21",
+   "dot:20261502-22",
+   "power:20261502-27",
+   "tank:20261502-34",
+   "power:20261502-39"
+  ],
+  "lost": [
+   "power:20261502-5",
+   "momentum:20261502-13",
+   "energy:20261502-14",
+   "momentum:20261502-21",
+   "trapezium:20261502-21",
+   "momentum:20261502-27",
+   "squares:20261502-28",
+   "series:20261502-29",
+   "trapezium:20261502-29",
+   "tank:20261502-30",
+   "squares:20261502-32",
+   "momentum:20261502-37"
+  ],
+  "p": 1
+ },
+ "tiers": {
+  "base": {
+   "easy": {
+    "n": 6,
+    "right": 6,
+    "wrong": 0,
+    "none": 0,
+    "rate": 1,
+    "silent": 0
+   },
+   "climb": {
+    "n": 153,
+    "right": 108,
+    "wrong": 45,
+    "none": 0,
+    "rate": 0.7058823529411765,
+    "silent": 0.29411764705882354
+   },
+   "wall": {
+    "n": 70,
+    "right": 2,
+    "wrong": 68,
+    "none": 0,
+    "rate": 0.02857142857142857,
+    "silent": 0.9714285714285714
+   }
+  },
+  "distilled": {
+   "easy": {
+    "n": 6,
+    "right": 6,
+    "wrong": 0,
+    "none": 0,
+    "rate": 1,
+    "silent": 0
+   },
+   "climb": {
+    "n": 153,
+    "right": 108,
+    "wrong": 45,
+    "none": 0,
+    "rate": 0.7058823529411765,
+    "silent": 0.29411764705882354
+   },
+   "wall": {
+    "n": 70,
+    "right": 2,
+    "wrong": 68,
+    "none": 0,
+    "rate": 0.02857142857142857,
+    "silent": 0.9714285714285714
+   }
+  }
+ },
+ "train": {
+  "examples": 539,
+  "verified": 539,
+  "unverified": 0,
+  "fileSha256": "58604b3f28c119214880bf1e46b366390438ec72f0e21f227a6f3be9d3060b85",
+  "trainerSha256": "58604b3f28c119214880bf1e46b366390438ec72f0e21f227a6f3be9d3060b85",
+  "trainerExamples": 539
+ },
+ "held": {
+  "n": 229,
+  "overlap": 0,
+  "harvested": 0
+ },
+ "notes": [],
+ "next": {
+  "act": "full",
+  "round": 2,
+  "why": "round 2 did not clear its bar and dissolved: the gains have flattened and the house is full"
+ },
+ "spend": {
+  "rounds": [
+   {
+    "round": 1,
+    "hours": 9.344166666666666,
+    "over": false
+   },
+   {
+    "round": 2,
+    "hours": 5.8533333333333335,
+    "over": false
+   }
+  ],
+  "total": 15.1975,
+  "perRound": 12,
+  "inAll": 48,
+  "left": 32.8025,
+  "capped": false
+ },
+ "gauge": [
+  {
+   "round": 1,
+   "base": 0.24675324675324675,
+   "distilled": 0.48917748917748916,
+   "lift": 0.2424242424242424,
+   "gained": 61,
+   "lost": 5,
+   "adopted": true,
+   "granted": true
+  },
+  {
+   "round": 2,
+   "base": 0.5065502183406113,
+   "distilled": 0.5065502183406113,
+   "lift": 0,
+   "gained": 12,
+   "lost": 12,
+   "adopted": false,
+   "granted": false
+  }
+ ],
+ "files": {
+  "harvest.json": "f52e1fadf683e8ac03e725aee61d7c48ec007c4b40a4ab07c620614737a663c7",
+  "train.jsonl": "58604b3f28c119214880bf1e46b366390438ec72f0e21f227a6f3be9d3060b85",
+  "asks.json": "556ab688fb4ac5a594d5634ec09692334a3990fc323ba55b2ce56a2a1f71498d",
+  "held.json": "b607229590b2a3448ce11712fbdb51dc1ef1a4adf56047869760ccc226c2fd5f",
+  "train-log.json": "9195dfd864a2e6f617a6a7593d49dc1418cb94499e855b6f189fbe6610862aee",
+  "cold-base.json": "d493049a8fae390b70c0bf08d71d2489712403358d448374713f29293e24ef3f",
+  "cold-distilled.json": "ff6de542c991d3c7e06d3f078cd2f275724f6fe93819cfeb89c587b47d268f42"
+ },
+ "at": "2026-11-28T14:25:27.447Z"
+}

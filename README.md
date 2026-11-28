@@ -7,12 +7,25 @@ The loop proposes a better model. A person decides whether it stands.
 
 | | |
 | --- | --- |
-| **24.7% → 48.9%** | round 1: right, cold, on 231 held-out problems, before and after training on 536 verified examples ([the verdict](data/rounds/1/verdict.json)) |
-| **6 of 6** | of round 1's claims passed. The rule says adopt. A person granted the weights on 27 November 2026 ([the grant](data/grants/round-1.json)) |
+| **50.7% → 50.7%** | round 2: right, cold, on 229 held-out problems, before and after training on 539 verified examples ([the verdict](data/rounds/2/verdict.json)) |
+| **4 of 6** | of round 2's claims passed. The rule says dissolve: round 2's weights are dropped, and the loop stops. Round 1's stand: 24.7% → 48.9%, granted by a person on 27 November 2026 ([the grant](data/grants/round-1.json)) |
 | **6** | claims and their pass marks, written down before any model was trained ([CLAIMS.md](CLAIMS.md)) |
 | **294 / 294** | planted bugs caught in the nine gated files ([the record](data/gates.json)) |
 | **100 / 100** | replies identical to plain one-at-a-time generation ([the record](data/parity.json)) |
 | **0** | changes to the model without a person's recorded yes |
+
+## Round 2, as measured
+
+- **No lift.** Right, cold, on 229 held-out problems: 116 before and 116 after. Round 2 started from round 1's
+  model, as granted, and trained it again on 539 examples of its own verified working.
+- **12 problems gained, 12 lost** (exact McNemar test, p = 1.000): what moved cancelled out. By kind, before → after:
+  one-step problems 6 → 6 of 6; several-step problems 108 → 108 of 153; the hardest problems 2 → 2 of 70.
+- **Confident wrong answers did not change, 113 → 113 of 229.** None was left blank, before or after.
+- **The rule says dissolve.** Lift (K1) and the fail-wall moving (K3) failed, and they stay on the page in red.
+  Round 2's weights are not used, so no person's grant was asked for. The loop's own rule then stops: the gains have
+  flattened. It starts no round 3.
+- **Every step ended cleanly.** Round 1's trainer crash did not happen again. 5.9 hours of a laptop processor, of a
+  cap of 12 ([how each step ended](data/rounds/2/run.json)).
 
 ## Round 1, as measured
 
@@ -23,8 +36,8 @@ The loop proposes a better model. A person decides whether it stands.
 - **61 problems gained, 5 lost** (exact McNemar test, p = 2.6e-13). 9.3 hours of a laptop processor, of a cap of 12.
 - **Resumed once by hand.** The trainer saved what it had learned, and its log. Then its process ended with an error
   and no message. Nothing was trained twice and no record was edited. [The note](data/rounds/1/run-note.json).
-- **Round 2 has not run yet.** Round 1's weights are granted. A second seal was made first: it mends how a round is
-  run and written down, and changes nothing that is asked or judged ([SEAL.md](SEAL.md)).
+- **Granted.** A person granted round 1's weights on 27 November 2026, in their own words. Before round 2, a second
+  seal mended how a round is run and written down, and changed nothing that is asked or judged ([SEAL.md](SEAL.md)).
 
 ## Run it yourself
 

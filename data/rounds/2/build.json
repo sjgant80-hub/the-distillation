@@ -1,0 +1,22 @@
+{
+ "v": "the-distillation-build/1",
+ "set": "2",
+ "counts": {
+  "pool": 566,
+  "grown": 566,
+  "complete": 554,
+  "used": 539,
+  "incomplete": 12,
+  "long": 15,
+  "unverified": 0
+ },
+ "examples": 539,
+ "trainFileSha256": "58604b3f28c119214880bf1e46b366390438ec72f0e21f227a6f3be9d3060b85",
+ "held": 229,
+ "overlap": 0,
+ "harvested": 0,
+ "lines": {
+  "most": 24,
+  "mean": 6.233766233766234
+ }
+}

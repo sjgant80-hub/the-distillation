@@ -1,0 +1,53 @@
+{
+ "v": "the-distillation-run/1",
+ "note": "how each step of this round ended, sitting by sitting; written by scripts/round.mjs as the round runs",
+ "sittings": [
+  {
+   "started": "2026-11-28T08:22:06.310Z",
+   "steps": [
+    {
+     "step": "harvest",
+     "exit": 0,
+     "signal": null,
+     "seconds": 5657,
+     "carriedOn": false
+    },
+    {
+     "step": "build",
+     "exit": 0,
+     "signal": null,
+     "seconds": 0,
+     "carriedOn": false
+    },
+    {
+     "step": "train",
+     "exit": 0,
+     "signal": null,
+     "seconds": 11503,
+     "carriedOn": false
+    },
+    {
+     "step": "cold-base",
+     "exit": 0,
+     "signal": null,
+     "seconds": 2505,
+     "carriedOn": false
+    },
+    {
+     "step": "cold-distilled",
+     "exit": 0,
+     "signal": null,
+     "seconds": 2104,
+     "carriedOn": false
+    },
+    {
+     "step": "judge",
+     "exit": 0,
+     "signal": null,
+     "seconds": 1,
+     "carriedOn": false
+    }
+   ]
+  }
+ ]
+}
