@@ -11,6 +11,17 @@ const [which, log] = process.argv.slice(2), push = process.argv.includes('--push
 const every = process.argv.includes('--every') ? Number(process.argv[process.argv.indexOf('--every') + 1]) : 240;
 const at = (p) => new URL(`../${p}`, import.meta.url);
 
+// progress(state) → how far the stage the round is in has got, for the commit line: the training step only while it
+// trains, the conversations answered while a model is tested cold, the problems grown while it harvests; else nothing
+export function progress(s) {
+  const x = s || {}, c = x.cold || {};
+  if (x.stage === 'train' && x.train) return ` · step ${x.train.step}/${x.train.steps}`;
+  if (x.stage === 'cold-base' && c.base) return ` · ${c.base.done} of ${c.base.total}`;
+  if (x.stage === 'cold-distilled' && c.distilled) return ` · ${c.distilled.done} of ${c.distilled.total}`;
+  if (x.stage === 'harvest' && x.harvest) return ` · ${x.harvest.done}/${x.harvest.total}`;
+  return '';
+}
+
 // read(text) → the state of the round, from its log alone
 export function read(text, round) {
   const lines = String(text).split('\n'), last = (re) => { for (let i = lines.length - 1; i >= 0; i--) { const m = lines[i].match(re); if (m) return m; } return null; };
@@ -51,8 +62,8 @@ if (process.argv[1] && process.argv[1].endsWith('live.mjs')) {
     if (body !== was) {
       was = body;
       writeFileSync(at('data/live.json'), JSON.stringify({ ...s, at: new Date().toISOString() }, null, 1) + '\n');
-      if (push) { const g = (a) => spawnSync('git', a, { cwd: at('.'), encoding: 'utf8' }); g(['add', 'data/live.json']); g(['-c', 'user.name=Simon Gant', '-c', 'user.email=sjgant80-hub@users.noreply.github.com', 'commit', '-q', '-m', `live: round ${round} · ${s.stage}${s.train ? ` · step ${s.train.step}/${s.train.steps}` : s.harvest && s.stage === 'harvest' ? ` · ${s.harvest.done}/${s.harvest.total}` : ''}`, '--', 'data/live.json']); g(['push', '-q']); }
-      console.log(`${new Date().toISOString().slice(11, 19)} ${s.stage}${s.train ? ` step ${s.train.step}/${s.train.steps}` : ''}`);
+      if (push) { const g = (a) => spawnSync('git', a, { cwd: at('.'), encoding: 'utf8' }); g(['add', 'data/live.json']); g(['-c', 'user.name=Simon Gant', '-c', 'user.email=sjgant80-hub@users.noreply.github.com', 'commit', '-q', '-m', `live: round ${round} · ${s.stage}${progress(s)}`, '--', 'data/live.json']); g(['push', '-q']); }
+      console.log(`${new Date().toISOString().slice(11, 19)} ${s.stage}${progress(s)}`);
     }
     if (s.done || s.failed) break;
     await new Promise((ok) => setTimeout(ok, every * 1000));
