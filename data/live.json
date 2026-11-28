@@ -1,14 +1,18 @@
 {
  "v": "the-distillation-live/1",
  "round": 2,
- "stage": "build",
+ "stage": "train",
  "harvest": {
   "done": 566,
   "total": 566,
   "complete": 554,
   "calls": 4835
  },
- "train": null,
+ "train": {
+  "step": 0,
+  "steps": 204,
+  "loss": []
+ },
  "cold": {
   "base": null,
   "distilled": null
@@ -17,5 +21,5 @@
  "done": false,
  "failed": false,
  "examples": 539,
- "at": "2026-11-28T10:01:06.741Z"
+ "at": "2026-11-28T10:08:12.952Z"
 }
