@@ -49,14 +49,14 @@ function renderResult() {
   if (!c) {
     bind('k.result', 'Round 1 · sealing now');
     const wait = (lab) => `<div class="stat reveal"><div class="n"><span class="was">—</span><span class="arrow">→</span><span class="wait">—</span></div><div class="lab">${lab} ${SEALING}</div></div>`;
-    $('receipts').innerHTML = wait('<b>Right, cold, on held-out problems.</b> Before and after one round.') + wait('<b>Confident wrong answers.</b> The rule requires this not to rise.') + wait('<b>Problems gained and lost.</b> The fail-wall, both ways.');
+    $('receipts').innerHTML = wait('<b>Right, cold, on problems it never trained on.</b> Before and after one round.') + wait('<b>Confident wrong answers.</b> The rule requires this not to rise.') + wait('<b>Problems gained and lost.</b> The fail-wall, both ways.');
     $('verdictLine').innerHTML = 'No sealed round has landed. <b>Nothing is claimed until one has.</b> The number replaces the tag when it does, pass or fail.';
     $('facet').innerHTML = 'Round 1 · sealing now · the gold faces are its six claims';
     return;
   }
   const src = `<a class="src" href="${r.dir}/verdict.json">receipt: round ${v.round} verdict ↗</a>`;
   bind('k.result', `The result · round ${v.round}, sealed`);
-  $('receipts').innerHTML = `<div class="stat reveal"><div class="n"><span class="was">${pct(c.base.rate)}</span><span class="arrow">→</span><span class="${c.lift > 0 ? 'now' : 'bad'}" data-count="${pct(c.distilled.rate)}">${pct(c.distilled.rate)}</span></div><div class="lab"><b>Right, cold, on ${c.n} held-out problems.</b> The same model, before and after training on ${v.train ? v.train.examples : 0} verified examples of its own working.</div>${src}</div>`
+  $('receipts').innerHTML = `<div class="stat reveal"><div class="n"><span class="was">${pct(c.base.rate)}</span><span class="arrow">→</span><span class="${c.lift > 0 ? 'now' : 'bad'}" data-count="${pct(c.distilled.rate)}">${pct(c.distilled.rate)}</span></div><div class="lab"><b>Right, cold, on ${c.n} problems it never trained on.</b> The same model, before and after training on ${v.train ? v.train.examples : 0} verified examples of its own working.</div>${src}</div>`
     + `<div class="stat reveal"><div class="n"><span class="was">${c.base.wrong}</span><span class="arrow">→</span><span class="${c.distilled.wrong <= c.base.wrong ? 'now' : 'bad'}" data-count="${c.distilled.wrong}">${c.distilled.wrong}</span></div><div class="lab"><b>Confident wrong answers.</b> An answer given, and wrong. The rule requires this not to rise.${worse(v).map((t) => ` <span class="fail">On ${TIER[t]} it rose: ${v.tiers.base[t].wrong} → ${v.tiers.distilled[t].wrong}.</span>`).join('')}</div>${src}</div>`
     + `<div class="stat reveal"><div class="n"><span class="now" data-count="+${c.gained.length}">+${c.gained.length}</span> <span class="bad">−${c.lost.length}</span></div><div class="lab"><b>Problems gained and lost.</b> Failed before and right after, against the other way. p = ${prob(c.p)}.</div>${src}</div>`;
   const next = v.next || {};
